@@ -3,6 +3,9 @@ CREATE TABLE Users (
     Name VARCHAR(255) NOT NULL,
     Email VARCHAR(255) UNIQUE NOT NULL,
     Password VARCHAR(255) NOT NULL,
-    Avatar VARCHAR(255),
-    Bio TEXT
+    Avatar VARCHAR(255) NOT NULL,
+    Bio TEXT NOT NULL,
+    LastSeen TIMESTAMP,
+    IsActivePrivacy BOOLEAN DEFAULT 0,
+    IsLastSeenPrivacy BOOLEAn DEFAULT 0
 );
