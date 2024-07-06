@@ -7,5 +7,5 @@ CREATE TABLE Users (
     Bio TEXT NOT NULL,
     LastSeen TIMESTAMP,
     IsActivePrivacy BOOLEAN DEFAULT 0,
-    IsLastSeenPrivacy BOOLEAn DEFAULT 0
+    IsLastSeenPrivacy BOOLEAN DEFAULT 0
 );
