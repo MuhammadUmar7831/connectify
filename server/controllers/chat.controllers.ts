@@ -2,9 +2,14 @@ import { NextFunction, Response } from "express";
 import { authRequest } from "../middlewares/authenticate";
 import connection from "../config/db";
 import { QueryError, QueryResult, RowDataPacket } from "mysql2";
+import errorHandler from "../errors/error";
 
 export const createPersonalChat = async (req: authRequest, res: Response, next: NextFunction) => {
     const { content, receiverId } = req.body;
+
+    // if (receiverId === req.userId) {
+    //     return next(errorHandler(400, 'You can not send a Message to Yourself'))
+    // }
 
     // begin transaction in case of any error rollback else commit all four queries changes
     connection.beginTransaction((err: QueryError | null) => {
