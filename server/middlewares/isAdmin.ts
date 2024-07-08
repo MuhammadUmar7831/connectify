@@ -11,7 +11,7 @@ const isAdmin = async(req: authRequest,res: Response,next: NextFunction)=>{
         return next(errorHandler(403,"Access Denied"))
       }
 
-      const query: string = `SELECT UserId FROM GroupAdmins WHERE GroupAdmins.GroupId IN (SELECT GroupId From Groups)`
+      const query: string = `SELECT ? FROM GroupAdmins;`
       connection.query(query,[req.userId],(err: QueryError|null, result: RowDataPacket[])=>{
         if(err){
             return next(err)
