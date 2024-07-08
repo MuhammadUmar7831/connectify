@@ -7,12 +7,9 @@ import { QueryError,RowDataPacket } from "mysql2";
 
 const isAdmin = async(req: authRequest,res: Response,next: NextFunction)=>{
    try{
-      if(!req.userId){
-        return next(errorHandler(403,"Access Denied"))
-      }
-
-      const query: string = `SELECT ? FROM GroupAdmins;`
-      connection.query(query,[req.userId],(err: QueryError|null, result: RowDataPacket[])=>{
+      const groupId = req.body
+      const query: string = `SELECT UserId FROM Users WHERE UserId IN (SELECT UserId FROM GroupAdmins WHERE UserId = ? AND GroupId = ?);`
+      connection.query(query,[req.userId,groupId],(err: QueryError|null, result: RowDataPacket[])=>{
         if(err){
             return next(err)
         }
