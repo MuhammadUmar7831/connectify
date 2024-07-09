@@ -42,9 +42,18 @@ export const getCommonGroups = async (req: authRequest, res: Response, next: Nex
 export const addAdmin = async (req: authRequest, res: Response, next: NextFunction) => {
   const { friendId, groupId } = req.body;
 
-  const sql = 'INSERT INTO GroupAdmins (UserId, GroupId) VALUES (?, ?)';
-  connection.query(sql, [friendId, groupId], (err: QueryError | null, result: RowDataPacket[]) => {
+  // case if the friend is not even the member of the group
+  var query = 'SELECT * FROM Members m WHERE m.UserId = ? AND m.ChatId = (SELECT ChatId FROM _Groups g WHERE g.GroupId = ?);';
+  connection.query(query, [friendId, groupId], (err: QueryError | null, result: RowDataPacket[]) => {
+    
     if (err) { return next(err) }
-    res.status(200).send({ success: true, message: 'Admin Added' });
+    if (result.length === 0) { return next(errorHandler(400, 'This User is not Member of this Group')) }
+
+    query = 'INSERT INTO GroupAdmins (UserId, GroupId) VALUES (?, ?);';
+    connection.query(query, [friendId, groupId], (err: QueryError | null, result: RowDataPacket[]) => {
+      if (err) { return next(err) }
+      res.status(200).send({ success: true, message: 'Admin Added' });
+    })
+
   })
 }
