@@ -5,8 +5,9 @@ import errorHandler from "../errors/error";
 import { authRequest } from "../middlewares/authenticate";
 
 export const deleteGroup = async (req: authRequest, res: Response, next: NextFunction) => {
-  const groupId = req.body;
-  const query = `DELETE FROM _Groups WHERE GroupId = ?;`;
+  const { groupId } = req.body;
+
+  const query = "DELETE FROM Chats WHERE ChatId = (SELECT ChatId FROM _Groups WHERE GroupId = ?);";
   const values: any = [groupId];
 
   connection.query(query, values, (err: QueryError | null, result: any) => {
@@ -20,10 +21,10 @@ export const deleteGroup = async (req: authRequest, res: Response, next: NextFun
 };
 
 export const getCommonGroups = async (req: authRequest, res: Response, next: NextFunction) => {
-  const friendId = req.params.friendId
-  const userId = req.userId
+  const friendId = req.params.friendId;
+  const userId = req.userId;
 
-  const query = `SELECT * FROM _Groups g JOIN GroupChats gc on g.GroupId = gc.GroupId JOIN Members m1 on gc.chatId = m1.chatId JOIN Members m2 on gc.chatId = m2.chatId WHERE m1.userId = ? AND m2.userId = ?;`
+  const query = `SELECT g.* FROM _Groups g  JOIN Members m1 on g.ChatId = m1.ChatId JOIN Members m2 on g.ChatId = m2.ChatId WHERE m1.UserId = 2 AND m2.UserId = 1;`
   const values = [friendId, userId]
   connection.query(query, values, (err: QueryError | null, result: RowDataPacket[]) => {
     if (err) {

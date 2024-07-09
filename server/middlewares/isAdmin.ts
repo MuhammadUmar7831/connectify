@@ -7,10 +7,8 @@ import { QueryError, RowDataPacket } from "mysql2";
 
 const isAdmin = async (req: authRequest, res: Response, next: NextFunction) => {
   try {
-    // const groupId = req.body
     const { groupId } = req.body
 
-    // const query: string = 'SELECT UserId FROM Users WHERE UserId IN (SELECT UserId FROM GroupAdmins WHERE UserId = ? AND GroupId = ?);';
     const query: string = 'SELECT UserId FROM GroupAdmins WHERE UserId = ? AND GroupId = ?;';
     connection.query(query, [req.userId, groupId], (err: QueryError | null, result: RowDataPacket[]) => {
       if (err) {
