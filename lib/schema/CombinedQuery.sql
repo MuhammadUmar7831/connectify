@@ -44,9 +44,9 @@ CREATE TABLE Groups (
 CREATE TABLE Members (
     UserId INT,
     ChatId INT,
-    PRIMARY KEY(UserId, ChatId)
-    FOREIGN KEY (UserId) REFERENCES Users(UserId),
-    FOREIGN KEY (ChatId) REFERENCES Chats(ChatId)
+    PRIMARY KEY(UserId, ChatId),
+    FOREIGN KEY (UserId) REFERENCES Users(UserId) ON DELETE CASCADE,
+    FOREIGN KEY (ChatId) REFERENCES Chats(ChatId) ON DELETE CASCADE
 );
 CREATE TABLE Messages (
     MessageId INT AUTO_INCREMENT PRIMARY KEY,
@@ -54,8 +54,8 @@ CREATE TABLE Messages (
     SenderId INT,
     Content TEXT NOT NULL,
     Timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (ChatId) REFERENCES Chats(ChatId),
-    FOREIGN KEY (SenderId) REFERENCES Users(UserId)
+    FOREIGN KEY (ChatId) REFERENCES Chats(ChatId) ON DELETE CASCADE,
+    FOREIGN KEY (SenderId) REFERENCES Users(UserId) ON DELETE CASCADE
 );
 CREATE TABLE MessagesStaus (
     UserId INT,
@@ -68,7 +68,8 @@ CREATE TABLE PersonalChats (
     ChatId INT,
     MessageId INT,
     PRIMARY KEY (ChatId, MessageId),
-    FOREIGN KEY (ChatId) REFERENCES Chats(ChatId),
+    FOREIGN KEY (ChatId) REFERENCES Chats(ChatId) ON DELETE CASCADE,
+    FOREIGN KEY (MessageId) REFERENCES Messages(MessageId) ON DELETE CASCADE
 );
 CREATE TABLE PinnedChats (
     ChatId INT,

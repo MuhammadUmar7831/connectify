@@ -13,7 +13,6 @@ import messageRoutes from "../routes/message.routes";
 dotenv.config();
 
 const app: Express = express();
-app.use(serverError);
 app.use(express.json());
 app.use(cors());
 app.use(cookieParser());
@@ -28,6 +27,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/group', groupRoutes);
 app.use('/api/message', messageRoutes);
+app.use(serverError);
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
