@@ -2,8 +2,7 @@ import { Router } from "express";
 import authenticate from "../middlewares/authenticate";
 import isAdmin from "../middlewares/isAdmin";
 import tryCatch from "../middlewares/tryCatch";
-import { deleteGroup } from "../controllers/group.controllers";
-import { getCommonGroups } from "../controllers/group.controllers";
+import { addAdmin, deleteGroup, getCommonGroups } from "../controllers/group.controllers";
 
 
 const router = Router();
@@ -15,5 +14,6 @@ router.delete('/delete', authenticate, isAdmin, tryCatch(deleteGroup)); //route 
 // router.delete('/leave', authenticate, tryCatch(leaveGroup)); //route to leave a group
 // router.put('/update', authenticate, isAdmin, tryCatch(updateGroup)); //route to update a group (picture, name) only for admins
 // router.post('/add', authenticate, isAdmin, tryCatch(updateGroup)); //route to add a user to a group (picture, name) only for admins
+router.post('/add/admin', authenticate, isAdmin, tryCatch(addAdmin)); //route to add a admin to a group only for admins
 
 export default router;
