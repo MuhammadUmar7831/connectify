@@ -68,3 +68,16 @@ export const archiveChat = async (req: authRequest, res: Response, next: NextFun
         res.status(201).send({ success: true, message: 'Chat Archived' })
     })
 }
+
+// Negotiateable
+// export const deleteChat = async (req: authRequest, res: Response, next: NextFunction) => {
+//     const { chatId } = req.body;
+
+//     var sql = 'SELECT * FROM Chats c JOIN Members m ON c.ChatId = m.ChatId WHERE c.ChatId = ? AND m.UserId = ?;';
+//     connection.query(sql, [chatId, req.userId], (err: QueryError | null, result: RowDataPacket[]) => {
+//         if (err) { return next(err) }
+//         if (result.length === 0) { return next(errorHandler(400, 'Forbidden! Not Allowed')) }
+//     })
+
+//     sql = 'DELETE FROM Chats WHERE '
+// }
