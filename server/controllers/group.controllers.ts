@@ -3,6 +3,7 @@ import { QueryError, QueryResult, RowDataPacket} from "mysql2";
 import connection from "../config/db";
 import errorHandler from "../errors/error";
 import { authRequest } from "../middlewares/authenticate";
+import { Query } from "mysql2/typings/mysql/lib/protocol/sequences/Query";
 
 export const deleteGroup = async (req: authRequest, res: Response, next: NextFunction) => {
   const groupId = req.body;
@@ -23,7 +24,7 @@ export const getCommonGroups = async (req: authRequest, res: Response, next: Nex
   const friendId = req.params.friendId
   const userId = req.userId
 
-  const query = `SELECT * FROM _Groups g JOIN GroupChats gc on g.GroupId = gc.GroupId JOIN Members m1 on gc.chatId = m1.chatId JOIN Members m2 on gc.chatId = m2.chatId WHERE m1.userId = ? AND m2.userId = ?;`
+  const query = `SELECT g.* FROM _Groups g  JOIN Members m1 on g.ChatId = m1.ChatId JOIN Members m2 on g.ChatId = m2.ChatId WHERE m1.UserId = ? AND m2.UserId = ?;`
   const values = [friendId,userId]
   connection.query(query,values,(err: QueryError|null, result: RowDataPacket[])=>{
       if(err){
@@ -35,5 +36,20 @@ export const getCommonGroups = async (req: authRequest, res: Response, next: Nex
       }
 
       res.status(200).send({success: true, message:"Common Groups Found" , data: result})
+  })
+}
+
+
+export const kickUser = async(req: authRequest,res: Response,next: NextFunction)=>{
+  
+  const toBeKickedId = req.body
+  const query = ``
+  
+  connection.query(query,toBeKickedId,(err: QueryError|null, result: any)=>{
+    if(err){
+      return next(err)
+    }
+
+    res.status(200).send({Success: true, message:`User Id: ${toBeKickedId} kicked out!!`})
   })
 }
