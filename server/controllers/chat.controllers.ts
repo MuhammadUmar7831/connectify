@@ -72,7 +72,26 @@ export const archiveChat = async (req: authRequest, res: Response, next: NextFun
 
 export const getPersonalChats= async(req:authRequest,res:Response,next:NextFunction)=>{
 
-res.send("ok");
+    const { userId } = req.body;
+    if (!userId) {
+        return res.status(400).send({ success: false, message: 'User ID is required' });
+    }
+
+    const sqlQuery = `
+        SELECT * 
+        FROM Messages mg 
+        INNER JOIN PersonalChats pc ON pc.MessageId = mg.MessageId 
+        INNER JOIN Members mb ON mb.ChatId = pc.ChatId 
+        WHERE mb.UserId = ?
+    `;
+
+    connection.query(sqlQuery, [userId], (err, result) => {
+        if (err) {
+            return next(err);
+        }
+        res.status(200).send({ success: true, message: 'Personal chats retrieved successfully', data: result });
+    });
+
 
 }
 
@@ -86,6 +105,24 @@ export const getGroupChats= async(req:authRequest,res:Response,next:NextFunction
 
 
 export const getArchivedChats =(req:authRequest,res:Response,next:NextFunction)=>{
+   
+    const { userId } = req.body;
+    if (!userId) {
+        return res.status(400).send({ success: false, message: 'User ID is required' });
+    }
 
-    res.send("ok");
+    const sqlQuery = `
+        SELECT * 
+        FROM Messages mg 
+        INNER JOIN ArchivedChats ac ON ac.ChatId=mg.ChatId
+        INNER JOIN Members mb ON mb.ChatId = ac.ChatId 
+        WHERE mb.UserId = ?
+    `;
+
+    connection.query(sqlQuery, [userId], (err, result) => {
+        if (err) {
+            return next(err);
+        }
+        res.status(200).send({ success: true, message: 'Archieved chats retrieved successfully', data: result });
+    }); 
 }
