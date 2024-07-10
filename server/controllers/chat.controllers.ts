@@ -68,3 +68,24 @@ export const archiveChat = async (req: authRequest, res: Response, next: NextFun
         res.status(201).send({ success: true, message: 'Chat Archived' })
     })
 }
+
+
+export const getPersonalChats= async(req:authRequest,res:Response,next:NextFunction)=>{
+
+res.send("ok");
+
+}
+
+
+export const getGroupChats= async(req:authRequest,res:Response,next:NextFunction)=>{
+    
+    res.send("ok");
+
+    
+}
+
+
+export const getArchivedChats =(req:authRequest,res:Response,next:NextFunction)=>{
+
+    res.send("ok");
+}
