@@ -2,8 +2,7 @@ import { Router } from "express";
 import authenticate from "../middlewares/authenticate";
 import isAdmin from "../middlewares/isAdmin";
 import tryCatch from "../middlewares/tryCatch";
-import { kickUser } from "../controllers/group.controllers";
-import { addAdmin, deleteGroup, getCommonGroups } from "../controllers/group.controllers";
+import { addAdmin, deleteGroup, getCommonGroups,kickUser } from "../controllers/group.controllers";
 
 
 const router = Router();
