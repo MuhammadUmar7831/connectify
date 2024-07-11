@@ -70,13 +70,15 @@ export const archiveChat = async (req: authRequest, res: Response, next: NextFun
 }
 
 
-export const getPersonalChats= async(req:authRequest,res:Response,next:NextFunction)=>{
+export const getPersonalChats = async (req: authRequest, res: Response, next: NextFunction) => {
 
-    const { userId } = req.body;
-    if (!userId) {
-        return res.status(400).send({ success: false, message: 'User ID is required' });
-    }
+    // const { userId } = req.body; 
+    const userId = req.userId; // set by the authenticate middleware
+    // if (!userId) {
+    //     return res.status(400).send({ success: false, message: 'User ID is required' });
+    // }
 
+    // not select messages we just need chat
     const sqlQuery = `
         SELECT * 
         FROM Messages mg 
@@ -85,7 +87,7 @@ export const getPersonalChats= async(req:authRequest,res:Response,next:NextFunct
         WHERE mb.UserId = ?
     `;
 
-    connection.query(sqlQuery, [userId], (err, result) => {
+    connection.query(sqlQuery, [userId], (err: QueryError | null, result: RowDataPacket[]) => {
         if (err) {
             return next(err);
         }
@@ -96,21 +98,23 @@ export const getPersonalChats= async(req:authRequest,res:Response,next:NextFunct
 }
 
 
-export const getGroupChats= async(req:authRequest,res:Response,next:NextFunction)=>{
-    
+export const getGroupChats = async (req: authRequest, res: Response, next: NextFunction) => {
+
     res.send("ok");
 
-    
+
 }
 
 
-export const getArchivedChats =(req:authRequest,res:Response,next:NextFunction)=>{
-   
-    const { userId } = req.body;
-    if (!userId) {
-        return res.status(400).send({ success: false, message: 'User ID is required' });
-    }
+export const getArchivedChats = (req: authRequest, res: Response, next: NextFunction) => {
 
+    // const { userId } = req.body;
+    const userId = req.userId; // set by the authenticate middleware
+    // if (!userId) {
+    //     return res.status(400).send({ success: false, message: 'User ID is required' });
+    // }
+
+    // not select messages we just need chat
     const sqlQuery = `
         SELECT * 
         FROM Messages mg 
@@ -119,10 +123,10 @@ export const getArchivedChats =(req:authRequest,res:Response,next:NextFunction)=
         WHERE mb.UserId = ?
     `;
 
-    connection.query(sqlQuery, [userId], (err, result) => {
+    connection.query(sqlQuery, [userId], (err: QueryError | null, result: RowDataPacket[]) => {
         if (err) {
             return next(err);
         }
         res.status(200).send({ success: true, message: 'Archieved chats retrieved successfully', data: result });
-    }); 
+    });
 }
