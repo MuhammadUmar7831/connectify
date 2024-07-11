@@ -1,9 +1,8 @@
-import { NextFunction, Request, Response } from "express";
-import { QueryError, QueryResult, RowDataPacket } from "mysql2";
+import { NextFunction, Response } from "express";
+import { QueryError, RowDataPacket } from "mysql2";
 import connection from "../config/db";
 import errorHandler from "../errors/error";
 import { authRequest } from "../middlewares/authenticate";
-import { Query } from "mysql2/typings/mysql/lib/protocol/sequences/Query";
 
 export const deleteGroup = async (
   req: authRequest,
@@ -55,10 +54,15 @@ export const getCommonGroups = async (
   );
 };
 
-export const kickUser = async ( req: authRequest,res: Response,next: NextFunction) => {
-  const {toBeKickedId,groupId} = req.body
+export const kickUser = async (req: authRequest, res: Response, next: NextFunction) => {
+  const { toBeKickedId, groupId } = req.body
+  if (toBeKickedId === req.userId) {
+    return next(errorHandler(400, 'Realy! You want to Kick Yourself'))
+  }
+
   const removeAdmin = `DELETE FROM GroupAdmins WHERE UserId = ? AND GroupId = ?;`;
-  const removeUser = `DELETE FROM Members WHERE UserId = ? AND ChatId IN (SELECT ChatId FROM Chats WHERE Type = 'Group' AND ChatId IN (SELECT ChatId FROM _Groups WHERE GroupId = ?))`;
+  // const removeUser = `DELETE FROM Members WHERE UserId = ? AND ChatId IN (SELECT ChatId FROM Chats WHERE Type = 'Group' AND ChatId IN (SELECT ChatId FROM _Groups WHERE GroupId = ?))`;
+  const removeUser = `DELETE FROM Members WHERE UserId = ? AND ChatId = (SELECT ChatId FROM _Groups WHERE GroupId = ?)`;
 
   connection.beginTransaction((err: QueryError | null) => {    ///YAHA SE TRANSACTION SHURU HOTI HAI
     if (err) {
@@ -67,6 +71,9 @@ export const kickUser = async ( req: authRequest,res: Response,next: NextFunctio
     connection.query(removeUser, [toBeKickedId, groupId], (err: QueryError | null, result: any) => {   ///REMOVING SIMPLE USER FROM THE GROUPS
       if (err) {
         return connection.rollback(() => next(err));
+      }
+      if (result.affectedRows === 0) {
+        return next(errorHandler(404, 'User to be Deleted is not a Member of this Group'));
       }
       connection.query(removeAdmin, [toBeKickedId, groupId], (err: QueryError | null, result: any) => {  ///REMOVING USER FROM ADMINS TABLE IF THE USER IS AN ADMIN
         if (err) {
