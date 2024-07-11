@@ -8,7 +8,7 @@ import UserIcon from "../interface/icons/UserIcon";
 
 export default function SideBar() {
   return (
-    <div className="bg-black h-full w-20 rounded-2xl flex flex-col items-center justify-between py-6">
+    <div className="bg-black h-full w-20 rounded-2xl flex flex-col items-center justify-between py-6 min-w-20">
       <SiGooglegemini color="#FF4D0C" className="w-7 h-7" />
       <div>
         {

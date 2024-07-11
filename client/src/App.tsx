@@ -8,7 +8,7 @@ import Info from "./pages/Info"
 function App() {
 
   return (
-    <div className="flex items-center justify-center p-4 w-screen h-screen">
+    <div className="flex items-center justify-center p-4 w-screen h-screen bg-gray gap-2 overflow-x-auto">
       <SideBar />
       <Main />
       <BrowserRouter>
