@@ -77,60 +77,52 @@ export const archiveChat = async (req: authRequest, res: Response, next: NextFun
 
 
 export const getPersonalChats = async (req: authRequest, res: Response, next: NextFunction) => {
-    const userId = req.body.userId; // set by the authenticate middleware
-  
-    const sqlQuery = `
-        SELECT DISTINCT m.ChatId 
+    const userId = req.userId;
+
+    const receivedMessagesCountTableForGivenChat = `
+        SELECT mg2.ChatId, COUNT(*) AS received_count
+        FROM Messages mg2
+        JOIN MessagesStatus mgs ON mg2.MessageId = mgs.MessageId
+        WHERE mgs.Status = 'received' AND mgs.UserId = ?
+        GROUP BY mg2.ChatId`
+
+    const queryToFilterArchivedChatsOfGivenUser = `
+        SELECT ChatId FROM ArchivedChats WHERE UserId = ?`;
+
+    const nestedQueryToGetLastSentMessageForEachChat = `
+        SELECT MAX(mg2.MessageId) 
+        FROM Messages mg2 
+        WHERE mg2.ChatId = mg1.ChatId`
+
+    const query = `
+        SELECT DISTINCT m.ChatId, u.Name, u.Avatar, u.IsActivePrivacy, mg1.*, IFNULL(received_counts.received_count, 0) AS unSeenMessages
         FROM Members m 
-        INNER JOIN PersonalChats pc ON pc.ChatId = m.ChatId 
-        WHERE m.UserId = ?
-    `;
+        JOIN Users u ON m.UserId = u.UserId
+        JOIN PersonalChats pc ON pc.ChatId = m.ChatId
+        JOIN Messages mg1 ON m.ChatId = mg1.ChatId
+        LEFT JOIN PinnedChats pnc ON pc.ChatId = pnc.ChatId
+        LEFT JOIN (
+            ${receivedMessagesCountTableForGivenChat}
+        ) AS received_counts ON m.ChatId = received_counts.ChatId
+        WHERE m.UserId != ?
+        AND m.ChatId NOT IN (
+            ${queryToFilterArchivedChatsOfGivenUser}
+        )
+        AND mg1.MessageId = (
+            ${nestedQueryToGetLastSentMessageForEachChat}
+        );`;
 
-    connection.query(sqlQuery, [userId], (err: QueryError | null, results: RowDataPacket[]) => {
-        if (err) {
-            return next(err);
-        }
-    
-        const chatIds = results.map(item => item.ChatId);
-
-        const chatPromises = chatIds.map(chatId => {
-            return new Promise((resolve, reject) => {
-                const sqlQuery2 = `
-               SELECT mg.SenderId, mg.MessageId, u.Name, u.Avatar, u.Bio, u.LastSeen, u.IsActivePrivacy, u.IsLastSeenPrivacy, mg.Content, pc.ChatId
-                    FROM Messages mg
-                    INNER JOIN PersonalChats pc ON pc.MessageId = mg.MessageId
-                    LEFT JOIN PinnedChats pn on pn.ChatId=pc.ChatId
-                    Left JOIN ArchivedChats ac on ac.ChatId =pc.ChatId
-                    INNER JOIN Members mb ON mb.ChatId = pc.ChatId 
-                    INNER JOIN Users u ON u.UserId = mb.UserId
-                    WHERE mb.UserId != ? AND mb.ChatId = ? AND pn.ChatId IS NULL AND ac.ChatId IS NULL
-                    ORDER BY pc.MessageId DESC
-                    LIMIT 1;
-                `;
-
-                connection.query(sqlQuery2, [userId, chatId], (err: QueryError | null, result: RowDataPacket[]) => {
-                    if (err) {
-                        return reject(err);
-                    }
-                    resolve(result.length > 0 ? result[0] : null); // Resolve with the result or null if no result is found
-                });
-            });
-        });
-
-        Promise.all(chatPromises)
-            .then(chatResults => {
-                const filteredResults = chatResults.filter(result => result !== null);
-                res.status(200).send({ success: true, message: 'Personal chats retrieved successfully', data: filteredResults });
-            })
-            .catch(err => next(err));
-    });
+    connection.query(query, [userId, userId, userId], (err: QueryError | null, result: RowDataPacket[]) => {
+        if (err) { return next(err) }
+        res.status(200).send({ success: true, message: 'Personal chats retrieved successfully', data: result });
+    })
 }
 
 
 export const getGroupChats = async (req: authRequest, res: Response, next: NextFunction) => {
 
     const userId = req.body.userId; // set by the authenticate middleware
-  
+
     const sqlQuery = `
  select distinct m.ChatId from Members m inner join
   GroupChats gc on gc.ChatId=m.ChatId where m.UserId=?
@@ -140,7 +132,7 @@ export const getGroupChats = async (req: authRequest, res: Response, next: NextF
         if (err) {
             return next(err);
         }
-    
+
         const chatIds = results.map(item => item.ChatId);
 
         const chatPromises = chatIds.map(chatId => {
