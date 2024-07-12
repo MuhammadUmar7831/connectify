@@ -127,53 +127,6 @@ export const getPersonalChats = async (req: authRequest, res: Response, next: Ne
 }
 
 
-
-
-
-
-
-
-
-
-
-// export const getPersonalChats = async (req: authRequest, res: Response, next: NextFunction) => {
-
-//     const userId = req.userId; // set by the authenticate middleware
-  
-//     const sqlQuery = `
-//       select distinct m.ChatId from Members m inner join PersonalChats pc on pc.ChatId=m.ChatId where m.UserId=?
-//     `;
-
-//     connection.query(sqlQuery, [userId], (err: QueryError | null, result: RowDataPacket[]) => {
-//         if (err) {
-//             return next(err);
-//         }
-    
-//         const chatIds = result.map(item => item.ChatId);
-//         chatIds.forEach(chatId => {
-//             const sqlQuery2 = `
-// SELECT mg.MessageId,u.Name,u.Avatar,u.Bio,u.LastSeen,u.IsActivePrivacy,u.IsLastSeenPrivacy , mg.Content, pc.ChatId
-// FROM Messages mg
-// INNER JOIN PersonalChats pc ON pc.MessageId = mg.MessageId
-// INNER JOIN Members mb ON mb.ChatId = pc.ChatId INNER JOIN Users u on u.UserId=mb.UserId
-// WHERE mb.UserId = ? and mb.ChatId=?
-// ORDER BY pc.MessageId DESC
-// Limit 1;    `;
-
-// connection.query(sqlQuery2, [userId],[chatId], (err: QueryError | null, result: RowDataPacket[]) => {
-
-
-//         });
-
-
-        
-//         res.status(200).send({ success: true, message: 'Personal chats retrieved successfully', data: result });
-//     });
-
-
-// }
-
-
 export const getGroupChats = async (req: authRequest, res: Response, next: NextFunction) => {
 
     res.send("ok");
