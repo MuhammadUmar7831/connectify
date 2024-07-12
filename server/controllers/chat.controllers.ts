@@ -70,32 +70,108 @@ export const archiveChat = async (req: authRequest, res: Response, next: NextFun
 }
 
 
+
+
+
+
+
+
 export const getPersonalChats = async (req: authRequest, res: Response, next: NextFunction) => {
-
-    // const { userId } = req.body; 
-    const userId = req.userId; // set by the authenticate middleware
-    // if (!userId) {
-    //     return res.status(400).send({ success: false, message: 'User ID is required' });
-    // }
-
-    // not select messages we just need chat
+    const userId = req.body.userId; // set by the authenticate middleware
+  
     const sqlQuery = `
-        SELECT * 
-        FROM Messages mg 
-        INNER JOIN PersonalChats pc ON pc.MessageId = mg.MessageId 
-        INNER JOIN Members mb ON mb.ChatId = pc.ChatId 
-        WHERE mb.UserId = ?
+        SELECT DISTINCT m.ChatId 
+        FROM Members m 
+        INNER JOIN PersonalChats pc ON pc.ChatId = m.ChatId 
+        WHERE m.UserId = ?
     `;
 
-    connection.query(sqlQuery, [userId], (err: QueryError | null, result: RowDataPacket[]) => {
+    connection.query(sqlQuery, [userId], (err: QueryError | null, results: RowDataPacket[]) => {
         if (err) {
             return next(err);
         }
-        res.status(200).send({ success: true, message: 'Personal chats retrieved successfully', data: result });
+    
+        const chatIds = results.map(item => item.ChatId);
+
+        const chatPromises = chatIds.map(chatId => {
+            return new Promise((resolve, reject) => {
+                const sqlQuery2 = `
+               SELECT mg.SenderId, mg.MessageId, u.Name, u.Avatar, u.Bio, u.LastSeen, u.IsActivePrivacy, u.IsLastSeenPrivacy, mg.Content, pc.ChatId
+                    FROM Messages mg
+                    INNER JOIN PersonalChats pc ON pc.MessageId = mg.MessageId
+                    LEFT JOIN PinnedChats pn on pn.ChatId=pc.ChatId
+                    Left JOIN ArchivedChats ac on ac.ChatId =pc.ChatId
+                    INNER JOIN Members mb ON mb.ChatId = pc.ChatId 
+                    INNER JOIN Users u ON u.UserId = mb.UserId
+                    WHERE mb.UserId != ? AND mb.ChatId = ? AND pn.ChatId IS NULL AND ac.ChatId IS NULL
+                    ORDER BY pc.MessageId DESC
+                    LIMIT 1;
+                `;
+
+                connection.query(sqlQuery2, [userId, chatId], (err: QueryError | null, result: RowDataPacket[]) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    resolve(result.length > 0 ? result[0] : null); // Resolve with the result or null if no result is found
+                });
+            });
+        });
+
+        Promise.all(chatPromises)
+            .then(chatResults => {
+                const filteredResults = chatResults.filter(result => result !== null);
+                res.status(200).send({ success: true, message: 'Personal chats retrieved successfully', data: filteredResults });
+            })
+            .catch(err => next(err));
     });
-
-
 }
+
+
+
+
+
+
+
+
+
+
+
+// export const getPersonalChats = async (req: authRequest, res: Response, next: NextFunction) => {
+
+//     const userId = req.userId; // set by the authenticate middleware
+  
+//     const sqlQuery = `
+//       select distinct m.ChatId from Members m inner join PersonalChats pc on pc.ChatId=m.ChatId where m.UserId=?
+//     `;
+
+//     connection.query(sqlQuery, [userId], (err: QueryError | null, result: RowDataPacket[]) => {
+//         if (err) {
+//             return next(err);
+//         }
+    
+//         const chatIds = result.map(item => item.ChatId);
+//         chatIds.forEach(chatId => {
+//             const sqlQuery2 = `
+// SELECT mg.MessageId,u.Name,u.Avatar,u.Bio,u.LastSeen,u.IsActivePrivacy,u.IsLastSeenPrivacy , mg.Content, pc.ChatId
+// FROM Messages mg
+// INNER JOIN PersonalChats pc ON pc.MessageId = mg.MessageId
+// INNER JOIN Members mb ON mb.ChatId = pc.ChatId INNER JOIN Users u on u.UserId=mb.UserId
+// WHERE mb.UserId = ? and mb.ChatId=?
+// ORDER BY pc.MessageId DESC
+// Limit 1;    `;
+
+// connection.query(sqlQuery2, [userId],[chatId], (err: QueryError | null, result: RowDataPacket[]) => {
+
+
+//         });
+
+
+        
+//         res.status(200).send({ success: true, message: 'Personal chats retrieved successfully', data: result });
+//     });
+
+
+// }
 
 
 export const getGroupChats = async (req: authRequest, res: Response, next: NextFunction) => {
@@ -108,13 +184,8 @@ export const getGroupChats = async (req: authRequest, res: Response, next: NextF
 
 export const getArchivedChats = (req: authRequest, res: Response, next: NextFunction) => {
 
-    // const { userId } = req.body;
     const userId = req.userId; // set by the authenticate middleware
-    // if (!userId) {
-    //     return res.status(400).send({ success: false, message: 'User ID is required' });
-    // }
 
-    // not select messages we just need chat
     const sqlQuery = `
         SELECT * 
         FROM Messages mg 
