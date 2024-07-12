@@ -129,7 +129,51 @@ export const getPersonalChats = async (req: authRequest, res: Response, next: Ne
 
 export const getGroupChats = async (req: authRequest, res: Response, next: NextFunction) => {
 
-    res.send("ok");
+    const userId = req.body.userId; // set by the authenticate middleware
+  
+    const sqlQuery = `
+ select distinct m.ChatId from Members m inner join
+  GroupChats gc on gc.ChatId=m.ChatId where m.UserId=?
+    `;
+
+    connection.query(sqlQuery, [userId], (err: QueryError | null, results: RowDataPacket[]) => {
+        if (err) {
+            return next(err);
+        }
+    
+        const chatIds = results.map(item => item.ChatId);
+
+        const chatPromises = chatIds.map(chatId => {
+            return new Promise((resolve, reject) => {
+                const sqlQuery2 = `
+          SELECT distinct gc.MessageId,mg.Content,gr.Name,gr.Avatar,gr.Description,gr.DateCreated,gr.CreatedBy
+                    FROM Messages mg
+                    INNER JOIN GroupChats gc ON gc.MessageId = mg.MessageId
+                    INNER JOIN _Groups gr ON gr.GroupId=gc.GroupId
+                    LEFT JOIN PinnedChats pn on pn.ChatId=gc.ChatId
+                    Left JOIN ArchivedChats ac on ac.ChatId =gc.ChatId
+                    INNER JOIN Members mb ON mb.ChatId = gc.ChatId 
+                    WHERE  mb.ChatId = ? AND pn.ChatId IS NULL AND ac.ChatId IS NULL
+                    ORDER BY gc.MessageId DESC
+                    LIMIT 1;
+                `;
+
+                connection.query(sqlQuery2, [chatId], (err: QueryError | null, result: RowDataPacket[]) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    resolve(result.length > 0 ? result[0] : null); // Resolve with the result or null if no result is found
+                });
+            });
+        });
+
+        Promise.all(chatPromises)
+            .then(chatResults => {
+                const filteredResults = chatResults.filter(result => result !== null);
+                res.status(200).send({ success: true, message: 'Group chats retrieved successfully', data: filteredResults });
+            })
+            .catch(err => next(err));
+    });
 
 
 }
