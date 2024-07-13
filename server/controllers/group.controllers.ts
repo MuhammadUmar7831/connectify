@@ -143,10 +143,28 @@ export const createGroup = async (req: authRequest, res: Response, next: NextFun
 
 }
 
+export const updateGroup = async (req: authRequest, res: Response, next: NextFunction) => {
+    const { groupId, name, avatar, description } = req.body;
+    if (
+        typeof groupId !== 'number' ||
+        typeof name !== 'string' ||
+        typeof avatar !== 'string' ||
+        typeof description !== 'string'
+    ) {
+        return res.status(400).send({ success: false, message: 'Invalid request body (groupId: number, name: string, avatar: string, description: string)' });
+    }
+
+    const sql = "UPDATE _Groups SET Name = ?, Avatar = ?, Description = ? WHERE GroupId = ?";
+    connection.query(sql, [name, avatar, description, groupId], (err: QueryError | null, result: any) => {
+        if (err) { return next(err) }
+        res.status(201).send({ success: true, message: "Group updated" })
+    })
+}
+
 export const addMemberToGroup = async (req: authRequest, res: Response, next: NextFunction) => {
     const { groupId, friendId } = req.body
-    if (typeof groupId !== 'number') {
-        return res.status(400).send({ success: false, message: 'Invalid request body (groupId: number)' });
+    if (typeof groupId !== 'number' || friendId !== 'number') {
+        return res.status(400).send({ success: false, message: 'Invalid request body (groupId: number, friendId: number)' });
     }
     var sql = "SELECT ChatId FROM _Groups where GroupId = ?"
     connection.query(sql, [groupId], (err: QueryError | null, result: RowDataPacket[]) => {
