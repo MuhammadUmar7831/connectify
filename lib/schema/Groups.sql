@@ -3,7 +3,7 @@ CREATE TABLE _Groups (
     Name VARCHAR(255) NOT NULL,
     Avatar VARCHAR(255) NOT NULL,
     Description VARCHAR(255) NULL,
-    DateCreated Date NOT NULL,
+    DateCreated TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
     CreatedBy INT NOT NULL,
     ChatId INT UNIQUE,
     FOREIGN KEY (CreatedBy) REFERENCES Users(UserId) ON DELETE CASCADE,
