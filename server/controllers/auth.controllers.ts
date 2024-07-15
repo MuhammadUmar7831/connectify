@@ -39,7 +39,7 @@ export const signin = async (req: Request, res: Response, next: NextFunction) =>
         if (validPassword) {
             const token = jwt.sign({ email: email }, process.env.JWT_SECRET as string);
             res
-                .cookie('access_token', token, { httpOnly: true })
+                .cookie('access_token', token, { httpOnly: true, secure: true })
                 .status(200)
                 .send({ success: true, message: `Wellcome ${result[0].Name}` });
         } else {
