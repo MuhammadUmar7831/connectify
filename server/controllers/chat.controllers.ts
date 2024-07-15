@@ -75,7 +75,6 @@ export const archiveChat = async (req: authRequest, res: Response, next: NextFun
 
 
 
-
 export const getPersonalChats = async (req: authRequest, res: Response, next: NextFunction) => {
     const userId = req.body.userId; // set by the authenticate middleware
  
