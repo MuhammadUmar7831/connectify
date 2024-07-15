@@ -14,14 +14,24 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
     const query = `INSERT INTO Users (Name, Email, Password, Avatar, Bio, LastSeen) VALUES (?, ?, ?, ?, ?, ?)`;
     const values: any = [name, email, hashedPassword, avatar, bio, lastSeen];
 
-    connection.query(query, values, (err: QueryError | null, result: QueryResult) => {
+    connection.query(query, values, (err: QueryError | null, result: any) => {
         if (err) { return next(err) }
         const token = jwt.sign({ email: email }, process.env.JWT_SECRET as string);
 
+        const user = {
+            UserId: result.insertId,
+            Name: name,
+            Email: email,
+            Avatar: avatar,
+            Bio: bio,
+            LastSeen: Date.now(),
+            IsActivePrivacy: 0,
+            IsLastSeenPrivacy: 0,
+        }
         res
             .cookie('access_token', token, { httpOnly: true })
             .status(201)
-            .send({ success: true, message: 'User Registered' });
+            .send({ success: true, message: 'User Registered', user });
     })
 }
 
@@ -38,10 +48,20 @@ export const signin = async (req: Request, res: Response, next: NextFunction) =>
         const validPassword = bcryptjs.compareSync(password, result[0].Password);
         if (validPassword) {
             const token = jwt.sign({ email: email }, process.env.JWT_SECRET as string);
+            const user = {
+                UserId: result[0].UserId,
+                Name: result[0].Name,
+                Email: result[0].Email,
+                Avatar: result[0].Avatar,
+                Bio: result[0].Bio,
+                LastSeen: result[0].LastSeen,
+                IsActivePrivacy: result[0].IsActivePrivacy,
+                IsLastSeenPrivacy: result[0].IsLastSeenPrivacy,
+            }
             res
                 .cookie('access_token', token, { httpOnly: true, secure: true })
                 .status(200)
-                .send({ success: true, message: `Wellcome ${result[0].Name}` });
+                .send({ success: true, message: `Wellcome ${result[0].Name}`, user });
         } else {
             return next(errorHandler(404, 'Invalid Email or Password'));
         }
