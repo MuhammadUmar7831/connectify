@@ -143,6 +143,40 @@ export const createGroup = async (req: authRequest, res: Response, next: NextFun
 
 }
 
+export const leaveGroup = async (req: authRequest, res: Response, next: NextFunction) => {
+    const { groupId } = req.body;
+    if (typeof groupId !== 'number') {
+        return next(errorHandler(400, 'Invalid request data (groupId: number)'))
+    }
+
+    var sql = 'SELECT * FROM Members WHERE UserId = ? AND ChatId = (SELECT ChatId FROM _Groups WHERE GroupId = ?)';
+    connection.query(sql, [req.userId, groupId], (err: QueryError | null, result: RowDataPacket[]) => {
+        if (err) { return connection.rollback(() => next(err)); }
+    })
+
+    connection.beginTransaction((_err: QueryError | null) => {
+
+        sql = 'DELETE FROM Members WHERE UserId = ? AND ChatId = (SELECT ChatId FROM _Groups WHERE GroupId = ?)';
+        connection.query(sql, [req.userId, groupId], (err: QueryError | null, result: any) => {
+            if (err) { return connection.rollback(() => next(err)); }
+            if (result.affectedRows === 0) {
+                return next(errorHandler(400, 'You are not Member of this Group'))
+            }
+
+            sql = 'DELETE FROM GroupAdmins WHERE UserId = ? AND GroupId = ?';
+            connection.query(sql, [req.userId, groupId], (err: QueryError | null, result: QueryResult) => {
+                if (err) { return connection.rollback(() => next(err)); }
+
+                connection.commit((err: QueryError | null) => {
+                    if (err) { return connection.rollback(() => next(err)) }
+
+                    res.status(200).send({ success: true, message: 'Group Left' })
+                })
+            })
+        })
+    })
+}
+
 export const updateGroup = async (req: authRequest, res: Response, next: NextFunction) => {
     const { groupId, name, avatar, description } = req.body;
     if (
