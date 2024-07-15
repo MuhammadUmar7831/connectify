@@ -4,18 +4,20 @@ import Main from "./pages/Main"
 import Hero from "./pages/Hero"
 import ChatArea from "./pages/ChatArea"
 import Info from "./pages/Info"
+import Signin from "./pages/Signin"
 
 function App() {
 
   return (
     <div className="flex items-center justify-center p-4 w-screen h-screen bg-gray gap-2 overflow-x-auto">
-      <SideBar />
-      <Main />
       <BrowserRouter>
+      {/* <SideBar />
+      <Main /> */}
         <Routes>
           <Route path={"/"} element={<Hero />} />
           <Route path={"/c/:chatId"} element={<ChatArea />} />
           <Route path={"/i/:id"} element={<Info />} />
+          <Route path={"/signin"} element={<Signin />} />
         </Routes>
       </BrowserRouter>
     </div>
