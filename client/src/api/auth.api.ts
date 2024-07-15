@@ -8,7 +8,7 @@ export const signinApi = async (body: { email: string, password: string }) => {
         if (error.response) {
             return error.response.data;
         } else {
-            return { success: true, message: 'Server is Down' }
+            return { success: false, message: 'Server is Down' }
         }
     }
 }

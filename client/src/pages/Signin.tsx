@@ -5,9 +5,13 @@ import { LuEyeOff } from "react-icons/lu";
 import { Link } from "react-router-dom";
 import { FormEvent, useState } from "react";
 import { signinApi } from "../api/auth.api";
+import { useDispatch } from "react-redux";
+import { setSuccess } from "../redux/slices/success";
+import { setError } from "../redux/slices/error";
 
 export default function Signin() {
     const googleClick = () => { }
+    const dispatch = useDispatch();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -16,10 +20,14 @@ export default function Signin() {
     const handleSiginClick = async (e: FormEvent) => {
         e.preventDefault();
         const res = await signinApi({ email, password });
-        console.log(res)
+        if (res.success) {
+            dispatch(setSuccess(res.message));
+        } else {
+            dispatch(setError(res.message));
+        }
     }
     return (
-        <div className="w-screen h-screen flex flex-col items-center justify-center text-black">
+        <div className="w-full h-full flex flex-col items-center justify-center text-black">
             <div className="bg-white rounded-md p-4 w-1/2 min-w-[280px] max-w-[600px]">
                 <span className="w-full flex justify-center"><GrConnect className="text-orange size-20 hover:text-black cursor-pointer" /></span>
                 <h1 className="text-center text-3xl mt-2">Sign In</h1>
