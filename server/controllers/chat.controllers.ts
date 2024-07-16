@@ -77,7 +77,8 @@ export const getPersonalChats = async (req: authRequest, res: Response, next: Ne
     ) AND 
     c.ChatId NOT IN (
         SELECT ChatId FROM ArchivedChats WHERE UserId = ?
-    );`
+    )
+    ORDER BY TimeStamp DESC;`
     connection.query(sql, [req.userId, req.userId, req.userId, req.userId, req.userId], (err: QueryError | null, result: RowDataPacket[]) => {
         if (err) { return next(err); }
 
@@ -95,7 +96,8 @@ export const getGroupChats = async (req: authRequest, res: Response, next: NextF
     ) AND 
     g.ChatId NOT IN (
         SELECT ChatId FROM ArchivedChats WHERE UserId = ?
-    )`
+    )
+    ORDER BY TimeStamp DESC;`
     connection.query(sql, [req.userId, req.userId, req.userId, req.userId], (err: QueryError | null, result: RowDataPacket[]) => {
         if (err) {
             return next(err);
@@ -111,23 +113,18 @@ export const getArchivedChats = (req: authRequest, res: Response, next: NextFunc
     
     const sqlQuery = `
         ${getPersonalChatQuery} AND
-        c.ChatId NOT IN (
-        SELECT ChatId FROM PinnedChats Where UserId = ?
-        ) AND 
         c.ChatId IN (
             SELECT ChatId FROM ArchivedChats WHERE UserId = ?
         )
         UNION
         ${getGroupChatsQuery}
         WHERE 
-        g.ChatId NOT IN (
-            select ChatId from PinnedChats Where UserId = ?
-        ) AND 
         g.ChatId IN (
             SELECT ChatId FROM ArchivedChats WHERE UserId = ?
-        );`;
+        )
+        ORDER BY TimeStamp DESC;`;
 
-    connection.query(sqlQuery, [req.userId, req.userId, req.userId, req.userId, req.userId, req.userId, req.userId, req.userId, req.userId], (err: QueryError | null, result: RowDataPacket[]) => {
+    connection.query(sqlQuery, [req.userId, req.userId, req.userId, req.userId, req.userId, req.userId, req.userId], (err: QueryError | null, result: RowDataPacket[]) => {
         if (err) {
             return next(err);
         }
@@ -138,87 +135,26 @@ export const getArchivedChats = (req: authRequest, res: Response, next: NextFunc
 
 
 export const getPinnedChats = (req: authRequest, res: Response, next: NextFunction) => {
-
-    const userId = req.body.userId; // set by the authenticate middleware
     const sqlQuery = `
-select distinct 
-    pc.ChatId as chatId, 
-    (select count(mg2.MessageId) 
-     from MessagesStatus mgs 
-     join Messages mg2 on mgs.MessageId = mg2.MessageId 
-     where mgs.Status = 'received' 
-       and mg2.ChatId = pc.ChatId 
-       and mgs.UserId = ?) as unSeenMessages,
-    ch.Type as chatType,
-    u.UserId as id,
-    u.Bio as description,
-    NULL as groupDateCreated,
-    NULL as groupdAdmin,
-    mg.Content as lastMessage,
-    u.Name as name, 
-    u.Avatar as avatar,
-    u.LastSeen as userLastSeen,
-    u.IsActivePrivacy as IsActivePrivacy,
-    u.IsLastSeenPrivacy as IsLastSeenPrivacy
-from PinnedChats ac 
-join PersonalChats pc on pc.ChatId = ac.ChatId 
-join Members m on m.ChatId = pc.ChatId
-join Users u on u.UserId = m.UserId 
-join Messages mg on mg.Messageid = pc.Messageid 
-join Chats ch on ch.ChatId = pc.ChatId
-where ac.UserId = ?
-  and mg.Messageid = (select max(messageId) 
-                      from Messages mg2 
-                      where mg2.ChatId = pc.ChatId) 
-  and u.UserId != ?
-  and pc.ChatId in (
-      select distinct ac.ChatId 
-      from PinnedChats ac 
-      join PersonalChats pc on pc.ChatId = ac.ChatId 
-      where ac.UserId = ?
-  )
+        ${getPersonalChatQuery} AND
+        c.ChatId IN (
+        SELECT ChatId FROM PinnedChats Where UserId = ?
+        ) AND 
+        c.ChatId NOT IN (
+            SELECT ChatId FROM ArchivedChats WHERE UserId = ?
+        )
+        UNION
+        ${getGroupChatsQuery}
+        WHERE 
+        g.ChatId IN (
+            select ChatId from PinnedChats Where UserId = ?
+        ) AND 
+        g.ChatId NOT IN (
+            SELECT ChatId FROM ArchivedChats WHERE UserId = ?
+        )
+        ORDER BY TimeStamp DESC;`;
 
-UNION
-
-select distinct 
-    gc.ChatId as chatId,
-    (select count(mg2.MessageId) 
-     from MessagesStatus mgs 
-     join Messages mg2 on mgs.MessageId = mg2.MessageId 
-     where mgs.Status = 'received' 
-       and mg2.ChatId = gc.ChatId 
-       and mgs.UserId = ?) as unSeenMessages,
-    ch.Type as chatType,
-    gr.GroupId as id,
-    gr.Description as description,
-    gr.DateCreated as groupDateCreated,
-    u.Name as groupdAdmin,
-    mg.Content as lastMessage, 
-    gr.Name as name,
-    gr.Avatar as avatar,
-    NULL as userLastSeen,
-    NULL as IsActivePrivacy,
-    NULL as IsLastSeenPrivacy
-from PinnedChats ac 
-join GroupChats gc on gc.ChatId = ac.ChatId 
-join Chats ch on ch.ChatId = ac.ChatId
-join Members m on m.ChatId = gc.ChatId 
-join _Groups gr on gr.GroupId = gc.GroupId 
-join Messages mg on mg.Messageid = gc.Messageid 
-join Users u on u.UserId = gr.CreatedBy
-where ac.UserId = ? 
-  and mg.Messageid = (select max(messageId) 
-                      from Messages mg2 
-                      where mg2.ChatId = gc.ChatId)
-  and gc.ChatId in (
-      select distinct ac.ChatId 
-      from PinnedChats ac 
-      join GroupChats gc on gc.ChatId = ac.ChatId 
-      where ac.UserId = ?
-  )
-`;
-
-    connection.query(sqlQuery, [userId, userId, userId, userId, userId, userId, userId], (err: QueryError | null, result: RowDataPacket[]) => {
+    connection.query(sqlQuery, [req.userId, req.userId, req.userId, req.userId, req.userId, req.userId, req.userId, req.userId, req.userId], (err: QueryError | null, result: RowDataPacket[]) => {
         if (err) {
             return next(err);
         }
