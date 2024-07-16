@@ -3,6 +3,7 @@ import { authRequest } from "../middlewares/authenticate";
 import connection from "../config/db";
 import { QueryError, QueryResult, RowDataPacket } from "mysql2";
 import errorHandler from "../errors/error";
+import { getGroupChatsQuery, getPersonalChatQuery } from "../utils/getChatQuries";
 
 export const createPersonalChat = async (req: authRequest, res: Response, next: NextFunction) => {
     const { content, receiverId } = req.body;
@@ -81,3 +82,98 @@ export const archiveChat = async (req: authRequest, res: Response, next: NextFun
 
 //     sql = 'DELETE FROM Chats WHERE '
 // }
+
+export const getPersonalChats = async (req: authRequest, res: Response, next: NextFunction) => {
+    const sql = `${getPersonalChatQuery}  AND
+    c.ChatId NOT IN (
+        select ChatId from PinnedChats Where UserId = ?
+    ) AND 
+    c.ChatId NOT IN (
+        SELECT ChatId FROM ArchivedChats WHERE UserId = ?
+    )
+    ORDER BY TimeStamp DESC;`
+    connection.query(sql, [req.userId, req.userId, req.userId, req.userId, req.userId], (err: QueryError | null, result: RowDataPacket[]) => {
+        if (err) { return next(err); }
+
+        res.status(200).send({ success: true, message: 'Personal Chats retrieved', data: result })
+        // res.status(200).json(result);
+    });
+}
+
+
+export const getGroupChats = async (req: authRequest, res: Response, next: NextFunction) => {
+    const sql = `${getGroupChatsQuery}
+    WHERE 
+    g.ChatId NOT IN (
+        select ChatId from PinnedChats Where UserId = ?
+    ) AND 
+    g.ChatId NOT IN (
+        SELECT ChatId FROM ArchivedChats WHERE UserId = ?
+    )
+    ORDER BY TimeStamp DESC;`
+    connection.query(sql, [req.userId, req.userId, req.userId, req.userId], (err: QueryError | null, result: RowDataPacket[]) => {
+        if (err) {
+            return next(err);
+            // console.error('Error executing query:', err);
+            // return res.status(500).json({ error: 'Error executing query' });
+        }
+
+        res.status(200).send({ success: true, message: 'Group chats retrieved', data: result });
+    });
+
+}
+export const getArchivedChats = (req: authRequest, res: Response, next: NextFunction) => {
+    
+    const sqlQuery = `
+        ${getPersonalChatQuery} AND
+        c.ChatId IN (
+            SELECT ChatId FROM ArchivedChats WHERE UserId = ?
+        )
+        UNION
+        ${getGroupChatsQuery}
+        WHERE 
+        g.ChatId IN (
+            SELECT ChatId FROM ArchivedChats WHERE UserId = ?
+        )
+        ORDER BY TimeStamp DESC;`;
+
+    connection.query(sqlQuery, [req.userId, req.userId, req.userId, req.userId, req.userId, req.userId, req.userId], (err: QueryError | null, result: RowDataPacket[]) => {
+        if (err) {
+            return next(err);
+        }
+        res.status(200).send({ success: true, message: 'Archived chats retrieved successfully', data: result });
+    });
+}
+
+
+
+export const getPinnedChats = (req: authRequest, res: Response, next: NextFunction) => {
+    const sqlQuery = `
+        ${getPersonalChatQuery} AND
+        c.ChatId IN (
+        SELECT ChatId FROM PinnedChats Where UserId = ?
+        ) AND 
+        c.ChatId NOT IN (
+            SELECT ChatId FROM ArchivedChats WHERE UserId = ?
+        )
+        UNION
+        ${getGroupChatsQuery}
+        WHERE 
+        g.ChatId IN (
+            select ChatId from PinnedChats Where UserId = ?
+        ) AND 
+        g.ChatId NOT IN (
+            SELECT ChatId FROM ArchivedChats WHERE UserId = ?
+        )
+        ORDER BY TimeStamp DESC;`;
+
+    connection.query(sqlQuery, [req.userId, req.userId, req.userId, req.userId, req.userId, req.userId, req.userId, req.userId, req.userId], (err: QueryError | null, result: RowDataPacket[]) => {
+        if (err) {
+            return next(err);
+        }
+        if (result.length == 0)
+            res.status(404).send({ success: false, message: 'chat not Existed', data: result });
+
+        res.status(200).send({ success: true, message: 'Archieved chats retrieved successfully', data: result });
+    });
+}
