@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { archiveChat, createPersonalChat, getPersonalChats, getGroupChats, getArchivedChats,getPinnedChats } from "../controllers/chat.controllers";
+import { archiveChat, createPersonalChat, getPersonalChats, getGroupChats, getArchivedChats, getPinnedChats } from "../controllers/chat.controllers";
 import tryCatch from "../middlewares/tryCatch";
 import authenticate from "../middlewares/authenticate";
 

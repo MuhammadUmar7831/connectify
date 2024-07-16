@@ -69,93 +69,106 @@ export const archiveChat = async (req: authRequest, res: Response, next: NextFun
     })
 }
 
-
-
-
-
-
-
 export const getPersonalChats = async (req: authRequest, res: Response, next: NextFunction) => {
-    const userId = req.body.userId; // set by the authenticate middleware
- 
     const query = `
-    SELECT DISTINCT m.ChatId, u.Name, u.Avatar, u.IsActivePrivacy, mg1.*, IFNULL(received_counts.received_count, 0) AS unSeenMessages
-    FROM Members m 
-    JOIN Users u ON m.UserId = u.UserId
-    JOIN PersonalChats pc ON pc.ChatId = m.ChatId
-    JOIN Messages mg1 ON m.ChatId = mg1.ChatId
-    LEFT JOIN PinnedChats pnc ON pc.ChatId = pnc.ChatId
+    SELECT DISTINCT 
+    c.ChatId,
+    u.Name, 
+    u.Avatar, 
+    CASE 
+        WHEN mg_all.SenderId = ? THEN 'You' 
+        ELSE u.Name 
+    END AS SenderName,
+    mg_all.MessageId, 
+    mg_all.SenderId, 
+    mg_all.Content, 
+    mg_all.TimeStamp, 
+    IFNULL(received_counts.received_count, 0) AS unSeenMessages
+    FROM Chats c
+    LEFT JOIN Members m ON c.ChatId = m.ChatId
+    LEFT JOIN Users u ON m.UserId = u.UserId
+    LEFT JOIN (
+        SELECT mg1.ChatId, max(mg1.MessageId) AS MessageId
+        FROM Messages mg1
+        GROUP BY ChatId
+    ) AS mg ON c.ChatId = mg.ChatId
+    LEFT JOIN Messages mg_all ON mg.MessageId = mg_all.MessageId
     LEFT JOIN (
         SELECT mg2.ChatId, COUNT(*) AS received_count
         FROM Messages mg2
         JOIN MessagesStatus mgs ON mg2.MessageId = mgs.MessageId
-        WHERE mgs.Status = 'received' AND mgs.UserId = ?
+        WHERE (mgs.Status = 'received' OR mgs.Status = 'sent') AND mgs.UserId = ?
         GROUP BY mg2.ChatId
-    ) AS received_counts ON m.ChatId = received_counts.ChatId
-    WHERE m.UserId != ? 
-      AND m.ChatId NOT IN (
+    ) AS received_counts ON c.ChatId = received_counts.ChatId
+    WHERE 
+    c.Type = 'Group' AND
+    u.UserId != 1 AND
+    c.ChatId NOT IN (
+        select ChatId from PinnedChats Where UserId = ?
+    ) AND 
+    c.ChatId NOT IN (
         SELECT ChatId FROM ArchivedChats WHERE UserId = ?
-      )
-      AND mg1.MessageId = (
-        SELECT MAX(mg2.MessageId) 
-        FROM Messages mg2 
-        WHERE mg2.ChatId = mg1.ChatId
-    )
-`;
+    );`;
 
-connection.query(query, [userId, userId, userId],(err: QueryError | null, result: RowDataPacket[] )=> {
-    if (err) {
-        console.error('Error executing query:', err);
-        return res.status(500).json({ error: 'Error executing query' });
-    }
+    connection.query(query, [req.userId, req.userId, req.userId, req.userId], (err: QueryError | null, result: RowDataPacket[]) => {
+        if (err) { return next(err); }
 
-    res.status(200).json(result);
-});
+        res.status(200).send({ success: true, message: 'Personal Chats retrieved', data: result })
+        // res.status(200).json(result);
+    });
 }
 
 
 export const getGroupChats = async (req: authRequest, res: Response, next: NextFunction) => {
-
-    const userId = req.body.userId; // set by the authenticate middleware
-
-const query = `
- SELECT DISTINCT m.ChatId, u.Name, u.Avatar, u.IsActivePrivacy, mg1.*, IFNULL(received_counts.received_count, 0) AS unSeenMessages
-    FROM Members m 
-    JOIN Users u ON m.UserId = u.UserId
-    JOIN GroupChats gc ON gc.ChatId = m.ChatId
-    JOIN Messages mg1 ON m.ChatId = mg1.ChatId
-    LEFT JOIN PinnedChats pnc ON gc.ChatId = pnc.ChatId
+    const query = `
+    SELECT DISTINCT 
+    g.ChatId,
+    g.Name, 
+    g.Avatar, 
+    CASE 
+        WHEN mg_all.SenderId = ? THEN 'You' 
+        ELSE u.Name 
+    END AS SenderName,
+    mg_all.MessageId, 
+    mg_all.SenderId, 
+    mg_all.Content, 
+    mg_all.TimeStamp, 
+    IFNULL(received_counts.received_count, 0) AS unSeenMessages
+    FROM _Groups g
+    LEFT JOIN (
+        SELECT mg1.ChatId, max(mg1.MessageId) AS MessageId
+        FROM Messages mg1
+        GROUP BY ChatId
+    ) AS mg ON g.ChatId = mg.ChatId
+    LEFT JOIN Messages mg_all ON mg.MessageId = mg_all.MessageId
+    LEFT JOIN Users u ON mg_all.SenderId = u.UserId
     LEFT JOIN (
         SELECT mg2.ChatId, COUNT(*) AS received_count
         FROM Messages mg2
         JOIN MessagesStatus mgs ON mg2.MessageId = mgs.MessageId
-        WHERE mgs.Status = 'received' AND mgs.UserId = ?
+        WHERE (mgs.Status = 'received' OR mgs.Status = 'sent') AND mgs.UserId = ?
         GROUP BY mg2.ChatId
-    ) AS received_counts ON m.ChatId = received_counts.ChatId
-    WHERE m.UserId != ? 
-      AND m.ChatId NOT IN (
+    ) AS received_counts ON g.ChatId = received_counts.ChatId
+    WHERE 
+    g.ChatId NOT IN (
+        select ChatId from PinnedChats Where UserId = ?
+    ) AND 
+    g.ChatId NOT IN (
         SELECT ChatId FROM ArchivedChats WHERE UserId = ?
-      )
-      AND mg1.MessageId = (
-        SELECT MAX(mg2.MessageId) 
-        FROM Messages mg2 
-        WHERE mg2.ChatId = mg1.ChatId
-    )
-`;
+    );`;
 
-connection.query(query, [userId,userId,userId], (err:QueryError|null, result:RowDataPacket[]) => {
-if (err) {
-    console.error('Error executing query:', err);
-    return res.status(500).json({ error: 'Error executing query' });
-}
+    connection.query(query, [req.userId, req.userId, req.userId, req.userId], (err: QueryError | null, result: RowDataPacket[]) => {
+        if (err) {
+            return next(err);
+            // console.error('Error executing query:', err);
+            // return res.status(500).json({ error: 'Error executing query' });
+        }
 
-res.status(200).send({ success: true, message: 'Group chats retrieved successfully', data: result });
-});
+        res.status(200).send({ success: true, message: 'Group chats retrieved', data: result });
+    });
 
 }
 export const getArchivedChats = (req: authRequest, res: Response, next: NextFunction) => {
-    const userId = req.body.userId; // set by the authenticate middleware
-
     const sqlQuery = `
     select distinct 
     NULL as MessageId,
@@ -226,7 +239,7 @@ export const getArchivedChats = (req: authRequest, res: Response, next: NextFunc
     group by mg.MessageId,gr.GroupId, gr.Description, gr.DateCreated, u.Name, gc.ChatId, ch.Type, mg.Content, gr.Name, gr.Avatar, gr.CreatedBy;
     `;
 
-    connection.query(sqlQuery, [userId, userId, userId, userId, userId,userId,userId,], (err: QueryError | null, result: RowDataPacket[]) => {
+    connection.query(sqlQuery, [req.userId, req.userId, req.userId, req.userId, req.userId, req.userId, req.userId,], (err: QueryError | null, result: RowDataPacket[]) => {
         if (err) {
             return next(err);
         }
@@ -317,11 +330,11 @@ where ac.UserId = ?
   )
 `;
 
-    connection.query(sqlQuery, [userId,userId,userId,userId,userId,userId,userId], (err: QueryError | null, result: RowDataPacket[]) => {
+    connection.query(sqlQuery, [userId, userId, userId, userId, userId, userId, userId], (err: QueryError | null, result: RowDataPacket[]) => {
         if (err) {
             return next(err);
         }
-        if(result.length==0)
+        if (result.length == 0)
             res.status(404).send({ success: false, message: 'chat not Existed', data: result });
 
         res.status(200).send({ success: true, message: 'Archieved chats retrieved successfully', data: result });
