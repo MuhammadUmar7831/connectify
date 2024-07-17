@@ -34,4 +34,27 @@ const isChatMember = async (
   }
 };
 
-export default isChatMember;
+const isMessageTimeFiveMinutes = async (
+  req: authRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const { messageId } = req.body;
+
+  const query = "SELECT TimeStamp FROM Messages WHERE Messages.MessageId = ?";
+  // Checking if the message is being deleted within 5 minutes of sending
+  connection.query(
+    query,
+    [messageId],
+    (err: QueryError | null, result: RowDataPacket[]) => {
+      if (err) {
+        return next(err);
+      }
+      // TODO: Check the difference between times
+
+      // TODO:
+    }
+  );
+};
+
+export { isChatMember };
