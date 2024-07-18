@@ -7,6 +7,10 @@ export default {
         "black-p": "#000000",
         black: "#010019",
         orange: "#FF4D0C",
+        "orange-100": "#ff6b36",
+        gray: "#EEEEEE",
+        "gray-100": "#F6F6F6", // backgorund for the app
+        "gray-200": "#BABABA", // gray color for text and borders
       },
     },
   },
