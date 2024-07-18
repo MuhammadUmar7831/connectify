@@ -71,18 +71,19 @@ export const sendMessage = async (
 
       // Assigning query according to Chat Type
 
-      let insertIntoChatQuery: string = `INSERT INTO ${Type}Chats (ChatId, MessageId) VALUES (?,?)`;
+      // TABLES HAVE BEEN DROPPED
+      // let insertIntoChatQuery: string = `INSERT INTO ${Type}Chats (ChatId, MessageId) VALUES (?,?)`;
 
-      // inserting into group or personal
-      connection.query(
-        insertIntoChatQuery,
-        [ChatId, messageId],
-        (err: QueryError | null, result: RowDataPacket[]) => {
-          if (err) {
-            return next(err);
-          }
-        }
-      );
+      // // inserting into group or personal
+      // connection.query(
+      //   insertIntoChatQuery,
+      //   [ChatId, messageId],
+      //   (err: QueryError | null, result: RowDataPacket[]) => {
+      //     if (err) {
+      //       return next(err);
+      //     }
+      //   }
+      // );
 
       // sending is not a status
       // here save sent status for each member in the group
