@@ -34,7 +34,7 @@ export const sendMessage = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { ChatId, Type } = req.body;
+  const { ChatId, Type, Content, SenderId, ReplyId } = req.body;
   let updatedChatId = ChatId;
 
   // if it is a personal chat, check if the chat has been previously created or not
@@ -53,7 +53,6 @@ export const sendMessage = async (
   }
 
   // Create a new message and insert it
-  const { Content, SenderId } = req.body;
   const insertMessageQuery =
     "INSERT INTO Messages (ChatId, Content, SenderId) VALUES (?,?,?)";
   connection.query(
@@ -94,7 +93,6 @@ export const sendMessage = async (
       );
 
       // Insert into reply table if it is a reply
-      const { ReplyId } = req.body;
       if (ReplyId) {
         connection.query(
           "INSERT INTO  Reply (ReplyId, MessageId) VALUES(?,?)",
