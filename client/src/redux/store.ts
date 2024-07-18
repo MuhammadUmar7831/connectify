@@ -3,6 +3,11 @@ import chatListTypeReducer from "./slices/chatListType";
 import successReducer from "./slices/success";
 import errorReducer from "./slices/error";
 import userReducer from "./slices/user";
+import allChatsReducer from "./slices/allChats";
+import personalChatsReducer from "./slices/personalChats";
+import groupChatsReducer from "./slices/groupChats";
+import pinnedChatsReducer from "./slices/pinnedChats";
+import archiveChatsReducer from "./slices/archiveChats";
 
 const store = configureStore({
     reducer: {
@@ -10,6 +15,11 @@ const store = configureStore({
         success: successReducer,
         error: errorReducer,
         user: userReducer,
+        allChats: allChatsReducer,
+        personalChats: personalChatsReducer,
+        groupChats: groupChatsReducer,
+        pinnedChats: pinnedChatsReducer,
+        archiveChats: archiveChatsReducer,
     },
     middleware: (getDefaultMiddleware) => {
         return getDefaultMiddleware({

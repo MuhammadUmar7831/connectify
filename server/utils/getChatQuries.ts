@@ -4,8 +4,8 @@ export const getPersonalChatQuery = `
     u.Name, 
     u.Avatar, 
     CASE 
-        WHEN mg_all.SenderId = ? THEN 'You' 
-        ELSE u.Name 
+        WHEN mg_all.SenderId = ? THEN null 
+        ELSE null 
     END AS SenderName,
     mg_all.MessageId, 
     mg_all.SenderId, 
