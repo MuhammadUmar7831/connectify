@@ -50,11 +50,20 @@ const isMessageTimeFiveMinutes = async (
       if (err) {
         return next(err);
       }
-      // TODO: Check the difference between times
+      const messgeTimeStamp = result[0].TimeStamp;
 
-      // TODO:
+      // converting into date object and calculating difference
+      const messageDateObj = new Date(messgeTimeStamp);
+      const currentTimeStamp = new Date();
+      const difference = currentTimeStamp.getTime() - messageDateObj.getTime();
+      const differenceInMinutes = Math.floor(difference / 1000 / 60);
+
+      if (differenceInMinutes >= 5) {
+        next(errorHandler(403, "More than 5 minutes passed for the message"));
+      }
+      next();
     }
   );
 };
 
-export { isChatMember };
+export { isChatMember, isMessageTimeFiveMinutes };

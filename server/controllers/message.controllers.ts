@@ -124,10 +124,48 @@ export const deleteMessage = async (
   req: authRequest,
   res: Response,
   next: NextFunction
-) => {};
+) => {
+  const { messageId } = req.body;
+
+  const deleteQuery = "DELETE FROM Messages WHERE MessageId = ?";
+
+  connection.query(
+    deleteQuery,
+    [messageId],
+    (err: QueryError | null, result: RowDataPacket[]) => {
+      if (err) {
+        return next(err);
+      }
+
+      res.status(200).send({
+        success: true,
+        message: "Message Deleted",
+      });
+    }
+  );
+};
 
 export const editMessage = async (
   req: authRequest,
   res: Response,
   next: NextFunction
-) => {};
+) => {
+  const { messageId, content } = req.body;
+
+  const updateQuery = "UPDATE Messages SET Content = ? WHERE MessageId = ?";
+
+  connection.query(
+    updateQuery,
+    [content, messageId],
+    (err: QueryError | null, result: RowDataPacket[]) => {
+      if (err) {
+        return next(err);
+      }
+
+      res.status(200).send({
+        success: true,
+        message: "Message Updated",
+      });
+    }
+  );
+};
