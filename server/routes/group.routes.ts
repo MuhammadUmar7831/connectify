@@ -4,7 +4,6 @@ import isAdmin from "../middlewares/isAdmin";
 import tryCatch from "../middlewares/tryCatch";
 import { addAdmin, addMemberToGroup, createGroup, deleteGroup, getCommonGroups, kickUser, leaveGroup, updateGroup } from "../controllers/group.controllers";
 
-
 const router = Router();
 
 router.get('/get/common/:friendId', authenticate, tryCatch(getCommonGroups)); //route to get all groups both users have joined (friendId is userId)
