@@ -2,16 +2,12 @@ import EmojiPicker from "emoji-picker-react";
 import { BsEmojiSmileFill } from "react-icons/bs";
 import { BiSend } from "react-icons/bi";
 import { useState } from "react";
+
 export default function ChatArea() {
   const [Emoji, setEmoji] = useState(false);
-  const showPicker = () => {
 
-    if(Emoji){
-      setEmoji(false)
-    }
-    else{
-      setEmoji(true)
-    }
+  const showPicker = () => {
+    setEmoji((prev) => !prev);
   };
 
   return (
@@ -108,7 +104,7 @@ export default function ChatArea() {
         </div>
       </div>
       <div className="flex justify-between items-center bg-white rounded-2xl px-4 py-5 w-full flex-row">
-        <div className="flex flex-row gap-2 px-4 w-full">
+        <div className="flex flex-row gap-2 px-4 w-full relative">
           <input
             type="text"
             className="w-full rounded-2xl px-2"
@@ -119,15 +115,16 @@ export default function ChatArea() {
           </button>
           <button
             className="text-center py-2 px-4 rounded-full text-sm bg-orange"
-            onClick={showPicker} 
+            onClick={showPicker}
           >
             <BsEmojiSmileFill style={{ color: "white" }} />
           </button>
-          <div className="z-40 relative">
-          <EmojiPicker open={Emoji} className="absolute"/>
-          </div>
+          {Emoji && (
+            <div className="absolute bottom-16 right-0">
+              <EmojiPicker />
+            </div>
+          )}
         </div>
-
       </div>
     </div>
   );
