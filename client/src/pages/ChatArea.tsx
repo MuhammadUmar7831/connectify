@@ -2,6 +2,7 @@ import EmojiPicker from "emoji-picker-react";
 import { BsEmojiSmileFill } from "react-icons/bs";
 import { BiSend } from "react-icons/bi";
 import { useState } from "react";
+import Message from "../components/ChatArea/Message";
 
 export default function ChatArea() {
   const [Emoji, setEmoji] = useState(false);
@@ -38,69 +39,18 @@ export default function ChatArea() {
       <div className="bg-white w-full rounded-2xl h-full p-4 flex flex-col gap-2 justify-between items-between overflow-y-scroll no-scrollbar">
         {/* Chat content */}
         <div className="flex flex-col gap-2">
-          <div className="text-center text-sm text-gray-500 ">
+          {/* <div className="text-center text-sm text-gray-500 ">
             10 June, 2022
-          </div>
-          <div className="flex justify-end">
-            <div className="bg-orange rounded-t-xl rounded-l-xl p-2 text-white">
-              <p>Okay, it's almost ready.</p>
-            </div>
-          </div>
-          <div className="flex justify-start">
-            <div className="bg-slate-200 rounded-t-xl rounded-r-xl p-2">
-              <p>How about these pictures?</p>
-              <img
-                src="../src/assets/react.svg"
-                alt="chat images"
-                className="mt-2 rounded-lg"
-              />
-            </div>
-          </div>
-          <div className="flex justify-end">
-            <div className="bg-orange rounded-t-xl rounded-l-xl p-2 text-white">
-              <p>Looks cool, can you find more options?</p>
-            </div>
-          </div>
-          <div className="flex justify-start">
-            <div className="bg-slate-200 rounded-t-xl rounded-r-xl p-2">
-              <p>Sure, but I'm busy right now.</p>
-            </div>
-          </div>
-          <div className="flex justify-start">
-            <div className="bg-slate-200 rounded-t-xl rounded-r-xl p-2">
-              <p>Sure, but I'm busy left now.</p>
-            </div>
-          </div>
-          <div className="flex justify-end">
-            <div className="bg-orange rounded-t-xl rounded-l-xl p-2 text-white">
-              <p>ok Yaar</p>
-            </div>
-          </div>
-          <div className="flex justify-end">
-            <div className="bg-orange rounded-t-xl rounded-l-xl p-2 text-white">
-              <p>ok Yaar</p>
-            </div>
-          </div>
-          <div className="flex justify-start">
-            <div className="bg-slate-200 rounded-t-xl rounded-r-xl p-2">
-              <p>Sure, but I'm busy top now.</p>
-            </div>
-          </div>{" "}
-          <div className="flex justify-start">
-            <div className="bg-slate-200 rounded-t-xl rounded-r-xl p-2">
-              <p>Sure, but I'm busy left now.</p>
-            </div>
-          </div>{" "}
-          <div className="flex justify-start">
-            <div className="bg-slate-200 rounded-t-xl rounded-r-xl p-2">
-              <p>Sure, but I'm busy left now.</p>
-            </div>
-          </div>{" "}
-          <div className="flex justify-start">
-            <div className="bg-slate-200 rounded-t-xl rounded-r-xl p-2">
-              <p>Sure, but I'm busy left now.</p>
-            </div>
-          </div>
+          </div> */}
+          <Message me={true} content="Okay, it's almost ready." />
+          <Message me={false} content="How about these pictures?" />
+          <Message me={true} content="Looks cool, can you find more options?" />
+          <Message me={false} content="Looks cool, can you find more options?" />
+          <Message me={true} content="Sure, but I'm busy right now." />
+          <Message me={false} content="Sure, but I'm busy left now." />
+          <Message me={true} content="OK Yar" />
+          <Message me={false} content="OK Yar" />
+          <Message me={true} content="Sure, but I'm busy top now." />
         </div>
       </div>
       <div className="flex justify-between items-center bg-white rounded-2xl px-4 py-5 w-full flex-row">
