@@ -108,6 +108,7 @@ export default function ChatList() {
                     {pinnedChats && pinnedChats.map((chat, index) => (
                         <ChatListItem
                             key={index}
+                            chatId={chat.ChatId}
                             image={chat.Avatar}
                             name={chat.Name}
                             lastMessage={chat.Content}
@@ -123,6 +124,7 @@ export default function ChatList() {
             {chatsToRender && chatsToRender.map((chat, index) => (
                 <ChatListItem
                     key={index}
+                    chatId={chat.ChatId}
                     image={chat.Avatar}
                     name={chat.Name}
                     senderName={chat.SenderName}
