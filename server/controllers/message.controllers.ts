@@ -38,7 +38,7 @@ export const sendMessage = async (
 
   // Transaction because of multiple inserts
   connection.beginTransaction((err: QueryError | null) => {
-    // Create a new message and insert it (Trigger has been made to insert messageStatus for all users except sender)
+    // Create a new message and insert it
     const insertMessageQuery =
       "INSERT INTO Messages (ChatId, Content, SenderId) VALUES (?,?,?)";
     connection.query(
@@ -54,7 +54,7 @@ export const sendMessage = async (
 
         // Check if it is a reply
         if (ReplyId) {
-          // Trigger will be called before this to check if the replyId exists in the Chat
+          // Trigger will be called before this to check if the replyId exists in the Chat (see lib/Triggers/PreventOtherChatReply.sql)
           connection.query(
             "INSERT INTO  Reply (ReplyId, MessageId) VALUES(?,?)",
             [ReplyId, messageId],
@@ -100,10 +100,15 @@ export const deleteMessage = async (
         return next(err);
       }
 
-      // CHANGE: handle case where user gives invalid messageId in that case the
-      // CHANGE: result.rowsAffected (or something) like this will be 0 (no need for separate select query)
+      // if no rows were affected (possibly invalid message id)
+      if (result[0].affectedRows) {
+        return res.status(500).send({
+          success: true,
+          message: "Message Not Found, Invalid Message Id",
+        });
+      }
 
-      res.status(200).send({
+      return res.status(200).send({
         success: true,
         message: "Message Deleted",
       });
@@ -127,10 +132,9 @@ export const editMessage = async (
       if (err) {
         return next(err);
       }
-      // CHANGE: also update the status of that message for all users to sent
-      // CHANGE: whatsapp also do this
+      // Trigger will be called to insert message statuses for all members except the sender (see lib/Triggers/TriggerAfterUpdateMessages.sql)
 
-      res.status(200).send({
+      return res.status(200).send({
         success: true,
         message: "Message Updated",
       });
