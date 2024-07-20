@@ -8,6 +8,7 @@ import {
   sendMessage,
 } from "../controllers/message.controllers";
 import {
+  createPersonalChatForFalseChatId,
   isChatMember,
   isMessageTimeFiveMinutes,
 } from "../middlewares/message.middlewares";
@@ -20,7 +21,13 @@ router.get(
   isChatMember,
   tryCatch(getMessageOfChats)
 ); //route to get messages of chats (only if user is a member of the chat)
-router.post("/send", authenticate, isChatMember, tryCatch(sendMessage)); //route to send messages to a chat (also include reply meesages)
+router.post(
+  "/send",
+  authenticate,
+  isChatMember,
+  createPersonalChatForFalseChatId,
+  tryCatch(sendMessage)
+); //route to send messages to a chat (also include reply meesages)
 router.delete(
   "/delete",
   authenticate,

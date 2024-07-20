@@ -66,4 +66,63 @@ const isMessageTimeFiveMinutes = async (
   );
 };
 
-export { isChatMember, isMessageTimeFiveMinutes };
+const createPersonalChatForFalseChatId = async (
+  req: authRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const { ChatId, recieverId } = req.body;
+
+  // if chatId has a value, than we do not need to do anything
+  if (ChatId !== false) {
+    next();
+  }
+
+  // if chat id is false, we know that we have to create a new personal chat.
+  // In case of group it will always have a value because group was created first.
+  // (!ChatId) syntax has not been used because it will also give true for undefined.
+  // Also explicitly mentioning the condition, instead of else case to handle any unintended value
+  if (ChatId === false) {
+    connection.beginTransaction((err: QueryError | null) => {
+      // Create new Personal chat
+      const newChatQuery = "INSERT INTO Chats (Type) VALUES ('Personal')";
+      connection.query(
+        newChatQuery,
+        (err: QueryError | null, result: RowDataPacket) => {
+          if (err) {
+            return connection.rollback(() => next(err));
+          }
+          req.body.ChatId = result.insertId;
+          // Insert members into the new Personal Chat
+          const addMembers =
+            "INSERT INTO Members (UserId, ChatId) VALUES (?, ?), (?, ?);";
+          connection.query(
+            addMembers,
+            [req.userId, ChatId, recieverId, ChatId],
+            (err: QueryError | null, result: RowDataPacket[]) => {
+              if (err) {
+                return connection.rollback(() => next(err));
+              }
+              // commit and return success response if no errors else rollback
+              connection.commit((err: QueryError | null) => {
+                if (err) {
+                  return connection.rollback(() => next(err));
+                }
+
+                res
+                  .status(201)
+                  .send({ success: true, message: "Personal Chat created" });
+              });
+            }
+          );
+        }
+      );
+    });
+  }
+};
+
+export {
+  isChatMember,
+  isMessageTimeFiveMinutes,
+  createPersonalChatForFalseChatId,
+};
