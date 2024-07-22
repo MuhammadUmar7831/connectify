@@ -93,7 +93,6 @@ const createPersonalChatForFalseChatId = async (
             return connection.rollback(() => next(err));
           }
           req.body.ChatId = result.insertId;
-          const insertedId = result.insertId;
           // Insert members into the new Personal Chat
           const addMembers =
             "INSERT INTO Members (UserId, ChatId) VALUES (?, ?), (?, ?);";
@@ -110,7 +109,6 @@ const createPersonalChatForFalseChatId = async (
                   return connection.rollback(() => next(err));
                 }
 
-                req.body.ChatId = insertedId;
                 next();
                 // res
                 //   .status(201)
