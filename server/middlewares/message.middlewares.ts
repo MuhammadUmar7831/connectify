@@ -120,9 +120,7 @@ const createPersonalChatForFalseChatId = async (
       );
     });
   }
-  else {
-    return next(errorHandler(400, 'Please insert chat id'))
-  }
+  next();
 };
 
 export {
