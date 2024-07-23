@@ -3,14 +3,12 @@ import Avatar from "../../interface/Avatar";
 import HeaderButton from "./HeaderButton";
 import { BsThreeDots } from "react-icons/bs";
 
-
-
 interface props {
     userName?: string;
 }
 
-export default function ChatHeader({userName}:props) {
-    
+export default function ChatHeader({ userName }: props) {
+
     return (
         <div className="bg-white rounded-2xl w-full p-4 flex justify-between items-center">
             <div className="flex gap-4">

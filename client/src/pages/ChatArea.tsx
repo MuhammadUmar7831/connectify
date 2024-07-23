@@ -4,6 +4,7 @@ import ChatSection from "../components/ChatArea/ChatSection";
 import axios from "../config/axios.config";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom"; // Import useParams
+import SendMessageBox from "../components/ChatArea/SendMessageBox";
 
 // Define the types for the message
 interface Message {
@@ -33,7 +34,7 @@ const useFetchMessages = () => {
       try {
         const response = await axios.get(`/api/message/get/${chatId}`);
         setMessages(response.data.data); // Assuming response.data is of type Message[]
-        console.log("messages",response.data.data)
+        console.log("messages", response.data.data)
       } catch (error: any) {
         console.error("Failed to fetch messages:", error); // Log error to console
       }
@@ -51,18 +52,19 @@ export default function ChatArea() {
   const [receiverUserName, setReceiverUserName] = useState<string>("");
 
   useEffect(() => {
-    if (messages&&messages.length > 0 && data?.user?.UserId) {
+    if (messages && messages.length > 0 && data?.user?.UserId) {
       const receiverData = messages.filter((message) => message.SenderId !== data.user.UserId);
       if (receiverData.length > 0) {
         setReceiverUserName(receiverData[0].Sender);
       }
     }
   }, [messages, data]);
-  
+
   return (
     <div className="w-2/3 min-w-[820px] h-full flex flex-col gap-2">
       <ChatHeader userName={receiverUserName} />
-      <ChatSection  message={messages} userId={data.user.UserId}/>
+      <ChatSection message={messages} userId={data.user.UserId} />
+      <SendMessageBox />
     </div>
   );
 }
