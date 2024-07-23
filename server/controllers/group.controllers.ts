@@ -68,6 +68,57 @@ export const getCommonGroups = async (
     );
 };
 
+export const getGroupInfo = async (req: authRequest, res: Response, next: NextFunction) => {
+    const groupId = parseInt(req.params.groupId);
+    if (isNaN(groupId)) {
+        return next(errorHandler(400, 'Invalid Request Params Expected groupId: type(number)'));
+    }
+
+    var query = `SELECT COUNT(*) AS isMember FROM Members m
+        JOIN _Groups g ON m.ChatId = g.ChatId
+        WHERE g.GroupId = ? AND m.UserId = ?`
+
+    connection.query(query, [groupId, req.userId], (err: QueryError | null, result: RowDataPacket[]) => {
+        if (err) { return next(err) }
+        if (result[0].isMember === 0) {
+            return next(errorHandler(404, 'May be Group does not exist or You are not Member of this Group'))
+        }
+
+        query = `
+        SELECT  
+        g.GroupId,
+        g.Name AS GroupName,
+        g.Description,
+        g.Avatar,
+        g.CreatedBy AS CreatorId,
+        u.Name AS CreatedBy,
+        g.DateCreated,
+        g.ChatId,
+        JSON_ARRAYAGG(JSON_OBJECT('UserId', members.UserId, 'Name', members.Name, 'Bio', members.Bio, 'isAdmin', members.isAdmin)) AS Members
+        FROM _Groups g
+        JOIN Users u ON g.CreatedBy = u.UserId
+        -- JOIN Members m ON g.ChatId = m.ChatId 
+        LEFT JOIN (
+            SELECT _m.UserId, 
+            CASE 
+                WHEN _ga.UserId = _m.UserId THEN TRUE
+                ELSE FALSE 
+            END AS isAdmin, 
+            _u.Name, _u.Bio, _g.GroupId FROM Members _m
+            JOIN _Groups _g ON _m.ChatId = _g.ChatId
+            JOIN Users _u on _m.UserId = _u.UserId
+            LEFT JOIN GroupAdmins _ga on _g.GroupId = _ga.GroupId
+        ) members ON g.GroupId = members.GroupId
+        WHERE g.GroupId = ?
+        GROUP BY g.GroupId;`
+
+        connection.query(query, [groupId], (err: QueryError | null, result: RowDataPacket[]) => {
+            if (err) { return next(err) }
+            return res.status(200).send({ success: true, message: 'Group Info Sent', data: result })
+        })
+    })
+}
+
 export const kickUser = async (req: authRequest, res: Response, next: NextFunction) => {
     const { toBeKickedId, groupId } = req.body
     if (toBeKickedId === req.userId) {
