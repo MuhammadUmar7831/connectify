@@ -3,7 +3,14 @@ import Avatar from "../../interface/Avatar";
 import HeaderButton from "./HeaderButton";
 import { BsThreeDots } from "react-icons/bs";
 
-export default function ChatHeader() {
+
+
+interface props {
+    userName?: string;
+}
+
+export default function ChatHeader({userName}:props) {
+    
     return (
         <div className="bg-white rounded-2xl w-full p-4 flex justify-between items-center">
             <div className="flex gap-4">
@@ -12,7 +19,7 @@ export default function ChatHeader() {
                     isActive={true}
                     className="w-12" />
                 <div>
-                    <h1 className="text-xl font-semibold">OK Yarism</h1>
+                    <h1 className="text-xl font-semibold">{userName}</h1>
                     <span className="text-sm text-gray-200">Online</span>
                 </div>
             </div>
