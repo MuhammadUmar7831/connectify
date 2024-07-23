@@ -1,15 +1,15 @@
-import { LuArchiveRestore } from "react-icons/lu";
-import { RiDeleteBinLine } from "react-icons/ri";
-import { TiPinOutline } from "react-icons/ti";
-import GroupInCommonListItems from "../GroupInCommonListItems";
+import GroupInCommonListItems from "./GroupInCommonListItems";
 import { getFriendInfoApi } from "../../../api/user.api";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { setError } from "../../../redux/slices/error";
 import friendType from "../../../types/friend.type";
+import { getCommonGroupsApi } from "../../../api/group.api";
+import { GroupListItem } from "../../../types/groupListItem.type";
 
 export default function PersonalInfo() {
     const [friend, setFriend] = useState<null | friendType>(null);
+    const [commonGroups, setCommonGroups] = useState<null | GroupListItem[]>(null);
     const dispatch = useDispatch();
 
     const getFriendInfo = async () => {
@@ -22,11 +22,21 @@ export default function PersonalInfo() {
         }
     }
 
+    const getCommonGroups = async () => {
+        const res = await getCommonGroupsApi(9);
+        if (res.success) {
+            setCommonGroups(res.data);
+        } else {
+            dispatch(setError(res.message));
+        }
+    }
+
     useEffect(() => {
         getFriendInfo();
+        getCommonGroups();
     }, [])
 
-    if (friend === null) {
+    if (friend === null || commonGroups === null) {
         return <div className="w-2/3 min-w-[820px] h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar"></div>
     }
 
@@ -46,20 +56,10 @@ export default function PersonalInfo() {
                 <p>{friend.Bio}</p>
             </div>
             <div className="bg-white rounded-2xl p-4">
-                <h1 className="text-gray-300">21 Groups in Common</h1>
-                <GroupInCommonListItems />
-                <GroupInCommonListItems />
-            </div>
-            <div className="bg-white rounded-2xl p-4 flex justify-center items-center gap-4">
-                <div>
-                    <TiPinOutline className="text-orange text-2xl cursor-pointer" />
-                </div>
-                <div>
-                    <LuArchiveRestore className="text-green-500 text-2xl cursor-pointer" />
-                </div>
-                <div>
-                    <RiDeleteBinLine className="text-red-500 text-2xl cursor-pointer" />
-                </div>
+                <h1 className="text-gray-300">{commonGroups.length > 0 ? commonGroups.length: 'No '} Groups in Common</h1>
+                {commonGroups.map((commonGroup) =>
+                    <GroupInCommonListItems group={commonGroup} />
+                )}
             </div>
         </div>
     )
