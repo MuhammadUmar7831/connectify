@@ -11,6 +11,7 @@ export default {
         gray: "#EEEEEE",
         "gray-100": "#F6F6F6", // backgorund for the app
         "gray-200": "#BABABA", // gray color for text and borders
+        "gray-300": "#8696A0", // gray color for prominent text
       },
     },
   },
