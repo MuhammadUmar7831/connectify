@@ -11,7 +11,7 @@ interface Props {
         Name: string;
         Avatar: string;
         Bio: string;
-        isAdmin: Boolean
+        isAdmin: number // not bolean because MySql return False as O and True as 1
     },
     userItselfAdmin: Boolean
 }
@@ -74,7 +74,7 @@ export default function MembersListItems({ member, userItselfAdmin }: Props) {
                 </div>
             </div>
             <div className="flex gap-2 justify-center items-center">
-                {member.isAdmin && <AdminBadge />}
+                {member.isAdmin === 1 && <AdminBadge />}
                 <div className="relative" ref={menuRef}>
                     <UserListItemMenu isOpen={menuOpen} options={options} actions={actions} />
                     {

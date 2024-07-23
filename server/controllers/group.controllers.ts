@@ -94,7 +94,7 @@ export const getGroupInfo = async (req: authRequest, res: Response, next: NextFu
         u.Name AS CreatedBy,
         g.DateCreated,
         g.ChatId,
-        JSON_ARRAYAGG(JSON_OBJECT('UserId', members.UserId, 'Name', members.Name, 'Bio', members.Bio, 'isAdmin', members.isAdmin)) AS Members
+        JSON_ARRAYAGG(JSON_OBJECT('UserId', members.UserId, 'Name', members.Name, 'Bio', members.Bio, 'Avatar', members.Avatar, 'isAdmin', members.isAdmin)) AS Members
         FROM _Groups g
         JOIN Users u ON g.CreatedBy = u.UserId
         -- JOIN Members m ON g.ChatId = m.ChatId 
@@ -104,7 +104,7 @@ export const getGroupInfo = async (req: authRequest, res: Response, next: NextFu
                 WHEN _ga.UserId = _m.UserId THEN TRUE
                 ELSE FALSE 
             END AS isAdmin, 
-            _u.Name, _u.Bio, _g.GroupId FROM Members _m
+            _u.Name, _u.Bio, _u.Avatar, _g.GroupId FROM Members _m
             JOIN _Groups _g ON _m.ChatId = _g.ChatId
             JOIN Users _u on _m.UserId = _u.UserId
             LEFT JOIN GroupAdmins _ga on _g.GroupId = _ga.GroupId
@@ -114,7 +114,7 @@ export const getGroupInfo = async (req: authRequest, res: Response, next: NextFu
 
         connection.query(query, [groupId], (err: QueryError | null, result: RowDataPacket[]) => {
             if (err) { return next(err) }
-            return res.status(200).send({ success: true, message: 'Group Info Sent', data: result })
+            return res.status(200).send({ success: true, message: 'Group Info Sent', data: result[0] })
         })
     })
 }
