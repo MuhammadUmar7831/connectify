@@ -15,7 +15,7 @@ export const getUserApi = async () => {
 
 export const getFriendInfoApi = async (friendId: number) => {
     try {
-        const response = await axios.get(`/api/user/get/friend/info/${friendId}`);
+        const response = await axios.get(`/api/user/get/info/${friendId}`);
         return response.data;
     } catch (error: any) {
         if (error.response) {
