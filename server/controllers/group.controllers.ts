@@ -29,23 +29,34 @@ export const getCommonGroups = async (
     res: Response,
     next: NextFunction
 ) => {
-    const friendId = req.params.friendId;
-    const userId = req.userId;
+    const friendId = parseInt(req.params.friendId);
+    if (isNaN(friendId)) {
+        return next(errorHandler(400, 'Invalid Paramas Expected friendId: type(number)'));
+    }
 
-    const query = `SELECT g.* FROM _Groups g  JOIN Members m1 on g.ChatId = m1.ChatId JOIN Members m2 on g.ChatId = m2.ChatId WHERE m1.UserId = ? AND m2.UserId = ?;`;
-    const values = [friendId, userId];
+    if (friendId === req.userId) {
+        return next(errorHandler(400, 'You have all groups in common with your own'))
+    }
+
+    const query = `
+    SELECT 
+    g.*, 
+    JSON_ARRAYAGG(JSON_OBJECT('UserId', u.UserId, 'UserName', u.Name)) AS Members
+    FROM _Groups g  
+    JOIN Members m1 on g.ChatId = m1.ChatId 
+    JOIN Members m2 on g.ChatId = m2.ChatId
+    JOIN Members m3 on g.ChatId = m3.ChatId
+    JOIN Users u ON m3.UserId = u.UserId
+    WHERE m1.UserId = 1 AND m2.UserId = 2
+    GROUP BY g.GroupId;`;
+
+    const values = [friendId, req.userId];
     connection.query(
         query,
         values,
         (err: QueryError | null, result: RowDataPacket[]) => {
             if (err) {
                 return next(err);
-            }
-
-            if (result.length === 0) {
-                res
-                    .status(403)
-                    .send({ success: false, message: "No Common Groups", data: null });
             }
 
             res
