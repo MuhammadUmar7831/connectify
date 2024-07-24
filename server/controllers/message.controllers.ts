@@ -39,10 +39,13 @@ export const sendMessage = async (
   connection.beginTransaction((err: QueryError | null) => {
     // Create a new message and insert it
     const insertMessageQuery =
-      "INSERT INTO Messages (ChatId, Content, SenderId) VALUES (?,?,?)";
+      "INSERT INTO Messages (ChatId, Content, SenderId, Timestamp) VALUES (?,?,?,?)";
+
+    const currentTime = new Date();
+    
     connection.query(
       insertMessageQuery,
-      [ChatId, Content, req.userId],
+      [ChatId, Content, req.userId, currentTime],
       (err: QueryError | null, result: any) => {
         if (err) {
           connection.rollback(() => next(err));
