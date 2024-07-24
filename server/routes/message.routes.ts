@@ -16,7 +16,7 @@ import {
 const router = Router();
 
 router.get(
-  "/get/:chatId",
+  "/get/:ChatId",
   authenticate,
   isChatMember,
   tryCatch(getMessageOfChats)
