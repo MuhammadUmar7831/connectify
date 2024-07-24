@@ -14,7 +14,7 @@ export const getMessageOfChats = async (
 
   connection.query(
     query,
-    [req.params.chatId, req.userId],
+    [req.params.ChatId, req.userId],
     (err: QueryError | null, result: RowDataPacket[]) => {
       if (err) {
         return next(err);
@@ -33,7 +33,7 @@ export const sendMessage = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { chatId, Content, ReplyId } = req.body;
+  const { ChatId, Content, ReplyId } = req.body;
 
   // Transaction because of multiple inserts
   connection.beginTransaction((err: QueryError | null) => {
@@ -42,10 +42,10 @@ export const sendMessage = async (
       "INSERT INTO Messages (ChatId, Content, SenderId) VALUES (?,?,?)";
     connection.query(
       insertMessageQuery,
-      [chatId, Content, req.userId],
+      [ChatId, Content, req.userId],
       (err: QueryError | null, result: any) => {
         if (err) {
-          return connection.rollback(() => next(err));
+          connection.rollback(() => next(err));
         }
         // Trigger will be called to insert message statuses for all members except the sender (see lib/Triggers/TriggerAfterInsertMessages.sql)
 
@@ -61,6 +61,14 @@ export const sendMessage = async (
               if (err) {
                 return connection.rollback(() => next(err));
               }
+              else{
+                connection.commit((err: QueryError | null) => {
+                  if (err) {
+                    return connection.rollback(() => next(err));
+                  }                  
+                });
+              }
+
             }
           );
         }
@@ -70,14 +78,17 @@ export const sendMessage = async (
             return connection.rollback(() => next(err));
           }
         });
+
+       
       }
     );
+    
   });
-
-  res.status(201).send({
+  return res.status(201).send({
     success: true,
     message: "Message Sent",
   });
+ 
 };
 
 export const deleteMessage = async (

@@ -12,18 +12,18 @@ const isChatMember = async (
 ) => {
   try {
     const userId = req.userId;
-    let chatId = req.params.chatId;
+    let ChatId = req.params.ChatId;
 
     // if it is not in params, then it should be in body for post request
-    if (!chatId) {
-      chatId = req.body.chatId;
+    if (!ChatId) {
+      ChatId = req.body.ChatId;
     }
 
     const query: string =
       "SELECT * FROM Members WHERE ChatId = ? AND UserId = ?";
     connection.query(
       query,
-      [chatId, userId],
+      [ChatId, userId],
       (err: QueryError | null, result: RowDataPacket[]) => {
         if (err) {
           return next(err);
@@ -77,10 +77,10 @@ const createPersonalChatForFalseChatId = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { chatId, recieverId } = req.body;
+  const { ChatId, recieverId } = req.body;
 
-  // if chatId has a value, than we do not need to do anything
-  if (chatId !== false) {
+  // if ChatId has a value, than we do not need to do anything
+  if (ChatId !== false) {
     next();
   }
 
@@ -88,7 +88,7 @@ const createPersonalChatForFalseChatId = async (
   // In case of group it will always have a value because group was created first.
   // (!ChatId) syntax has not been used because it will also give true for undefined.
   // Also explicitly mentioning the condition, instead of else case to handle any unintended value
-  if (chatId === false) {
+  if (ChatId === false) {
     connection.beginTransaction((err: QueryError | null) => {
       // Create new Personal chat
       const newChatQuery = "INSERT INTO Chats (Type) VALUES ('Personal')";
@@ -104,7 +104,7 @@ const createPersonalChatForFalseChatId = async (
             "INSERT INTO Members (UserId, ChatId) VALUES (?, ?), (?, ?);";
           connection.query(
             addMembers,
-            [req.userId, chatId, recieverId, chatId],
+            [req.userId, ChatId, recieverId, ChatId],
             (err: QueryError | null, result: RowDataPacket[]) => {
               if (err) {
                 return connection.rollback(() => next(err));
@@ -116,9 +116,6 @@ const createPersonalChatForFalseChatId = async (
                 }
 
                 next();
-                // res
-                //   .status(201)
-                //   .send({ success: true, message: "Personal Chat created" });
               });
             }
           );
