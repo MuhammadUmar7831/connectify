@@ -123,7 +123,6 @@ const createPersonalChatForFalseChatId = async (
       );
     });
   }
-  next();
 };
 
 export {
