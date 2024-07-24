@@ -101,20 +101,20 @@ export const deleteMessage = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { messageId } = req.body;
+  const { MessageId } = req.body;
 
   const deleteQuery = "DELETE FROM Messages WHERE MessageId = ?";
 
   connection.query(
     deleteQuery,
-    [messageId],
-    (err: QueryError | null, result: RowDataPacket[]) => {
+    [MessageId],  
+    (err: QueryError | null, result: any) => {
       if (err) {
         return next(err);
       }
 
       // if no rows were affected (possibly invalid message id)
-      if (result[0].affectedRows) {
+      if (result.affectedRows === 0) {
         return res.status(500).send({
           success: true,
           message: "Message Not Found, Invalid Message Id",
