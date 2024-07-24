@@ -10,8 +10,7 @@ export const getMessageOfChats = async (
 ) => {
   //   Query to get Chat Messages based on ChatId with message status
   // selecting from view ChatMessages (for detail see lib/views.ChatMessages.sql)
-  const query = `
-      SELECT * FROM ChatMessages WHERE ChatId = ?;`;
+  const query = `SELECT * FROM ChatMessages WHERE ChatId = ?;`;
 
   connection.query(
     query,
@@ -34,7 +33,7 @@ export const sendMessage = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { ChatId, Content, ReplyId } = req.body;
+  const { chatId, Content, ReplyId } = req.body;
 
   // Transaction because of multiple inserts
   connection.beginTransaction((err: QueryError | null) => {
@@ -43,14 +42,14 @@ export const sendMessage = async (
       "INSERT INTO Messages (ChatId, Content, SenderId) VALUES (?,?,?)";
     connection.query(
       insertMessageQuery,
-      [ChatId, Content, req.userId],
-      (err: QueryError | null, result: RowDataPacket[]) => {
+      [chatId, Content, req.userId],
+      (err: QueryError | null, result: any) => {
         if (err) {
           return connection.rollback(() => next(err));
         }
         // Trigger will be called to insert message statuses for all members except the sender (see lib/Triggers/TriggerAfterInsertMessages.sql)
 
-        const messageId = result[0].insertId;
+        const messageId = result.insertId;
 
         // Check if it is a reply
         if (ReplyId) {
@@ -62,24 +61,22 @@ export const sendMessage = async (
               if (err) {
                 return connection.rollback(() => next(err));
               }
-
-              // commiting transaction and sending response
-
-              connection.commit((err: QueryError | null) => {
-                if (err) {
-                  return connection.rollback(() => next(err));
-                }
-
-                return res.status(200).send({
-                  success: true,
-                  message: "Message Sent",
-                });
-              });
             }
           );
         }
+
+        connection.commit((err: QueryError | null) => {
+          if (err) {
+            return connection.rollback(() => next(err));
+          }
+        });
       }
     );
+  });
+
+  res.status(201).send({
+    success: true,
+    message: "Message Sent",
   });
 };
 
