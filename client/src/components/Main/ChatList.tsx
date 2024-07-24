@@ -11,6 +11,7 @@ import { setAllChats } from "../../redux/slices/allChats";
 import { setGroupChats } from "../../redux/slices/groupChats";
 import { setPinnedChats } from "../../redux/slices/pinnedChats";
 import { setArchiveChats } from "../../redux/slices/archiveChats";
+import ChatListSkeleton from "../../interface/skeletons/ChatListSkeleton";
 
 export default function ChatList() {
     const { chatListType } = useSelector((state: RootState) => state.chatListType);
@@ -97,11 +98,13 @@ export default function ChatList() {
     }
 
     if (chatsToRender === null) {
-        return <></>
+        return (
+            <ChatListSkeleton />
+        )
     }
 
     return (
-        <div className="rounded-2xl w-full bg-white overflow-y-scroll no-scrollbar">
+        <div className="rounded-2xl w-full h-full bg-white overflow-y-scroll no-scrollbar">
             {chatListType !== 'Archived' && (
                 <>
                     <h1 className="text-gray-200 mx-6 mt-6 uppercase text-sm">Pinned</h1>
