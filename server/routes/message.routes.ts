@@ -39,7 +39,7 @@ router.put(
   "/edit",
   authenticate,
   isChatMember,
-  isMessageTimeFiveMinutes,
+  
   tryCatch(editMessage)
 ); //route to edit message (with in 5 minutes after sent)
 

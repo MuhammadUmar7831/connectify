@@ -45,21 +45,20 @@ const isMessageTimeFiveMinutes = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { messageId } = req.body;
-
-  const query = "SELECT TimeStamp FROM Messages WHERE Messages.MessageId = ?";
-  // Checking if the message is being deleted within 5 minutes of sending
+  const { MessageId } = req.body;
+  const query = "SELECT Timestamp FROM Messages WHERE Messages.MessageId = ?";
+  // Checking if the message is being deleted/edited within 5 minutes of sending
   connection.query(
     query,
-    [messageId],
+    [MessageId],
     (err: QueryError | null, result: RowDataPacket[]) => {
       if (err) {
         return next(err);
       }
-      const messgeTimeStamp = result[0].TimeStamp;
+      const messageTimeStamp = result[0].Timestamp;
 
       // converting into date object and calculating difference
-      const messageDateObj = new Date(messgeTimeStamp);
+      const messageDateObj = new Date(messageTimeStamp);
       const currentTimeStamp = new Date();
       const difference = currentTimeStamp.getTime() - messageDateObj.getTime();
       const differenceInMinutes = Math.floor(difference / 1000 / 60);
@@ -67,6 +66,8 @@ const isMessageTimeFiveMinutes = async (
       if (differenceInMinutes >= 5) {
         next(errorHandler(403, "More than 5 minutes passed for the message"));
       }
+      console.log(differenceInMinutes)
+      
       next();
     }
   );
