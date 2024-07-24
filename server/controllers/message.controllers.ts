@@ -48,11 +48,10 @@ export const sendMessage = async (
           connection.rollback(() => next(err));
         }
         // Trigger will be called to insert message statuses for all members except the sender (see lib/Triggers/TriggerAfterInsertMessages.sql)
-
-        const messageId = result.insertId;
-
-        // Check if it is a reply
-        if (ReplyId) {
+        
+        // if it is a reply then insert it
+        else if (ReplyId){
+          const messageId = result.insertId;
           // Trigger will be called before this to check if the replyId exists in the Chat (see lib/Triggers/PreventOtherChatReply.sql)
           connection.query(
             "INSERT INTO  Reply (ReplyId, MessageId) VALUES(?,?)",
@@ -61,33 +60,39 @@ export const sendMessage = async (
               if (err) {
                 return connection.rollback(() => next(err));
               }
-              else{
-                connection.commit((err: QueryError | null) => {
-                  if (err) {
-                    return connection.rollback(() => next(err));
-                  }                  
+              // commit and return the response with reply
+              connection.commit((err: QueryError | null) => {
+                if (err) {
+                  return connection.rollback(() => next(err));
+                }
+                return res.status(201).send({
+                  success: true,
+                  message: "Message Sent with a reply",
                 });
-              }
+              });
 
             }
           );
         }
-
-        connection.commit((err: QueryError | null) => {
-          if (err) {
-            return connection.rollback(() => next(err));
-          }
-        });
-
+        // commit and return the response without reply
+        else{
+          connection.commit((err: QueryError | null) => {
+            if (err) {
+              return connection.rollback(() => next(err));
+            }
+            return res.status(201).send({
+              success: true,
+              message: "Message Sent",
+            });
+          });
+        }
        
       }
     );
     
   });
-  return res.status(201).send({
-    success: true,
-    message: "Message Sent",
-  });
+  
+
  
 };
 
