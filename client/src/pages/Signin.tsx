@@ -2,7 +2,7 @@ import { GrConnect } from "react-icons/gr";
 import { FcGoogle } from "react-icons/fc";
 import { LuEye } from "react-icons/lu";
 import { LuEyeOff } from "react-icons/lu";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FormEvent, useState } from "react";
 import { signinApi } from "../api/auth.api";
 import { useDispatch } from "react-redux";
@@ -14,19 +14,21 @@ import { ClipLoader } from "react-spinners";
 export default function Signin() {
     const googleClick = () => { }
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false)
     const [loading, setLoading] = useState(false);
 
-    const handleSiginClick = async (e: FormEvent) => {
+    const handleSigninClick = async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
         const res = await signinApi({ email, password });
         if (res.success) {
             dispatch(setUser(res.user));
             dispatch(setSuccess(res.message));
+            navigate("/");
         } else {
             dispatch(setError(res.message));
         }
@@ -48,7 +50,7 @@ export default function Signin() {
                     </button>
                 </div>
                 <p className="text-center my-2 text-md">or</p>
-                <form onSubmit={handleSiginClick} className="flex flex-col gap-2">
+                <form onSubmit={handleSigninClick} className="flex flex-col gap-2">
                     <input
                         className="w-full focus:outline-none bg-gray-100 py-2 px-4 rounded-md"
                         type="email"
