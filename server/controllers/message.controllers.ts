@@ -2,6 +2,7 @@ import { NextFunction, Response } from "express";
 import { authRequest } from "../middlewares/authenticate";
 import connection from "../config/db";
 import { QueryError, RowDataPacket } from "mysql2";
+import errorHandler from "../errors/error";
 
 export const getMessageOfChats = async (
   req: authRequest,
@@ -9,7 +10,7 @@ export const getMessageOfChats = async (
   next: NextFunction
 ) => {
   //   Query to get Chat Messages based on ChatId with message status
-  // selecting from view ChatMessages (for detail see lib/views.ChatMessages.sql)
+  // selecting from view ChatMessages (for detail see lib/views/ChatMessages.sql)
   const query = `SELECT * FROM ChatMessages WHERE ChatId = ?;`;
 
   connection.query(
@@ -42,7 +43,7 @@ export const sendMessage = async (
       "INSERT INTO Messages (ChatId, Content, SenderId, Timestamp) VALUES (?,?,?,?)";
 
     const currentTime = new Date();
-    
+
     connection.query(
       insertMessageQuery,
       [ChatId, Content, req.userId, currentTime],
@@ -51,9 +52,9 @@ export const sendMessage = async (
           connection.rollback(() => next(err));
         }
         // Trigger will be called to insert message statuses for all members except the sender (see lib/Triggers/TriggerAfterInsertMessages.sql)
-        
+
         // if it is a reply then insert it
-        else if (ReplyId){
+        else if (ReplyId) {
           const messageId = result.insertId;
           // Trigger will be called before this to check if the replyId exists in the Chat (see lib/Triggers/PreventOtherChatReply.sql)
           connection.query(
@@ -78,7 +79,7 @@ export const sendMessage = async (
           );
         }
         // commit and return the response without reply
-        else{
+        else {
           connection.commit((err: QueryError | null) => {
             if (err) {
               return connection.rollback(() => next(err));
@@ -89,14 +90,14 @@ export const sendMessage = async (
             });
           });
         }
-       
+
       }
     );
-    
-  });
-  
 
- 
+  });
+
+
+
 };
 
 export const deleteMessage = async (
@@ -110,7 +111,7 @@ export const deleteMessage = async (
 
   connection.query(
     deleteQuery,
-    [MessageId],  
+    [MessageId],
     (err: QueryError | null, result: any) => {
       if (err) {
         return next(err);
@@ -118,10 +119,7 @@ export const deleteMessage = async (
 
       // if no rows were affected (possibly invalid message id)
       if (result.affectedRows === 0) {
-        return res.status(500).send({
-          success: true,
-          message: "Message Not Found, Invalid Message Id",
-        });
+        return next(errorHandler(500, "Message Not Found, Invalid Message Id"))
       }
 
       return res.status(200).send({
