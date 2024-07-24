@@ -12,7 +12,13 @@ const isChatMember = async (
 ) => {
   try {
     const userId = req.userId;
-    const chatId = req.params.chatId;
+    let chatId = req.params.chatId;
+
+    // if it is not in params, then it should be in body for post request
+    if (!chatId) {
+      chatId = req.body.chatId;
+    }
+
     const query: string =
       "SELECT * FROM Members WHERE ChatId = ? AND UserId = ?";
     connection.query(
@@ -24,7 +30,7 @@ const isChatMember = async (
         }
 
         if (result.length === 0) {
-          next(errorHandler(403, "Access Denied"));
+          next(errorHandler(403, "You are not a member of this chat"));
         }
         next();
       }
@@ -71,10 +77,10 @@ const createPersonalChatForFalseChatId = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { ChatId, recieverId } = req.body;
+  const { chatId, recieverId } = req.body;
 
   // if chatId has a value, than we do not need to do anything
-  if (ChatId !== false) {
+  if (chatId !== false) {
     next();
   }
 
@@ -82,7 +88,7 @@ const createPersonalChatForFalseChatId = async (
   // In case of group it will always have a value because group was created first.
   // (!ChatId) syntax has not been used because it will also give true for undefined.
   // Also explicitly mentioning the condition, instead of else case to handle any unintended value
-  if (ChatId === false) {
+  if (chatId === false) {
     connection.beginTransaction((err: QueryError | null) => {
       // Create new Personal chat
       const newChatQuery = "INSERT INTO Chats (Type) VALUES ('Personal')";
@@ -98,7 +104,7 @@ const createPersonalChatForFalseChatId = async (
             "INSERT INTO Members (UserId, ChatId) VALUES (?, ?), (?, ?);";
           connection.query(
             addMembers,
-            [req.userId, ChatId, recieverId, ChatId],
+            [req.userId, chatId, recieverId, chatId],
             (err: QueryError | null, result: RowDataPacket[]) => {
               if (err) {
                 return connection.rollback(() => next(err));
