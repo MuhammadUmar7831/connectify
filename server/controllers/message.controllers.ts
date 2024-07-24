@@ -134,13 +134,13 @@ export const editMessage = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { messageId, content } = req.body;
+  const { MessageId, Content } = req.body;
 
   const updateQuery = "UPDATE Messages SET Content = ? WHERE MessageId = ?";
 
   connection.query(
     updateQuery,
-    [content, messageId],
+    [Content, MessageId],
     (err: QueryError | null, result: RowDataPacket[]) => {
       if (err) {
         return next(err);
