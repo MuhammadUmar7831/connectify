@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import MessageResponse from "../../types/MessageResponse.type";
 import Message from "./Message";
 import MessageReply from "./MessageReply";
@@ -9,6 +10,10 @@ interface ChatSectionProps {
 
 
 export default function ChatSection({ message, userId }: ChatSectionProps) {
+
+  useEffect(()=>{
+    console.log("i wun  ow")
+  },[message])
 
   function getMessage(messageId: number): MessageResponse | undefined {
     return message.find(mg => mg.MessageId === messageId);
