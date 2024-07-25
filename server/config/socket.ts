@@ -36,6 +36,12 @@ io.on('connection', (socket) => {
     userSocketMap[parseInt(userId)] = socket.id;
 
     io.emit("getOnlineUsers", Object.keys(userSocketMap).map(key => parseInt(key)));
+    console.log(userId);
+
+    socket.on("startTyping", (chatId) => {
+        console.log(`User with Id ${userId} Started Typing... in Chat Id ${chatId}`);
+        io.emit('userTyping', userId, chatId);
+    })
 
     // Handle other socket events
     socket.on('disconnect', () => {

@@ -50,7 +50,7 @@ export default function useChatList() {
             dispatch(setError(res.message));
         }
     }
-  
+
     // api call for pinned chats (also dispatch result in redux slice)
     async function getPinnedChats() {
         if (pinnedChats !== null) {
@@ -63,7 +63,7 @@ export default function useChatList() {
             dispatch(setError(res.message));
         }
     }
-   
+
     // api call for archive chats (also dispatch result in redux slice)
     async function getArchiveChats() {
         if (pinnedChats !== null) {
@@ -95,15 +95,23 @@ export default function useChatList() {
     }, []);
 
     // check if this user is online or not
-    const isActive = (userId: number | null) => { 
+    const isActive = (userId: number | null) => {
         return onlineUser.includes(userId || -1)
     }
 
     // listen to event (emmited every time someone joins or leave socket) 
     // return all the online users
-    socket?.on("getOnlineUsers", (users) => {
-        setOnlineUsers(users);
-    });
+    useEffect(() => {
+        const handleGetOnlineUsers = (users: number[]) => {
+            setOnlineUsers(users);
+        };
+
+        socket?.on("getOnlineUsers", handleGetOnlineUsers);
+
+        return () => {
+            socket?.off("getOnlineUsers", handleGetOnlineUsers);
+        };
+    }, [socket])
 
     // after the personal and group chat is received from api merge them to get all chats
     useEffect(() => {
