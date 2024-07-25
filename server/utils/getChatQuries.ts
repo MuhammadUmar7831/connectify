@@ -1,6 +1,7 @@
 export const getPersonalChatQuery = `
     SELECT DISTINCT 
     c.ChatId,
+    u.UserId,
     u.Name, 
     u.Avatar, 
     CASE 
@@ -35,6 +36,7 @@ export const getPersonalChatQuery = `
 export const getGroupChatsQuery = `
     SELECT DISTINCT 
     g.ChatId,
+    null As UserId,
     g.Name, 
     g.Avatar, 
     CASE 

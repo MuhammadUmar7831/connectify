@@ -1,5 +1,6 @@
 export default interface Chat {
     ChatId: number;
+    UserId: number | null;
     Name: string;
     Avatar: string;
     SenderName?: string | null;
@@ -8,4 +9,5 @@ export default interface Chat {
     Content?: string | null;
     TimeStamp?: string | null;
     unSeenMessages?: number;
+    isActive: boolean;
 }
