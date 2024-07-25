@@ -3,14 +3,30 @@ import { HiMiniUserGroup } from "react-icons/hi2";
 import ArchiveIcon from "../interface/icons/ArchiveIcon";
 import ChatIcon from "../interface/icons/ChatIcon";
 import { IoIosPerson } from "react-icons/io";
-// import { VscDebugDisconnect } from "react-icons/vsc";
 import UserIcon from "../interface/icons/UserIcon";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setChatListTypeSlice } from "../redux/slices/chatListType";
 import SidebarIcon from "../interface/SidebarIcon";
+import { RootState } from "../redux/store";
+import { useEffect, useState } from "react";
 
 export default function SideBar() {
   const dispatch = useDispatch();
+  const { archiveChats } = useSelector((state: RootState) => state.archiveChats);
+  const [archiveBadge, setAtchiveBadge] = useState<number>(0);
+
+  const getUnseenMessageCountInArchivedChats = () => {
+    if (archiveChats) {
+      return archiveChats.filter(chat => chat.unSeenMessages !== undefined && chat.unSeenMessages > 0).length;
+    }
+    return 0;
+  };
+
+  useEffect(() => {
+    setAtchiveBadge(getUnseenMessageCountInArchivedChats());
+  }, [archiveChats])
+
+
   return (
     <div className="bg-black h-full w-20 rounded-2xl flex flex-col items-center justify-between py-6 min-w-20">
       <GrConnect className="w-7 h-7 text-orange hover:text-white cursor-pointer" />
@@ -32,11 +48,17 @@ export default function SideBar() {
               tip={'Group Chats'}
               onClick={() => dispatch(setChatListTypeSlice('Group'))}
             />
-            <SidebarIcon
-              icon={<ArchiveIcon className="w-5 h-5 cursor-pointer text-white hover:text-orange focus:text-orange" />}
-              tip={'Archived'}
-              onClick={() => dispatch(setChatListTypeSlice('Archived'))}
-            />
+            <div className="relative">
+              <SidebarIcon
+                icon={<ArchiveIcon className="w-5 h-5 cursor-pointer text-white hover:text-orange focus:text-orange" />}
+                tip={'Archived'}
+                onClick={() => dispatch(setChatListTypeSlice('Archived'))}
+              />
+              {
+                archiveBadge &&
+                <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-orange border border-black" />
+              }
+            </div>
           </ul>
         }
       </div>
