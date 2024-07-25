@@ -4,6 +4,7 @@ import { RootState } from "../../../redux/store";
 import { useEffect, useState } from "react";
 import { getGroupInfoApi } from "../../../api/group.api";
 import { setError } from "../../../redux/slices/error";
+import { InfoSkeleton } from "../../../interface/skeletons/InfoSkeleton";
 
 interface GroupInfo {
     GroupId: number;
@@ -42,7 +43,9 @@ export default function GroupInfo() {
     }, [])
 
     if (groupInfo === null) {
-        return <div className="w-2/3 min-w-[820px] h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar" />
+        return (
+            <InfoSkeleton />
+        )
 
     }
 

@@ -6,6 +6,7 @@ import { setError } from "../../../redux/slices/error";
 import friendType from "../../../types/friend.type";
 import { getCommonGroupsApi } from "../../../api/group.api";
 import { GroupListItem } from "../../../types/groupListItem.type";
+import { InfoSkeleton } from "../../../interface/skeletons/InfoSkeleton";
 
 export default function PersonalInfo() {
     const [friend, setFriend] = useState<null | friendType>(null);
@@ -37,7 +38,9 @@ export default function PersonalInfo() {
     }, [])
 
     if (friend === null || commonGroups === null) {
-        return <div className="w-2/3 min-w-[820px] h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar"></div>
+        return (
+            <InfoSkeleton/>
+        )
     }
 
     return (
