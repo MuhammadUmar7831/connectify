@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import MessageResponse from "../../types/MessageResponse.type";
 import Message from "./Message";
 import MessageReply from "./MessageReply";
@@ -10,11 +11,26 @@ interface ChatSectionProps {
 
 export default function ChatSection({ message, userId }: ChatSectionProps) {
 
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(()=>{
+    // smooth scrolling after message is sent
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  },[message])
+
   function getMessage(messageId: number): MessageResponse | undefined {
     return message.find(mg => mg.MessageId === messageId);
   }
 
   function formatTime(timestamp: string): string {
+    if (timestamp === ''){ // For dummy message
+      return timestamp;
+    }
     const date = new Date(timestamp);
     let hours = date.getHours();
     const minutes = date.getMinutes();
@@ -27,7 +43,7 @@ export default function ChatSection({ message, userId }: ChatSectionProps) {
   }
   const sortedMessages = [...message].sort((a, b) => a.MessageId - b.MessageId);
   return (
-    <div className="bg-white rounded-2xl w-full h-full flex flex-col gap-10 p-4 overflow-y-scroll no-scrollbar">
+    <div ref={chatContainerRef} className="bg-white rounded-2xl w-full h-full flex flex-col gap-10 p-4 overflow-y-scroll no-scrollbar">
       {
         sortedMessages.map((m) => (
           m.ReplyId === null ?

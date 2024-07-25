@@ -42,7 +42,7 @@ export const sendMessage = async (
     const insertMessageQuery =
       "INSERT INTO Messages (ChatId, Content, SenderId, Timestamp) VALUES (?,?,?,?)";
 
-    const currentTime = new Date();
+    let currentTime = new Date();
 
     connection.query(
       insertMessageQuery,
@@ -72,14 +72,18 @@ export const sendMessage = async (
                 return res.status(201).send({
                   success: true,
                   message: "Message Sent with a reply",
+                  data: {
+                    MessageId: messageId,
+                    Timestamp: currentTime,
+                  },
                 });
               });
-
             }
           );
         }
         // commit and return the response without reply
         else {
+          const messageId = result.insertId;
           connection.commit((err: QueryError | null) => {
             if (err) {
               return connection.rollback(() => next(err));
@@ -87,17 +91,16 @@ export const sendMessage = async (
             return res.status(201).send({
               success: true,
               message: "Message Sent",
+              data: {
+                MessageId: messageId,
+                Timestamp: currentTime,
+              },
             });
           });
         }
-
       }
     );
-
   });
-
-
-
 };
 
 export const deleteMessage = async (
@@ -119,7 +122,7 @@ export const deleteMessage = async (
 
       // if no rows were affected (possibly invalid message id)
       if (result.affectedRows === 0) {
-        return next(errorHandler(500, "Message Not Found, Invalid Message Id"))
+        return next(errorHandler(500, "Message Not Found, Invalid Message Id"));
       }
 
       return res.status(200).send({
