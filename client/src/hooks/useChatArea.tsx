@@ -39,12 +39,15 @@ export default function useChatArea() {
     );
 
     if (messageFromSender) {
+
       // Create a new message object
       const newMessage: Message = {
         ...messageFromSender,
         Content,
         MessageId:999999,
-        Timestamp:''
+        Timestamp:'',
+        UserStatus: [{ Status: 'sending' ,UserId: -1,
+          UserName: ""}]
         // Add any other properties as needed
       };
 
@@ -91,8 +94,15 @@ export default function useChatArea() {
         tempContent
       );
       const response = await sendMessageToChatApi(chatId, tempContent, false);
-      const get = await axios.get(`/api/message/get/${chatId}`);
-      setMessages(get.data.data);
+      // Setting the message Id of the inserted message
+      setMessages(prevMessages => {
+        return prevMessages.map(message => 
+          message.MessageId === 999999 ? { ...message, MessageId:response.data.MessageId, Timestamp:response.data.Timestamp, UserStatus: [{ Status: 'sent' ,UserId: -1,
+            UserName: ""}] } : message
+        );
+      });
+     
+      
     } catch (error: any) {
       console.error("Failed to fetch messages:", error); // Log error to console
     }

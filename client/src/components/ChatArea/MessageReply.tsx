@@ -1,3 +1,4 @@
+import Clock from "../../interface/Clock";
 import DoubleTick from "../../interface/DoubleTick";
 import SingleTick from "../../interface/SingleTick";
 import { IoIosArrowDown } from "react-icons/io";
@@ -24,11 +25,13 @@ export default function MessageReply({ me, message, content, time, status, sende
         <span className="text-gray-200 text-xs">{time}</span>
         {
           me && (
-            status === 'sent' ?
-              <SingleTick size="16" className="text-gray-200" /> :
-              status == 'received' ?
-                <DoubleTick size="16" className="text-gray-200" /> :
-                <DoubleTick size="16" className="text-orange" />
+            status === 'sending' ? 
+            <Clock size="16" className="text-gray-200" /> :
+              status === 'sent' ?
+                <SingleTick size="16" className="text-gray-200" /> :
+                status === 'received' ?
+                  <DoubleTick size="16" className="text-gray-200" /> :
+                    <DoubleTick size="16" className="text-blue-700" />
           )
         }
       </div>
