@@ -4,33 +4,18 @@ import {
   getMessageByChatIdApi,
   sendMessageToChatApi,
 } from "../api/message.api";
-import axios from "axios";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import MessageResponse from "../types/MessageResponse.type";
+import { setError } from "../redux/slices/error";
 
 // Define the types for the message
-interface Message {
-  MessageId: number;
-  ChatId: number;
-  SenderId: number;
-  Content: string;
-  Timestamp: string;
-  Sender: string;
-  UserStatus: {
-    Status: string;
-    UserId: number;
-    UserName: string;
-  }[];
-  ReplyId: number | null;
-  ReplyContent: string | null;
-  ReplySenderId: number | null;
-  ReplySender: string | null;
-}
 
 export default function useChatArea() {
   const [Content, setContent] = useState("");
   const { chatId } = useParams<{ chatId: string }>();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<MessageResponse[]>([]);
   const user = useSelector((state: any) => state.user.user);
+  const dispatch = useDispatch();
 
   const addDummyMessageObjectToMessageArray = async (Content: string) => {
     // Getting any message object of sender
@@ -40,7 +25,7 @@ export default function useChatArea() {
 
     if (messageFromSender) {
       // Create a new message object
-      const newMessage: Message = {
+      const newMessage: MessageResponse = {
         ...messageFromSender,
         Content,
         MessageId: 999999,
@@ -57,13 +42,13 @@ export default function useChatArea() {
     }
   };
 
-  // ** GET MESSAGE LOGIN STARTS HERE
+  // ** GET MESSAGE LOGIC STARTS HERE
 
   const fetchMessages = async () => {
     try {
-      const response = await axios.get(`/api/message/get/${chatId}`);
-      console.log("messages", response.data.data);
-      setMessages(response.data.data); // Assuming response.data is of type Message[]
+      // const response = await axios.get(`/api/message/get/${chatId}`);
+      const response = await getMessageByChatIdApi(chatId);
+      setMessages(response.data); // Assuming response.data is of type Message[]
     } catch (error: any) {
       console.error("Failed to fetch messages:", error); // Log error to console
     }
@@ -78,9 +63,8 @@ export default function useChatArea() {
   };
 
   // handle send message button click
-  const onSendMessageIconClick = async (event: FormEvent, chatId: any) => {
+  const onSendMessageIconClick = async (chatId: any) => {
     try {
-      event.preventDefault();
       // in order to clear the text field immediately, gives fast user experience
       const tempContent = Content;
       setContent("");
@@ -115,6 +99,7 @@ export default function useChatArea() {
               : message
           );
         });
+        dispatch(setError(response.message));
       }
     } catch (error: any) {
       console.error("Failed to fetch messages:", error); // Log error to console

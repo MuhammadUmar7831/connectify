@@ -4,7 +4,6 @@ export const getMessageByChatIdApi = async (chatId: any) => {
   console.log(chatId);
   try {
     const response = await axios.get(`/api/message/get/${chatId}`);
-    console.log("API res", response.data);
     return response.data;
   } catch (error: any) {
     if (error.response) return error.response.data;
