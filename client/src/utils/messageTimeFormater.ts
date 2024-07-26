@@ -18,7 +18,7 @@ export default function formatTimestamp(timestamp: string | undefined | null): s
     } else if (daysDifference < 7) {
         return format(date, 'eeee'); // Day of the week for messages within a week
     } else if (daysDifference < 30) {
-        return format(date, 'dd MMM'); // Day and month for messages within a month
+        return format(date, 'LLLL dd'); // Day and month for messages within a month
     } else if (monthsDifference < 12) {
         if (monthsDifference === 1) {
             return 'a month ago';

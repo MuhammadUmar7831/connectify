@@ -36,15 +36,21 @@ io.on('connection', (socket) => {
     userSocketMap[parseInt(userId)] = socket.id;
 
     io.emit("getOnlineUsers", Object.keys(userSocketMap).map(key => parseInt(key)));
-    console.log(userId);
 
-    socket.on("startTyping", (chatId) => {
-        console.log(`User with Id ${userId} Started Typing... in Chat Id ${chatId}`);
-        io.emit('userTyping', userId, chatId);
+    socket.on("startTyping", (chatId, userName) => {
+        io.emit('userTyping', userId, userName, chatId);
     })
+
+    // TO DO
+    // 1. a scoket on that will listen when message is sent successfully
+    // 2. inside above socket on an emit that will be listened by client side chat list component that there is some message (with cheen tapak dum dum)
+    // 3. on client side use usePara to get chatId if chatId is equal to the chatId of the message ChatId emitted then no Cheen Tapak Dum Dum
+    // 4. also if param chatId is not eqault to chatId of emitted message than increase the notification number by in chatList Item
 
     // Handle other socket events
     socket.on('disconnect', () => {
+        // TO DO 
+        // 1. Set Last of this user to current time
         delete userSocketMap[parseInt(userId)];
         io.emit("getOnlineUsers", Object.keys(userSocketMap).map(key => parseInt(key)));
     });

@@ -3,15 +3,21 @@ import { authRequest } from "../middlewares/authenticate";
 import connection from "../config/db";
 import { QueryError, RowDataPacket } from "mysql2";
 import errorHandler from "../errors/error";
+import chatHeaderDataQuery from '../utils/chatHeaderdataQuery';
 
 export const getMessageOfChats = async (
   req: authRequest,
   res: Response,
   next: NextFunction
 ) => {
+  const chatId = parseInt(req.params.ChatId);
+  if (isNaN(chatId)) {
+    return next(errorHandler(400, 'Invalid Params Expected {ChatId: number}'));
+  }
+
   //   Query to get Chat Messages based on ChatId with message status
   // selecting from view ChatMessages (for detail see lib/views/ChatMessages.sql)
-  const query = `SELECT * FROM ChatMessages WHERE ChatId = ?;`;
+  var query = `SELECT * FROM ChatMessages WHERE ChatId = ?;`;
 
   connection.query(
     query,
@@ -20,11 +26,18 @@ export const getMessageOfChats = async (
       if (err) {
         return next(err);
       }
-      res.status(200).send({
-        success: true,
-        message: "Messages for Chat found",
-        data: result,
-      });
+
+      query = `${chatHeaderDataQuery}`;
+      connection.query(query, [req.userId, req.userId, chatId, req.userId], (err: QueryError | null, chatHeaderData: RowDataPacket[]) => {
+        if (err) { return next(err); }
+
+        res.status(200).send({
+          success: true,
+          message: "Messages for Chat found",
+          data: result,
+          chatHeaderData: chatHeaderData[0]
+        });
+      })
     }
   );
 };

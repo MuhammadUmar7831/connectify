@@ -8,6 +8,8 @@ import { useDispatch, useSelector } from "react-redux";
 import MessageResponse from "../types/MessageResponse.type";
 import { setError } from "../redux/slices/error";
 import { getSocket } from "../config/scoket.config";
+import ChatHeaderResponse from "../types/chatHeaderReponse.type";
+import { RootState } from "../redux/store";
 
 // Define the types for the message
 
@@ -15,13 +17,14 @@ export default function useChatArea() {
   const [Content, setContent] = useState("");
   const { chatId } = useParams<{ chatId: string }>();
   const [messages, setMessages] = useState<MessageResponse[]>([]);
-  const user = useSelector((state: any) => state.user.user);
+  const [chatHeaderData, setChatHeaderData] = useState<ChatHeaderResponse | null>(null);
+  const { user } = useSelector((state: RootState) => state.user);
   const dispatch = useDispatch();
 
   const addDummyMessageObjectToMessageArray = async (Content: string) => {
     // Getting any message object of sender
     const messageFromSender = messages.find(
-      (message) => message.SenderId === user.UserId
+      (message) => message.SenderId === user?.UserId
     );
 
     if (messageFromSender) {
@@ -46,12 +49,12 @@ export default function useChatArea() {
   // ** GET MESSAGE LOGIC STARTS HERE
 
   const fetchMessages = async () => {
-    try {
-      // const response = await axios.get(`/api/message/get/${chatId}`);
-      const response = await getMessageByChatIdApi(chatId);
-      setMessages(response.data); // Assuming response.data is of type Message[]
-    } catch (error: any) {
-      console.error("Failed to fetch messages:", error); // Log error to console
+    const res = await getMessageByChatIdApi(chatId);
+    if (res.success) {
+      setChatHeaderData(res.chatHeaderData);
+      setMessages(res.data);
+    } else {
+      dispatch(setError(res.message));
     }
   };
   // GET MESSAGE LOGIC ENDS HERE **
@@ -62,7 +65,7 @@ export default function useChatArea() {
   const onContentChange = (e: ChangeEvent<HTMLInputElement>) => {
     const socket = getSocket();
     if (socket) {
-      socket.emit('startTyping', chatId);
+      socket.emit('startTyping', chatId, user?.Name);
     }
     setContent(e.target.value);
   };
@@ -119,6 +122,7 @@ export default function useChatArea() {
     setContent,
     setMessages,
     messages,
+    chatHeaderData,
     onSendMessageIconClick,
     fetchMessages,
   };

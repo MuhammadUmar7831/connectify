@@ -7,38 +7,80 @@ import { getSocket } from "../../config/scoket.config";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { useParams } from "react-router-dom";
+import ChatHeaderResponse from "../../types/chatHeaderReponse.type";
+import formatTimestamp from "../../utils/messageTimeFormater";
+import useActive from "../../hooks/useActive";
 
 interface Props {
-    userName?: string;
+    data: ChatHeaderResponse | null;
 }
 
-export default function ChatHeader({ userName }: Props) {
+export default function ChatHeader({ data }: Props) {
     const { user } = useSelector((state: RootState) => state.user);
     const { chatId } = useParams<{ chatId: string }>();
-    const [status, setStatus] = useState<string>('You, Daniyal, Rabi, Rayyan');
+    const [status, setStatus] = useState<string>('');
     const [typingTimeout, setTypingTimeout] = useState<number | null>(null);
+    const userId = data?.Type === 'Personal' ?
+        data?.Members[0].IsActivePrivacy === 0 ?
+            data?.Members[0].UserId : 
+            null :
+         null;
+
+    const active = useActive(userId);
     const socket = getSocket();
+
+    const setOriginalStatus = () => {
+        if (data?.Type === 'Group') {
+            const memberNames: string = data?.Members
+                .map(member => member.Name)
+                .join(', ');
+            setStatus(['You', memberNames].join(', '));
+        } else {
+            if (data?.Members[0].IsLastSeenPrivacy === 0) {
+                let LastSeen: null | undefined | string = data.Members[0].LastSeen;
+                LastSeen = formatTimestamp(LastSeen);
+                if (LastSeen) {
+                    setStatus(`Last seen on ${LastSeen}`);
+                }
+            }
+        }
+    };
+
+    useEffect(() => {
+        setOriginalStatus();
+    }, [data]);
+
+    const handleUserTyping = (userId: number, userName: string, _chatId: string) => {
+        if (user?.UserId != userId && chatId === _chatId) {
+            setStatus(`${userName} is Typing...`);
+
+            if (typingTimeout) {
+                clearTimeout(typingTimeout);
+            }
+
+            const timeout = window.setTimeout(() => {
+                if (active) {
+                    setStatus('Active');
+                } else {
+                    setOriginalStatus(); // set the original status of chat
+                }
+                setTypingTimeout(null); // Reset timeout state
+            }, 1000);
+
+            setTypingTimeout(timeout);
+        }
+    };
+
+    useEffect(() => {
+        if (data?.Type === 'Personal' && active) {
+            setStatus('Active');
+        } else {
+            setOriginalStatus();
+        }
+    }, [active, data]);
 
     useEffect(() => {
         if (socket && chatId) {
-            const handleUserTyping = (userId: number, _chatId: string) => {
-                if (user?.UserId != userId && chatId === _chatId) {
-                    console.log(`User ${userId} is Typing...`);
-                    setStatus('Typing...');
-
-                    if (typingTimeout) {
-                        clearTimeout(typingTimeout);
-                    }
-
-                    const timeout = window.setTimeout(() => {
-                        setStatus('You, Daniyal, Rabi, Rayyan');
-                        setTypingTimeout(null); // Reset timeout state
-                    }, 2000);
-                    
-                    setTypingTimeout(timeout);
-                }
-            };
-
             socket.on('userTyping', handleUserTyping);
 
             return () => {
@@ -54,12 +96,12 @@ export default function ChatHeader({ userName }: Props) {
         <div className="bg-white rounded-2xl w-full p-4 flex justify-between items-center">
             <div className="flex gap-4">
                 <Avatar
-                    image={'https://media.licdn.com/dms/image/D5603AQEx_fCrarjrTA/profile-displayphoto-shrink_200_200/0/1693693804377?e=2147483647&v=beta&t=J6fPaqXI7IiFVUerxsAOL3zmcQmrEmHwBpzUjh51Vy4'}
-                    isActive={true}
-                    className="w-12" />
+                    image={data !== null ? data.ChatAvatar : ''}
+                    isActive={active}
+                    className="w-12 h-14" />
                 <div>
-                    <h1 className="text-xl font-semibold">{userName}</h1>
-                    <span className={`text-sm ${typingTimeout !== null ? 'text-orange' : 'text-gray-200'}`}>{status}</span>
+                    <h1 className="text-xl font-semibold">{data?.ChatName}</h1>
+                    <span className={`text-sm ${typingTimeout !== null ? 'text-orange' : status === 'Active' ? 'text-green-500' : 'text-gray-200'}`}>{status}</span>
                 </div>
             </div>
             <div className="flex items-center gap-4 justify-between">
