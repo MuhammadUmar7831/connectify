@@ -39,7 +39,10 @@ export default function useChatArea() {
     setReply({ ReplyId, ReplyContent, ReplySenderId, ReplySender });
   };
 
-  const addDummyMessageObjectToMessageArray = async (Content: string) => {
+  const addDummyMessageObjectToMessageArray = async (
+    Content: string,
+    reply: Reply
+  ) => {
     // Getting any message object of sender
     const messageFromSender = messages.find(
       (message) => message.SenderId === user?.UserId
@@ -97,11 +100,22 @@ export default function useChatArea() {
     try {
       // in order to clear the text field immediately, gives fast user experience
       const tempContent = Content;
+      const tempReply: Reply = reply;
       setContent("");
+      setReply({
+        ReplyId: null,
+        ReplyContent: null,
+        ReplySenderId: null,
+        ReplySender: null,
+      });
 
       // Showing dummy message on the frontend
-      await addDummyMessageObjectToMessageArray(tempContent);
-      const response = await sendMessageToChatApi(chatId, tempContent, false);
+      await addDummyMessageObjectToMessageArray(tempContent, tempReply);
+      const response = await sendMessageToChatApi(
+        chatId,
+        tempContent,
+        tempReply.ReplyId
+      );
 
       if (response.success) {
         // Setting the message Id of the inserted message

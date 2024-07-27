@@ -16,7 +16,7 @@ export default function Clock({
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={`lucide lucide-check-check ${className}`}
+      className={`lucide lucide-clock-3 ${className}`}
     >
       <circle cx="12" cy="12" r="10" />
       <polyline points="12 6 12 12 16.5 12" />

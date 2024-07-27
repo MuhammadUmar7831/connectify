@@ -35,6 +35,7 @@ export default function ChatArea() {
         userId={data.user.UserId}
       />
       <SendMessageBox
+        onSetReplyClick={onSetReplyClick}
         reply={reply}
         onContentChange={onContentChange}
         onSendMessageIconClick={onSendMessageIconClick}

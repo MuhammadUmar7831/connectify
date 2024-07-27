@@ -1,35 +1,53 @@
 import { IoSend } from "react-icons/io5";
 import { BsEmojiGrin } from "react-icons/bs";
 import { useParams } from "react-router-dom";
+import ReplyMessageBox from "./ReplyMessageBox";
+import { useEffect } from "react";
 
 export default function SendMessageBox(props: any) {
-  const { onContentChange, onSendMessageIconClick, Content } = props;
+  const {
+    onContentChange,
+    onSendMessageIconClick,
+    Content,
+    reply,
+    onSetReplyClick,
+  } = props;
   const { chatId } = useParams();
 
+  useEffect(() => {
+    // everytime reply is changed, the message box is re-rendered
+  }, [reply]);
+
   return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault();
-        if (Content !== "") {
-          onSendMessageIconClick(chatId);
-        }
-      }}
-      className="flex gap-2 items-center rounded-2xl bg-white w-full p-4"
-    >
-      <BsEmojiGrin className="text-orange text-2xl cursor-pointer" />
-      <input
-        autoComplete="off"
-        onChange={onContentChange}
-        value={Content}
-        placeholder="Type a message"
-        type="text"
-        name="Content"
-        id="Content"
-        className="p-2 w-full outline-none  rounded-md"
-      />
-      <button title="send button" type="submit">
-        <IoSend className="text-orange text-2xl cursor-pointer" />
-      </button>
-    </form>
+    <div className="flex flex-col gap-1 rounded-2xl bg-white w-full p-4">
+      {/* if reply is set then this will show */}
+      {reply.ReplyId && (
+        <ReplyMessageBox reply={reply} onSetReplyClick={onSetReplyClick} />
+      )}
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (Content !== "") {
+            onSendMessageIconClick(chatId);
+          }
+        }}
+        className="flex gap-2 items-center"
+      >
+        <BsEmojiGrin className="text-orange text-2xl cursor-pointer" />
+        <input
+          autoComplete="off"
+          onChange={onContentChange}
+          value={Content}
+          placeholder="Type a message"
+          type="text"
+          name="Content"
+          id="Content"
+          className="p-2 w-full outline-none  rounded-md"
+        />
+        <button title="send button" type="submit">
+          <IoSend className="text-orange text-2xl cursor-pointer" />
+        </button>
+      </form>
+    </div>
   );
 }
