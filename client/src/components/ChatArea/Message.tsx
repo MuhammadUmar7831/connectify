@@ -10,12 +10,18 @@ export default function Message({
   time,
   status,
   senderName,
+  senderId,
+  messageId,
+  onSetReplyClick,
 }: {
   me: Boolean;
   content: String;
   time: String;
   status: String;
   senderName: String;
+  senderId: number;
+  messageId: number;
+  onSetReplyClick: any;
 }) {
   return (
     <div className={`flex flex-col gap-2 ${me ? "items-end" : "items-start"}`}>
@@ -33,7 +39,12 @@ export default function Message({
             : "bg-gray-200 rounded-r-2xl text-black"
         } rounded-t-2xl p-4 text-sm relative group`}
       >
-        <IoIosArrowDown className="absolute top-2 right-4 text-lg opacity-0 group-hover:opacity-100 cursor-pointer" />
+        <IoIosArrowDown
+          onClick={() => {
+            onSetReplyClick(messageId, content, senderId, senderName);
+          }}
+          className="absolute top-2 right-4 text-lg opacity-0 group-hover:opacity-100 cursor-pointer"
+        />
         <p className=" text-white">{content}</p>
       </div>
       <div className="flex gap-2">

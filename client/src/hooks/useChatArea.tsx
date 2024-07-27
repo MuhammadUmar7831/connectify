@@ -10,6 +10,7 @@ import { setError } from "../redux/slices/error";
 import { getSocket } from "../config/scoket.config";
 import ChatHeaderResponse from "../types/chatHeaderReponse.type";
 import { RootState } from "../redux/store";
+import Reply from "../types/reply.type";
 
 // Define the types for the message
 
@@ -17,9 +18,26 @@ export default function useChatArea() {
   const [Content, setContent] = useState("");
   const { chatId } = useParams<{ chatId: string }>();
   const [messages, setMessages] = useState<MessageResponse[]>([]);
-  const [chatHeaderData, setChatHeaderData] = useState<ChatHeaderResponse | null>(null);
+  const [chatHeaderData, setChatHeaderData] =
+    useState<ChatHeaderResponse | null>(null);
   const { user } = useSelector((state: RootState) => state.user);
   const dispatch = useDispatch();
+  const [reply, setReply] = useState<Reply>({
+    ReplyId: null,
+    ReplyContent: null,
+    ReplySenderId: null,
+    ReplySender: null,
+  });
+
+  // update reply state on click
+  const onSetReplyClick = (
+    ReplyId: number,
+    ReplyContent: string,
+    ReplySenderId: number,
+    ReplySender: string
+  ) => {
+    setReply({ ReplyId, ReplyContent, ReplySenderId, ReplySender });
+  };
 
   const addDummyMessageObjectToMessageArray = async (Content: string) => {
     // Getting any message object of sender
@@ -35,6 +53,10 @@ export default function useChatArea() {
         MessageId: 999999,
         Timestamp: "",
         UserStatus: [{ Status: "sending", UserId: -1, UserName: "" }],
+        ReplyId: reply.ReplyId,
+        ReplyContent: reply.ReplyContent,
+        ReplySenderId: reply.ReplySenderId,
+        ReplySender: reply.ReplySender,
         // Add any other properties as needed
       };
 
@@ -65,7 +87,7 @@ export default function useChatArea() {
   const onContentChange = (e: ChangeEvent<HTMLInputElement>) => {
     const socket = getSocket();
     if (socket) {
-      socket.emit('startTyping', chatId, user?.Name);
+      socket.emit("startTyping", chatId, user?.Name);
     }
     setContent(e.target.value);
   };
@@ -87,11 +109,11 @@ export default function useChatArea() {
           return prevMessages.map((message) =>
             message.MessageId === 999999
               ? {
-                ...message,
-                MessageId: response.data.MessageId,
-                Timestamp: response.data.Timestamp,
-                UserStatus: [{ Status: "sent", UserId: -1, UserName: "" }],
-              }
+                  ...message,
+                  MessageId: response.data.MessageId,
+                  Timestamp: response.data.Timestamp,
+                  UserStatus: [{ Status: "sent", UserId: -1, UserName: "" }],
+                }
               : message
           );
         });
@@ -101,14 +123,22 @@ export default function useChatArea() {
           return prevMessages.map((message) =>
             message.MessageId === 999999
               ? {
-                ...message,
-                UserStatus: [{ Status: "error", UserId: -1, UserName: "" }],
-              }
+                  ...message,
+                  UserStatus: [{ Status: "error", UserId: -1, UserName: "" }],
+                }
               : message
           );
         });
         dispatch(setError(response.message));
       }
+
+      // setting the reply state to null after message sent
+      setReply({
+        ReplyId: null,
+        ReplyContent: null,
+        ReplySenderId: null,
+        ReplySender: null,
+      });
     } catch (error: any) {
       console.error("Failed to fetch messages:", error); // Log error to console
     }
@@ -125,5 +155,7 @@ export default function useChatArea() {
     chatHeaderData,
     onSendMessageIconClick,
     fetchMessages,
+    reply,
+    onSetReplyClick,
   };
 }

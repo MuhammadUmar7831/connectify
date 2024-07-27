@@ -11,6 +11,9 @@ interface Props {
   time: string;
   status: string;
   senderName: string;
+  onSetReplyClick: any;
+  senderId: number;
+  messageId: number;
 }
 
 export default function MessageReply({
@@ -20,6 +23,9 @@ export default function MessageReply({
   time,
   status,
   senderName,
+  senderId,
+  messageId,
+  onSetReplyClick,
 }: Props) {
   return (
     <div className={`flex flex-col gap-2 ${me ? "items-end" : "items-start"}`}>
@@ -37,7 +43,12 @@ export default function MessageReply({
             : "bg-gray-200 rounded-r-2xl text-black"
         } rounded-t-2xl p-4 text-sm relative group`}
       >
-        <IoIosArrowDown className="absolute top-2 right-4 text-lg opacity-0 group-hover:opacity-100 cursor-pointer z-10" />
+        <IoIosArrowDown
+          onClick={() => {
+            onSetReplyClick(messageId, content, senderId, senderName);
+          }}
+          className="absolute top-2 right-4 text-lg opacity-0 group-hover:opacity-100 cursor-pointer z-10"
+        />
         <p
           className={`${
             me ? "bg-orange-100" : " bg-gray-100"

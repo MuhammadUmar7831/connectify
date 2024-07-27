@@ -18,6 +18,8 @@ export default function ChatArea() {
     messages,
     chatHeaderData,
     fetchMessages,
+    reply,
+    onSetReplyClick,
   } = useChatArea();
 
   useEffect(() => {
@@ -27,8 +29,13 @@ export default function ChatArea() {
   return (
     <div className="w-2/3 min-w-[820px] h-full flex flex-col gap-2">
       <ChatHeader data={chatHeaderData} />
-      <ChatSection message={messages} userId={data.user.UserId} />
+      <ChatSection
+        onSetReplyClick={onSetReplyClick}
+        message={messages}
+        userId={data.user.UserId}
+      />
       <SendMessageBox
+        reply={reply}
         onContentChange={onContentChange}
         onSendMessageIconClick={onSendMessageIconClick}
         Content={Content}
