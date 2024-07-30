@@ -17,7 +17,7 @@ export const getMessageOfChats = async (
 
   //   Query to get Chat Messages based on ChatId with message status
   // selecting from view ChatMessages (for detail see lib/views/ChatMessages.sql)
-  var query = `SELECT * FROM ChatMessages WHERE ChatId = ?;`;
+  var query = `SELECT * FROM ChatMessages WHERE ChatId = ? ORDER BY Timestamp;`;
 
   connection.query(
     query,

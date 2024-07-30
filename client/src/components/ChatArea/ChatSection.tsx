@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 import MessageResponse from "../../types/MessageResponse.type";
 import Message from "./Message";
 import MessageReply from "./MessageReply";
-import Reply from "../../types/reply.type";
 
 interface ChatSectionProps {
   message: MessageResponse[];
@@ -46,13 +45,13 @@ export default function ChatSection({
     const strTime = hours + ":" + minutesStr + " " + ampm;
     return strTime;
   }
-  const sortedMessages = [...message].sort((a, b) => a.MessageId - b.MessageId);
+  // const sortedMessages = [...message].sort((a, b) => a.MessageId - b.MessageId);
   return (
     <div
       ref={chatContainerRef}
       className="bg-white rounded-2xl w-full h-full flex flex-col gap-10 p-4 overflow-y-scroll no-scrollbar"
     >
-      {sortedMessages.map((m) =>
+      {message.map((m) =>
         m.ReplyId === null ? (
           <Message
             onSetReplyClick={onSetReplyClick}

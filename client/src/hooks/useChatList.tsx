@@ -10,15 +10,18 @@ import { setArchiveChats } from "../redux/slices/archiveChats";
 import { combineGroupAndPersonalChats } from "../utils/combineGroupAndPersonalChats";
 import { setAllChats } from "../redux/slices/allChats";
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
 export default function useChatList() {
-
     const { chatListType } = useSelector((state: RootState) => state.chatListType);
     const { allChats } = useSelector((state: RootState) => state.allChats);
     const { personalChats } = useSelector((state: RootState) => state.personalChats);
     const { groupChats } = useSelector((state: RootState) => state.groupChats);
     const { pinnedChats } = useSelector((state: RootState) => state.pinnedChats);
     const { archiveChats } = useSelector((state: RootState) => state.archiveChats);
+    const { chatId } = useParams<{ chatId: string }>();
+
+    console.log(personalChats)
 
     const [onlineUser, setOnlineUsers] = useState<number[]>([]); // state to store all active users
 
@@ -28,7 +31,7 @@ export default function useChatList() {
     // api call for personal chats (also dispatch result in redux slice)
     async function getPersonalChats() {
         if (personalChats !== null) {
-            return
+            return;
         }
         const res = await getPersonalChatsApi();
         if (res.success) {
@@ -41,7 +44,7 @@ export default function useChatList() {
     // api call for group chats (also dispatch result in redux slice)
     async function getGroupChats() {
         if (groupChats !== null) {
-            return
+            return;
         }
         const res = await getGroupChatsApi();
         if (res.success) {
@@ -54,7 +57,7 @@ export default function useChatList() {
     // api call for pinned chats (also dispatch result in redux slice)
     async function getPinnedChats() {
         if (pinnedChats !== null) {
-            return
+            return;
         }
         const res = await getPinnedChatsApi();
         if (res.success) {
@@ -66,8 +69,8 @@ export default function useChatList() {
 
     // api call for archive chats (also dispatch result in redux slice)
     async function getArchiveChats() {
-        if (pinnedChats !== null) {
-            return
+        if (archiveChats !== null) {
+            return;
         }
         const res = await getArchiveChatsApi();
         if (res.success) {
@@ -96,28 +99,78 @@ export default function useChatList() {
 
     // check if this user is online or not
     const isActive = (userId: number | null) => {
-        return onlineUser.includes(userId || -1)
-    }
+        return onlineUser.includes(userId || -1);
+    };
 
-    // listen to event (emmited every time someone joins or leave socket) 
+    const messageReceived = (data: any) => {
+        const { ChatId, Content, Timestamp, UserStatus, chatType } = data;
+        console.log("Received message data:", data);
+        console.log("Current personalChats:", personalChats);
+        console.log("Current groupChats:", groupChats);
+        console.log("Current pinnedChats:", pinnedChats);
+        console.log("Current archiveChats:", archiveChats);
+
+
+        // local function that actually return the passed state with updated status
+        const updateChatArray = (chats: any) => {
+            console.log("chats", chats)
+            return chats.map((chat: any) => {
+                if (chat.ChatId == ChatId) { // this is the chat i want to push notification to
+                    if (chat.ChatId == chatId) { // this chat is in view
+                        return {
+                            ...chat,
+                            Content,
+                            Timestamp,
+                            UserStatus,
+                            unSeenMessages: 0,
+                        };
+                    } else { // chat not in view
+                        return {
+                            ...chat,
+                            Content,
+                            Timestamp,
+                            UserStatus,
+                            unSeenMessages: (chat.unSeenMessages || 0) + 1,
+                        };
+                    }
+                }
+                return chat;
+            });
+        };
+
+        if (chatType === 'personal') {
+            dispatch(setPersonalChats(updateChatArray(personalChats)));
+        } else if (chatType === 'group') {
+            dispatch(setGroupChats(updateChatArray(groupChats)));
+        } else if (chatType === 'pinned') {
+            dispatch(setPinnedChats(updateChatArray(pinnedChats)));
+        } else if (chatType === 'archived') {
+            dispatch(setArchiveChats(updateChatArray(archiveChats)));
+        }
+    };
+
+    // listen to event (emitted every time someone joins or leave socket) 
     // return all the online users
     useEffect(() => {
-        const handleGetOnlineUsers = (users: number[]) => {
-            setOnlineUsers(users);
-        };
+        if (socket) {
+            const handleGetOnlineUsers = (users: number[]) => {
+                setOnlineUsers(users);
+            };
 
-        socket?.on("getOnlineUsers", handleGetOnlineUsers);
+            socket.on("getOnlineUsers", handleGetOnlineUsers);
+            // socket.on("messageReceived", messageReceived);
 
-        return () => {
-            socket?.off("getOnlineUsers", handleGetOnlineUsers);
-        };
-    }, [socket])
+            return () => {
+                socket.off("getOnlineUsers", handleGetOnlineUsers);
+                socket.off("messageReceived", messageReceived);
+            };
+        }
+    }, [socket]);
 
     // after the personal and group chat is received from api merge them to get all chats
     useEffect(() => {
         getAllChats();
     }, [personalChats, groupChats]);
-
 
     let chatsToRender = null; // variable that render chat based on selected chat
     if (chatListType === 'All') {
@@ -134,6 +187,6 @@ export default function useChatList() {
         chatsToRender,
         pinnedChats,
         chatListType,
-        isActive
+        isActive,
     };
 }

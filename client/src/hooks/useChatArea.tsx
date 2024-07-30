@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   getMessageByChatIdApi,
@@ -15,6 +15,7 @@ import Reply from "../types/reply.type";
 // Define the types for the message
 
 export default function useChatArea() {
+  const socket = getSocket();
   const [Content, setContent] = useState("");
   const { chatId } = useParams<{ chatId: string }>();
   const [messages, setMessages] = useState<MessageResponse[]>([]);
@@ -53,7 +54,7 @@ export default function useChatArea() {
       const newMessage: MessageResponse = {
         ...messageFromSender,
         Content,
-        MessageId: 999999,
+        MessageId: -1,
         Timestamp: "",
         UserStatus: [{ Status: "sending", UserId: -1, UserName: "" }],
         ReplyId: reply.ReplyId,
@@ -88,7 +89,6 @@ export default function useChatArea() {
 
   // Handling change of content when message is typed
   const onContentChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const socket = getSocket();
     if (socket) {
       socket.emit("startTyping", chatId, user?.Name);
     }
@@ -116,30 +116,18 @@ export default function useChatArea() {
         tempContent,
         tempReply.ReplyId
       );
-
-      if (response.success) {
-        // Setting the message Id of the inserted message
-        setMessages((prevMessages) => {
-          return prevMessages.map((message) =>
-            message.MessageId === 999999
-              ? {
-                  ...message,
-                  MessageId: response.data.MessageId,
-                  Timestamp: response.data.Timestamp,
-                  UserStatus: [{ Status: "sent", UserId: -1, UserName: "" }],
-                }
-              : message
-          );
-        });
-      } else {
+      // socket trigger to push notification
+      socket?.emit("messageSent", response.data.MessageId);
+      // socket trigger to update seen status for each member of chat except me
+      if (!response.success) {
         // Showing that message was not sent and error occurred
         setMessages((prevMessages) => {
           return prevMessages.map((message) =>
-            message.MessageId === 999999
+            message.MessageId === -1
               ? {
-                  ...message,
-                  UserStatus: [{ Status: "error", UserId: -1, UserName: "" }],
-                }
+                ...message,
+                UserStatus: [{ Status: "error", UserId: -1, UserName: "" }],
+              }
               : message
           );
         });
@@ -159,6 +147,55 @@ export default function useChatArea() {
   };
 
   // SEND MESSAGE LOGIN ENDS HERE **
+
+  useEffect(() => {
+    if (socket) {
+      // socket function that listen to the message that is newly received (wether i sent it or anyone else)
+      socket.on("messageReceived", (data) => {
+        if (data.ChatId == chatId) { // do only if we have oppened the same chat
+          setMessages((prevMessages) => {
+            const updatedMessages = prevMessages.filter(
+              (message) => message.MessageId !== -1
+            );
+
+            updatedMessages.push({
+              ...data,
+              UserStatus: data.UserStatus,
+            });
+
+            return updatedMessages;
+          });
+        }
+      });
+
+      // the user with userId opened chat and seen all the messages (this user is garaunteed not to be me)
+      socket.on('messageSeen', (userId) => {
+        setMessages((prevMessages) =>
+          prevMessages.map((message) => ({
+            ...message,
+            UserStatus: message.UserStatus.map((status) =>
+              status.UserId === userId ? { ...status, Status: 'seen' } : status
+            ),
+          }))
+        );
+      });
+
+      // Clean up the socket listener when the component unmounts
+      return () => {
+        socket.off("messageReceived");
+        socket.off("messageSeen");
+      };
+    }
+  }, [socket]);
+
+  useEffect(() => {
+    if (socket) {
+      socket.emit('chatOpened', chatId);
+      return () => {
+        socket.off("chatOpened");
+      }
+    }
+  }, [])
 
   return {
     onContentChange,

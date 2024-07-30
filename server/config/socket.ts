@@ -3,6 +3,8 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import http from "http";
 import { Server } from "socket.io";
+import { sendMessage } from "../socket/sendMessage.socket";
+import { messageSeen } from "../socket/messageSeen.scoket";
 
 export const app = express();
 app.use(express.json());
@@ -25,7 +27,7 @@ interface UserSocketMap {
     [userId: number]: string; // Maps userId to socketId
 }
 
-const userSocketMap: UserSocketMap = {}; // Initialize as an empty object
+export const userSocketMap: UserSocketMap = {}; // Initialize as an empty object
 
 const getReceiverSocketId = (receiverId: number): string | undefined => {
     return userSocketMap[receiverId];
@@ -39,6 +41,24 @@ io.on('connection', (socket) => {
 
     socket.on("startTyping", (chatId, userName) => {
         io.emit('userTyping', userId, userName, chatId);
+    })
+
+    socket.on("messageSent", async (messageId: number) => {
+        const res = await sendMessage(messageId);
+        if (res.success) {
+            io.emit('messageReceived', res.data);
+        } else {
+            io.emit('error', res.message);
+        }
+    })
+
+    socket.on("chatOpened", async (chatId: number) => {
+        const res = await messageSeen(userId, chatId);
+        if (res.success) {
+            socket.broadcast.emit('messageSeen', userId);
+        } else {
+            io.emit('error', res.message);
+        }
     })
 
     // TO DO

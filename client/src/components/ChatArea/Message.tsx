@@ -59,7 +59,7 @@ export default function Message({
           ) : status === "received" ? (
             <DoubleTick size="16" className="text-gray-200" />
           ) : (
-            <DoubleTick size="16" className="text-blue-700" />
+            <DoubleTick size="16" className="text-orange" />
           ))}
       </div>
     </div>
