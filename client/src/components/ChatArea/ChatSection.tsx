@@ -54,6 +54,7 @@ export default function ChatSection({
       {message.map((m) =>
         m.ReplyId === null ? (
           <Message
+            key={m.MessageId}
             onSetReplyClick={onSetReplyClick}
             me={m.SenderId === userId}
             content={m.Content}
@@ -65,6 +66,7 @@ export default function ChatSection({
           />
         ) : (
           <MessageReply
+            key={m.MessageId}
             onSetReplyClick={onSetReplyClick}
             me={m.SenderId === userId}
             message={getMessage(m.ReplyId)?.Content || ""}

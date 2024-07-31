@@ -2,12 +2,6 @@ import { QueryError, RowDataPacket } from "mysql2";
 import connection from "../config/db";
 import { userSocketMap } from "../config/socket";
 
-interface UserStatus {
-    Status: string;
-    UserId: number;
-    UserName: string;
-}
-
 // this function will 
 // 1. update status for all members except me 
 // 2. send the message in response to client to update their chatArea and chatListItem 

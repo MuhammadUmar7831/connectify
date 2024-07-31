@@ -9,6 +9,7 @@ import { useParams } from "react-router-dom";
 export default function ChatArea() {
   const { chatId } = useParams();
   const data = useSelector((state: any) => state.user);
+  const notificationAudio = new Audio("/notification.m4a");
 
   // use ChatArea hook
   const {
@@ -41,6 +42,10 @@ export default function ChatArea() {
         onSendMessageIconClick={onSendMessageIconClick}
         Content={Content}
       />
+      {/* keep this because chrome does not allow audio autoplay unless user press any button */}
+      <button className="hidden" id="notification" onClick={() => notificationAudio.play()}>
+        Audio
+      </button>
     </div>
   );
 }

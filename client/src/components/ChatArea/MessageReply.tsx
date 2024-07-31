@@ -50,14 +50,14 @@ export default function MessageReply({
           className="absolute top-2 right-4 text-lg opacity-0 group-hover:opacity-100 cursor-pointer z-10"
         />
 
-        <p
+        <div
           className={`${
             me ? "bg-orange-100" : " bg-gray-100"
           }  py-2 px-4 mb-2 rounded-md opacity-75`}
         >
           <p className={`font-semibold`}>{senderName}</p>
           {message}
-        </p>
+        </div>
         <p>{content}</p>
       </div>
       <div className="flex gap-2">

@@ -1,7 +1,7 @@
 import { QueryError } from "mysql2";
 import connection from "../config/db";
 
-export const messageSeen = async (userId: string, chatId: number) => {
+export const allMessageSeen = async (userId: string, chatId: number) => {
     let query =
         `UPDATE MessagesStatus 
     SET Status = 'seen' 

@@ -6,7 +6,6 @@ export const createSocket = (userId: number) => {
         socket = io(import.meta.env.API_BASE_URL || 'http://localhost:3000', {
             query: { userId }
         })
-        console.log(socket)
     }
     return socket;
 }

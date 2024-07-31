@@ -1,7 +1,6 @@
 import axios from "../config/axios.config";
 
 export const getMessageByChatIdApi = async (chatId: any) => {
-  console.log(chatId);
   try {
     const response = await axios.get(`/api/message/get/${chatId}`);
     return response.data;

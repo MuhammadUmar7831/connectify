@@ -4,7 +4,8 @@ import cookieParser from "cookie-parser";
 import http from "http";
 import { Server } from "socket.io";
 import { sendMessage } from "../socket/sendMessage.socket";
-import { messageSeen } from "../socket/messageSeen.scoket";
+import { allMessageSeen } from "../socket/allMessagesSeen.scoket";
+import { messageSeenById } from "../socket/seenMessageById.socket";
 
 export const app = express();
 app.use(express.json());
@@ -53,14 +54,22 @@ io.on('connection', (socket) => {
     })
 
     socket.on("chatOpened", async (chatId: number) => {
-        const res = await messageSeen(userId, chatId);
+        const res = await allMessageSeen(userId, chatId);
         if (res.success) {
-            socket.broadcast.emit('messageSeen', userId);
+            socket.emit('seenAllMessage', userId);
         } else {
             io.emit('error', res.message);
         }
     })
 
+    socket.on('singleMessageSeen', async (messageId: number) => {
+        const res = await messageSeenById(userId, messageId);
+        if (res.success) {
+            socket.emit('singleMessageHasBeenSeen', res.data);
+        } else {
+            io.emit('error', res.message);
+        }
+    })
     // TO DO
     // 1. a scoket on that will listen when message is sent successfully
     // 2. inside above socket on an emit that will be listened by client side chat list component that there is some message (with cheen tapak dum dum)

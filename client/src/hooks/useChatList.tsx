@@ -21,8 +21,6 @@ export default function useChatList() {
     const { archiveChats } = useSelector((state: RootState) => state.archiveChats);
     const { chatId } = useParams<{ chatId: string }>();
 
-    console.log(personalChats)
-
     const [onlineUser, setOnlineUsers] = useState<number[]>([]); // state to store all active users
 
     const socket = getSocket(); // getting singleton socket instance
@@ -162,7 +160,7 @@ export default function useChatList() {
 
             return () => {
                 socket.off("getOnlineUsers", handleGetOnlineUsers);
-                socket.off("messageReceived", messageReceived);
+                // socket.off("messageReceived", messageReceived);
             };
         }
     }, [socket]);
