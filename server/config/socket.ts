@@ -56,7 +56,7 @@ io.on('connection', (socket) => {
     socket.on("chatOpened", async (chatId: number) => {
         const res = await allMessageSeen(userId, chatId);
         if (res.success) {
-            socket.emit('seenAllMessage', userId);
+            io.emit('seenAllMessage', userId);
         } else {
             io.emit('error', res.message);
         }
@@ -65,7 +65,7 @@ io.on('connection', (socket) => {
     socket.on('singleMessageSeen', async (messageId: number) => {
         const res = await messageSeenById(userId, messageId);
         if (res.success) {
-            socket.emit('singleMessageHasBeenSeen', res.data);
+            io.emit('singleMessageHasBeenSeen', res.data);
         } else {
             io.emit('error', res.message);
         }

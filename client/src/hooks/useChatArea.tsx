@@ -23,7 +23,6 @@ export default function useChatArea() {
     useState<ChatHeaderResponse | null>(null);
   const { user } = useSelector((state: RootState) => state.user);
   const dispatch = useDispatch();
-  const [seenMessages, setSeenMessages] = useState<boolean>(false);
   const [reply, setReply] = useState<Reply>({
     ReplyId: null,
     ReplyContent: null,
@@ -149,11 +148,7 @@ export default function useChatArea() {
     if (socket) {
       // socket function that listen to the message that is newly received (wether i sent it or anyone else)
       socket.on("messageReceived", (data) => {
-        console.log(data.ChatId)
-        console.log(chatId)
-        console.log(data.ChatId == chatId)
         if (data.ChatId == chatId) { // do only if we have oppened the same chat
-          setSeenMessages(false);
           setMessages((prevMessages) => {
             const updatedMessages = prevMessages.filter(
               (message) => message.MessageId !== -1
@@ -174,7 +169,6 @@ export default function useChatArea() {
 
       // the user with userId opened chat and seen all the messages (this user is garaunteed not to be me)
       socket.on('seenAllMessage', (userId) => {
-        console.log('seenAllMessage', userId)
         setMessages((prevMessages) => {
           const updatedMessages = prevMessages.map((message) => ({
             ...message,
@@ -182,24 +176,19 @@ export default function useChatArea() {
               status.UserId == userId ? { ...status, Status: 'seen' } : status
             ),
           }));
-          console.log("updatedMessages", updatedMessages);
-          setSeenMessages(true);
           return updatedMessages;
         });
       });
 
       socket.on('singleMessageHasBeenSeen', (data: any) => {
-        console.log("data", data)
         setMessages((prevMessages) => {
           const updateSeenMessage = prevMessages.map((message) => {
             if (message.MessageId == data.MessageId) {
-              console.log('first', { ...message, ...data })
               return { ...message, ...data };
             } else {
               return message
             }
           })
-          console.log("updateSeenMessage", updateSeenMessage)
           return updateSeenMessage;
         })
       })
@@ -215,13 +204,13 @@ export default function useChatArea() {
 
   useEffect(() => {
     if (socket) {
-      console.log('first')
       socket.emit('chatOpened', chatId);
       return () => {
         socket.off("chatOpened");
       }
     }
-  }, [chatId])
+  }, [socket, chatId]);
+
 
   return {
     onContentChange,
