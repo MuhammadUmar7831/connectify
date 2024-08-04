@@ -4,27 +4,10 @@ import { RootState } from "../../../redux/store";
 import { useEffect, useState } from "react";
 import { getGroupInfoApi } from "../../../api/group.api";
 import { setError } from "../../../redux/slices/error";
-
-interface GroupInfo {
-    GroupId: number;
-    GroupName: string;
-    Description: string;
-    Avatar: string;
-    CreatorId: number;
-    CreatedBy: string;
-    DateCreated: string;
-    ChatId: number;
-    Members: {
-        UserId: number;
-        Name: string;
-        Avatar: string;
-        Bio: string;
-        isAdmin: number;
-    }[];
-}
+import GroupInfoResponse from "../../../types/groupInfo.type";
 
 export default function GroupInfo() {
-    const [groupInfo, setGroupInfo] = useState<GroupInfo | null>(null);
+    const [groupInfo, setGroupInfo] = useState<GroupInfoResponse | null>(null);
     const { user } = useSelector((state: RootState) => state.user);
     const dispatch = useDispatch();
 
@@ -71,7 +54,7 @@ export default function GroupInfo() {
             <div className="bg-white rounded-2xl">
                 <h1 className="text-gray-300 p-4">Members</h1>
                 {groupInfo.Members.map((member) => (
-                    <MembersListItems key={member.UserId} member={member} userItselfAdmin={userItselfAdmin} />
+                    <MembersListItems key={member.UserId} member={member} userItselfAdmin={userItselfAdmin} groupId={groupInfo?.GroupId} setGroupInfo={setGroupInfo} />
                 ))}
             </div>
         </div>

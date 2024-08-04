@@ -25,3 +25,18 @@ export const getGroupInfoApi = async (groupId: number) => {
         }
     }
 }
+
+export const kickUserApi = async (body: { toBeKickedId: number, groupId: number }) => {
+    try {
+        const response = await axios.delete(`/api/group/kick`, {
+            data: body,
+        });
+        return response.data;
+    } catch (error: any) {
+        if (error.response) {
+            return error.response.data;
+        } else {
+            return { success: false, message: 'Server is Down' };
+        }
+    }
+};

@@ -2,8 +2,13 @@ import AdminBadge from "../../../interface/AdminBadge";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import UserListItemMenu from "./UserListItemMenu";
 import { useState, useEffect, useRef } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../redux/store";
+import { kickUserApi } from "../../../api/group.api";
+import { setError } from "../../../redux/slices/error";
+import GroupInfoResponse from "../../../types/groupInfo.type";
+import { setSuccess } from "../../../redux/slices/success";
+import { ClipLoader } from "react-spinners";
 
 interface Props {
     member: {
@@ -13,13 +18,17 @@ interface Props {
         Bio: string;
         isAdmin: number // not bolean because MySql return False as O and True as 1
     },
-    userItselfAdmin: Boolean
+    groupId: number,
+    userItselfAdmin: Boolean,
+    setGroupInfo: React.Dispatch<React.SetStateAction<GroupInfoResponse | null>>
 }
 
-export default function MembersListItems({ member, userItselfAdmin }: Props) {
+export default function MembersListItems({ member, groupId, userItselfAdmin, setGroupInfo }: Props) {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
     const { user } = useSelector((state: RootState) => state.user)
+    const [loading, setLoading] = useState<boolean>(false);
+    const dispatch = useDispatch();
 
     const toggleMenu = () => {
         setMenuOpen(!menuOpen);
@@ -43,12 +52,29 @@ export default function MembersListItems({ member, userItselfAdmin }: Props) {
         };
     }, [menuOpen]);
 
-    const kickUser = () => {
+    const kickUser = async () => {
         setMenuOpen(false)
-        console.log('User Kicked');
+        setLoading(true)
+        const body = { toBeKickedId: member.UserId, groupId: groupId };
+        const res = await kickUserApi(body);
+        if (res.success) {
+            setGroupInfo((prevGroupInfo) => {
+                if (prevGroupInfo) {
+                    return {
+                        ...prevGroupInfo,
+                        Members: prevGroupInfo.Members.filter((m) => m.UserId !== member.UserId),
+                    };
+                }
+                return prevGroupInfo;
+            });
+            dispatch(setSuccess(res.message));
+        } else {
+            dispatch(setError(res.message));
+        }
+        setLoading(false)
     }
 
-    const makeAdmin = () => {
+    const makeAdmin = async () => {
         setMenuOpen(false)
         console.log('Made Admin');
     }
@@ -75,14 +101,17 @@ export default function MembersListItems({ member, userItselfAdmin }: Props) {
             </div>
             <div className="flex gap-2 justify-center items-center">
                 {member.isAdmin === 1 && <AdminBadge />}
-                <div className="relative" ref={menuRef}>
-                    <UserListItemMenu isOpen={menuOpen} options={options} actions={actions} />
-                    {
-                        user?.UserId !== member.UserId && // this member is not user it self
-                        userItselfAdmin && // user is admin of this group
-                        <BsThreeDotsVertical onClick={toggleMenu} className="text-lg cursor-pointer" />
-                    }
-                </div>
+                {loading ? // show loader in case user is being made admin or being kicked
+                    <ClipLoader size={20} color="#FF4D0C" /> :
+                    <div className="relative" ref={menuRef}>
+                        <UserListItemMenu isOpen={menuOpen} options={options} actions={actions} />
+                        {
+                            user?.UserId !== member.UserId && // this member is not user it self
+                            userItselfAdmin && // user is admin of this group
+                            <BsThreeDotsVertical onClick={toggleMenu} className="text-lg cursor-pointer" />
+                        }
+                    </div>
+                }
             </div>
         </div>
     );
