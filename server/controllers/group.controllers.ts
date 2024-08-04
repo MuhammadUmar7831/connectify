@@ -86,31 +86,43 @@ export const getGroupInfo = async (req: authRequest, res: Response, next: NextFu
 
         query = `
         SELECT  
-        g.GroupId,
-        g.Name AS GroupName,
-        g.Description,
-        g.Avatar,
-        g.CreatedBy AS CreatorId,
-        u.Name AS CreatedBy,
-        g.DateCreated,
-        g.ChatId,
-        JSON_ARRAYAGG(JSON_OBJECT('UserId', members.UserId, 'Name', members.Name, 'Bio', members.Bio, 'Avatar', members.Avatar, 'isAdmin', members.isAdmin)) AS Members
-        FROM _Groups g
-        JOIN Users u ON g.CreatedBy = u.UserId
-        -- JOIN Members m ON g.ChatId = m.ChatId 
+            g.GroupId,
+            g.Name AS GroupName,
+            g.Description,
+            g.Avatar,
+            g.CreatedBy AS CreatorId,
+            u.Name AS CreatedBy,
+            g.DateCreated,
+            g.ChatId,
+            JSON_ARRAYAGG(JSON_OBJECT('UserId', members.UserId, 'Name', members.Name, 'Bio', members.Bio, 'Avatar', members.Avatar, 'isAdmin', members.isAdmin)) AS Members
+        FROM 
+            _Groups g
+        JOIN 
+            Users u ON g.CreatedBy = u.UserId
         LEFT JOIN (
-            SELECT _m.UserId, 
-            CASE 
-                WHEN _ga.UserId = _m.UserId THEN TRUE
-                ELSE FALSE 
-            END AS isAdmin, 
-            _u.Name, _u.Bio, _u.Avatar, _g.GroupId FROM Members _m
-            JOIN _Groups _g ON _m.ChatId = _g.ChatId
-            JOIN Users _u on _m.UserId = _u.UserId
-            LEFT JOIN GroupAdmins _ga on _g.GroupId = _ga.GroupId
+            SELECT 
+                _m.UserId, 
+                _u.Name, 
+                _u.Bio, 
+                _u.Avatar, 
+                _g.GroupId,
+                MAX(_ga.UserId IS NOT NULL) AS isAdmin -- Aggregate to determine if the user is an admin
+            FROM 
+                Members _m
+            JOIN 
+                _Groups _g ON _m.ChatId = _g.ChatId
+            JOIN 
+                Users _u ON _m.UserId = _u.UserId
+            LEFT JOIN 
+                GroupAdmins _ga ON _g.GroupId = _ga.GroupId AND _ga.UserId = _m.UserId -- Only join matching admin records
+            GROUP BY 
+                _m.UserId, _u.Name, _u.Bio, _u.Avatar, _g.GroupId
         ) members ON g.GroupId = members.GroupId
-        WHERE g.GroupId = ?
-        GROUP BY g.GroupId;`
+        WHERE 
+            g.GroupId = ?
+        GROUP BY 
+            g.GroupId;
+`
 
         connection.query(query, [groupId], (err: QueryError | null, result: RowDataPacket[]) => {
             if (err) { return next(err) }

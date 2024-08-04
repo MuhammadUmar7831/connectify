@@ -53,3 +53,18 @@ export const makeAdminApi = async (body: { friendId: number, groupId: number }) 
         }
     }
 };
+
+export const leaveGroupApi = async (body: { groupId: number }) => {
+    try {
+        const response = await axios.delete(`/api/group/leave`, {
+            data: body
+        });
+        return response.data;
+    } catch (error: any) {
+        if (error.response) {
+            return error.response.data;
+        } else {
+            return { success: false, message: 'Server is Down' };
+        }
+    }
+};
