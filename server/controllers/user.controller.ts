@@ -28,3 +28,27 @@ export const getFriendInfo = async (req: Request, res: Response, next: NextFunct
     })
 
 }
+
+export const search = async (req: Request, res: Response, next: NextFunction) => {
+    const notInclude = req.body.notInclude;
+
+    // Check if notInclude is provided and is an array of numbers
+    if (notInclude && (!Array.isArray(notInclude) || !notInclude.every(Number.isInteger))) {
+        return res.status(400).send({ success: false, message: 'Invalid notInclude parameter expected notInclude: number[]' });
+    }
+
+    let query = "SELECT UserId, Name, Avatar, Bio FROM Users";
+    let queryParams: (number | string)[] = [];
+
+    if (notInclude && notInclude.length > 0) {
+        query += " WHERE UserId NOT IN (" + notInclude.map(() => '?').join(',') + ")";
+        queryParams = notInclude;
+    }
+
+    connection.query(query, queryParams, (err: QueryError | null, result: RowDataPacket[]) => {
+        if (err) {
+            return next(err);
+        }
+        return res.status(200).send({ success: true, message: 'Search Result', data: result });
+    });
+};
