@@ -30,22 +30,27 @@ export const getFriendInfo = async (req: Request, res: Response, next: NextFunct
 }
 
 export const search = async (req: Request, res: Response, next: NextFunction) => {
-    const notInclude = req.body.notInclude;
+    const { query, notInclude } = req.body;
+
+    // Check if query is provided and is a string
+    // if (typeof query !== 'string') {
+    //     return next(errorHandler(400, 'Invalid query parameter, expected {query: string}'));
+    // }
 
     // Check if notInclude is provided and is an array of numbers
-    if (notInclude && (!Array.isArray(notInclude) || !notInclude.every(Number.isInteger))) {
-        return res.status(400).send({ success: false, message: 'Invalid notInclude parameter expected notInclude: number[]' });
+    if (typeof query !== 'string' || (notInclude && (!Array.isArray(notInclude) || !notInclude.every(Number.isInteger)))) {
+        return next(errorHandler(400, 'Invalid notInclude parameter, expected {query: string, notInclude: number[]}'));
     }
 
-    let query = "SELECT UserId, Name, Avatar, Bio FROM Users";
-    let queryParams: (number | string)[] = [];
+    let _query = "SELECT UserId, Name, Avatar, Bio FROM Users WHERE ( Name LIKE ? OR Bio LIKE ? )";
+    let queryParams: (number | string)[] = [`%${query}%`, `%${query}%`];
 
     if (notInclude && notInclude.length > 0) {
-        query += " WHERE UserId NOT IN (" + notInclude.map(() => '?').join(',') + ")";
-        queryParams = notInclude;
+        _query += " AND UserId NOT IN (" + notInclude.map(() => '?').join(',') + ")";
+        queryParams.push(...notInclude);
     }
 
-    connection.query(query, queryParams, (err: QueryError | null, result: RowDataPacket[]) => {
+    connection.query(_query, queryParams, (err: QueryError | null, result: RowDataPacket[]) => {
         if (err) {
             return next(err);
         }
