@@ -32,11 +32,6 @@ export const getFriendInfo = async (req: Request, res: Response, next: NextFunct
 export const search = async (req: Request, res: Response, next: NextFunction) => {
     const { query, notInclude } = req.body;
 
-    // Check if query is provided and is a string
-    // if (typeof query !== 'string') {
-    //     return next(errorHandler(400, 'Invalid query parameter, expected {query: string}'));
-    // }
-
     // Check if notInclude is provided and is an array of numbers
     if (typeof query !== 'string' || (notInclude && (!Array.isArray(notInclude) || !notInclude.every(Number.isInteger)))) {
         return next(errorHandler(400, 'Invalid notInclude parameter, expected {query: string, notInclude: number[]}'));

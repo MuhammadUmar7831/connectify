@@ -25,3 +25,16 @@ export const getFriendInfoApi = async (friendId: number) => {
         }
     }
 }
+
+export const searchApi = async (body: { query: string, notInclude: number[] }) => {
+    try {
+        const response = await axios.post(`/api/user/search`, body);
+        return response.data;
+    } catch (error: any) {
+        if (error.response) {
+            return error.response.data;
+        } else {
+            return { success: false, message: 'Server is Down' }
+        }
+    }
+}
