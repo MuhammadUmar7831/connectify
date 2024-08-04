@@ -40,3 +40,16 @@ export const kickUserApi = async (body: { toBeKickedId: number, groupId: number 
         }
     }
 };
+
+export const makeAdminApi = async (body: { friendId: number, groupId: number }) => {
+    try {
+        const response = await axios.post(`/api/group/add/admin`, body);
+        return response.data;
+    } catch (error: any) {
+        if (error.response) {
+            return error.response.data;
+        } else {
+            return { success: false, message: 'Server is Down' };
+        }
+    }
+};

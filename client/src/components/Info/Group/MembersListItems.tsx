@@ -4,7 +4,7 @@ import UserListItemMenu from "./UserListItemMenu";
 import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../redux/store";
-import { kickUserApi } from "../../../api/group.api";
+import { kickUserApi, makeAdminApi } from "../../../api/group.api";
 import { setError } from "../../../redux/slices/error";
 import GroupInfoResponse from "../../../types/groupInfo.type";
 import { setSuccess } from "../../../redux/slices/success";
@@ -76,7 +76,26 @@ export default function MembersListItems({ member, groupId, userItselfAdmin, set
 
     const makeAdmin = async () => {
         setMenuOpen(false)
-        console.log('Made Admin');
+        setLoading(true)
+        const body = { friendId: member.UserId, groupId: groupId };
+        const res = await makeAdminApi(body);
+        if (res.success) {
+            setGroupInfo((prevGroupInfo) => {
+                if (prevGroupInfo) {
+                    return {
+                        ...prevGroupInfo,
+                        Members: prevGroupInfo.Members.map((m) =>
+                            m.UserId === member.UserId ? { ...m, isAdmin: 1 } : m
+                        ),
+                    };
+                }
+                return prevGroupInfo;
+            });
+            dispatch(setSuccess(res.message));
+        } else {
+            dispatch(setError(res.message));
+        }
+        setLoading(false)
     }
 
     const removeAdmin = () => {
