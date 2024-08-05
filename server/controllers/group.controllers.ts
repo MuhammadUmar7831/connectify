@@ -272,28 +272,29 @@ export const updateGroup = async (req: authRequest, res: Response, next: NextFun
 }
 
 export const addMemberToGroup = async (req: authRequest, res: Response, next: NextFunction) => {
-    const { groupId, friendId } = req.body
-    if (typeof groupId !== 'number' || friendId !== 'number') {
-        return res.status(400).send({ success: false, message: 'Invalid request body (groupId: number, friendId: number)' });
+    const { groupId, membersId } = req.body
+    if (typeof groupId !== 'number' || !Array.isArray(membersId) || membersId.length === 0 || !membersId.every(id => typeof id === 'number')) {
+        return res.status(400).send({ success: false, message: 'Invalid request body expected {groupId: number, membersId: number[]}' });
     }
-    var sql = "SELECT ChatId FROM _Groups where GroupId = ?"
+    var sql = "SELECT ChatId FROM _Groups where GroupId = ?;"
     connection.query(sql, [groupId], (err: QueryError | null, result: RowDataPacket[]) => {
         if (err) { return next(err) }
         const chatId = result[0].ChatId;
 
-        sql = "SELECT UserId FROM Members WHERE ChatId = ? and UserId = ?"
-        connection.query(sql, [chatId, friendId], (err: QueryError | null, result: RowDataPacket[]) => {
+        sql = "SELECT UserId FROM Members WHERE ChatId = ? AND UserId IN (?);"
+        connection.query(sql, [chatId, membersId], (err: QueryError | null, result: RowDataPacket[]) => {
             if (err) { return next(err) }
 
             if (result.length > 0) {
-                return next(errorHandler(400, "This user is already member of this Group"))
+                return next(errorHandler(400, "User is already member of this Group"))
             }
         })
 
-        sql = "INSERT INTO Members (UserId, ChatId) VALUES (?, ?)";
-        connection.query(sql, [friendId, chatId], (err: QueryError | null, result: any) => {
+        const values = membersId.map(id => [id, chatId]);
+        sql = "INSERT INTO Members (UserId, ChatId) VALUES ?;";
+        connection.query(sql, [values], (err: QueryError | null, result: any) => {
             if (err) { return next(err) }
-            res.status(201).send({ success: true, message: "User added in the Group" })
+            res.status(201).send({ success: true, message: "User(s) added in the Group" })
         })
     })
 
