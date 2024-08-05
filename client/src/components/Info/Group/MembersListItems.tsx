@@ -4,7 +4,7 @@ import UserListItemMenu from "./UserListItemMenu";
 import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../redux/store";
-import { kickUserApi, makeAdminApi } from "../../../api/group.api";
+import { kickUserApi, makeAdminApi, removeAdminApi } from "../../../api/group.api";
 import { setError } from "../../../redux/slices/error";
 import GroupInfoResponse from "../../../types/groupInfo.type";
 import { setSuccess } from "../../../redux/slices/success";
@@ -98,9 +98,28 @@ export default function MembersListItems({ member, groupId, userItselfAdmin, set
         setLoading(false)
     }
 
-    const removeAdmin = () => {
+    const removeAdmin = async () => {
         setMenuOpen(false)
-        console.log('Remove Admin');
+        setLoading(true)
+        const body = { groupId: groupId, toBeRemoveId: member.UserId };
+        const res = await removeAdminApi(body);
+        if (res.success) {
+            setGroupInfo((prevGroupInfo) => {
+                if (prevGroupInfo) {
+                    return {
+                        ...prevGroupInfo,
+                        Members: prevGroupInfo.Members.map((m) =>
+                            m.UserId === member.UserId ? { ...m, isAdmin: 0 } : m
+                        ),
+                    };
+                }
+                return prevGroupInfo;
+            });
+            dispatch(setSuccess(res.message));
+        } else {
+            dispatch(setError(res.message));
+        }
+        setLoading(false)
     }
 
     const options = member.isAdmin ? ["Kick User", "Remove Admin"] : ["Kick User", "Make Admin"];

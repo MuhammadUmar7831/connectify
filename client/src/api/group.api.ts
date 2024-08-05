@@ -94,3 +94,16 @@ export const updateGroupApi = async (body: { groupId: number, name: string, avat
         }
     }
 };
+
+export const removeAdminApi = async (body: { groupId: number, toBeRemoveId: number }) => {
+    try {
+        const response = await axios.delete(`/api/group/remove/admin`, { data: body });
+        return response.data;
+    } catch (error: any) {
+        if (error.response) {
+            return error.response.data;
+        } else {
+            return { success: false, message: 'Server is Down' };
+        }
+    }
+};
