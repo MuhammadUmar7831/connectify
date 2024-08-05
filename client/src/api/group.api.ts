@@ -81,3 +81,16 @@ export const addMembersApi = async (body: { groupId: number, membersId: number[]
         }
     }
 };
+
+export const updateGroupApi = async (body: { groupId: number, name: string, avatar: string, description: string }) => {
+    try {
+        const response = await axios.put(`/api/group/update`, body);
+        return response.data;
+    } catch (error: any) {
+        if (error.response) {
+            return error.response.data;
+        } else {
+            return { success: false, message: 'Server is Down' };
+        }
+    }
+};
