@@ -2,7 +2,7 @@ import { Router } from "express";
 import authenticate from "../middlewares/authenticate";
 import isAdmin from "../middlewares/isAdmin";
 import tryCatch from "../middlewares/tryCatch";
-import { addAdmin, addMembersToGroup, createGroup, deleteGroup, getCommonGroups, getGroupInfo, kickUser, leaveGroup, updateGroup } from "../controllers/group.controllers";
+import { addAdmin, addMembersToGroup, createGroup, deleteGroup, getCommonGroups, getGroupInfo, kickUser, leaveGroup, removeAdmin, updateGroup } from "../controllers/group.controllers";
 
 const router = Router();
 
@@ -14,6 +14,7 @@ router.post('/create', authenticate, tryCatch(createGroup)); //route to create a
 router.delete('/leave', authenticate, tryCatch(leaveGroup)); //route to leave a group
 router.put('/update', authenticate, isAdmin, tryCatch(updateGroup)); //route to update a group (picture, name) only for admins
 router.post('/add/members', authenticate, isAdmin, tryCatch(addMembersToGroup)); //route to add a user to a group (picture, name) only for admins
-router.post('/add/admin', authenticate, isAdmin, tryCatch(addAdmin)); //route to add a admin to a group only for admins
+router.post('/add/admin', authenticate, isAdmin, tryCatch(addAdmin)); //route to add an admin to a group only for admins
+router.delete('/remove/admin', authenticate, isAdmin, tryCatch(removeAdmin)); //route to remove an admin to a group only for admins
 
 export default router;

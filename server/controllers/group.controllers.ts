@@ -335,3 +335,24 @@ export const addAdmin = async (
         }
     );
 };
+
+export const removeAdmin = async (req: authRequest, res: Response, next: NextFunction) => {
+    const { groupId, toBeRemoveId } = req.body;
+
+    if (typeof groupId !== 'number' || typeof toBeRemoveId !== 'number') {
+        return next(errorHandler(400, 'Invalid request body expected {groupId: number, toBeRemoveId: number}'));
+    }
+
+    if (toBeRemoveId === req.userId) {
+        return next(errorHandler(400, 'You can not remove yourself'));
+    }
+
+    const query = "DELETE FROM GroupAdmins WHERE GroupId = ? AND UserId = ?";
+    connection.query(query, [groupId, toBeRemoveId], (err: QueryError | null, result: any) => {
+        if (err) { return next(err) };
+        if (result.affectedRows === 0) {
+            return next(errorHandler(404, `User may not be the Admin or Member of this Group Chat or This Group Doesn't exist`))
+        }
+        res.status(200).send({ success: true, message: 'Admin Removed' })
+    })
+}
