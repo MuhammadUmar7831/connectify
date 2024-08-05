@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   getMessageByChatIdApi,
@@ -88,11 +88,11 @@ export default function useChatArea() {
   // ** SEND MESSAGE LOGIC STARTS HERE
 
   // Handling change of content when message is typed
-  const onContentChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const onContentChange = (value: string) => {
     if (socket) {
       socket.emit("startTyping", chatId, user?.Name);
     }
-    setContent(e.target.value);
+    setContent(value);
   };
 
   // handle send message button click

@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { BsThreeDotsVertical, BsEmojiGrin } from "react-icons/bs";
+import { BsThreeDotsVertical } from "react-icons/bs";
 import { IoPersonAdd } from "react-icons/io5";
 import { MdOutlineMessage, MdEdit } from "react-icons/md";
 import { AiOutlineCheck } from "react-icons/ai";
@@ -16,7 +16,7 @@ import { useMenu } from "../../../hooks/useMenu";
 import { ClipLoader } from "react-spinners";
 import themeColor from "../../../config/theme.config";
 import UserSearchAndSelect, { User } from "./UserSearchAndSelect";
-import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
+import Emoji_Picker from "../../Emoji_Picker";
 
 export default function GroupInfo() {
     const [groupInfo, setGroupInfo] = useState<GroupInfoResponse | null>(null);
@@ -28,7 +28,6 @@ export default function GroupInfo() {
     const [groupName, setGroupName] = useState<string | null>(null);
     const [groupDesc, setGroupDesc] = useState<string | null>(null);
     const [groupAvatar, setGroupAvatar] = useState<string | null>(null);
-    const [iseEmojiPickerOpent, setIseEmojiPickerOpent] = useState<boolean>(false)
     const navigate = useNavigate();
 
     const getGroupInfo = async () => {
@@ -188,14 +187,10 @@ export default function GroupInfo() {
                                 <h1 className="text-2xl font-semibold">{groupInfo.GroupName}</h1> :
                                 <form onSubmit={updateGroup} className="relative flex gap-2 text-2xl border-b-2 p-2">
                                     <input required className="font-semibold focus:outline-none" type="text" placeholder="Group Name" value={groupName} onChange={(e) => setGroupName(e.target.value)} />
-                                    <BsEmojiGrin className="cursor-pointer" size={25} onClick={() => setIseEmojiPickerOpent(!iseEmojiPickerOpent)} />
+                                    <Emoji_Picker emojiPicketClassName="top-[60px] right-0" onPickup={(emoji: string) => { setGroupName(`${groupName}${emoji}`) }} />
                                     <button type="submit">
                                         <AiOutlineCheck className="cursor-pointer" size={26} />
                                     </button>
-                                    <div
-                                        className="absolute top-[60px] right-0">
-                                        <EmojiPicker open={iseEmojiPickerOpent} height={350} onEmojiClick={(emojiData: EmojiClickData) => { setGroupName(`${groupName}${emojiData.emoji}`) }} />
-                                    </div>
                                 </form>
                             }
                             <MdEdit onClick={handleEditGroupNameClick} size={25} className="cursor-pointer" />
@@ -223,6 +218,7 @@ export default function GroupInfo() {
                             <p>{groupInfo.Description}</p> :
                             <form onSubmit={updateGroup} className="flex gap-2 border-b-2 p-2 w-full">
                                 <input required className="focus:outline-none w-full" type="text" placeholder="Group Name" value={groupDesc} onChange={(e) => setGroupDesc(e.target.value)} />
+                                <Emoji_Picker emojiPicketClassName="top-[60px] right-[20px]" onPickup={(emoji: string) => { setGroupDesc(`${groupDesc}${emoji}`) }} />
                                 <button type="submit">
                                     <AiOutlineCheck className="cursor-pointer" size={25} />
                                 </button>

@@ -1,8 +1,8 @@
 import { IoSend } from "react-icons/io5";
-import { BsEmojiGrin } from "react-icons/bs";
 import { useParams } from "react-router-dom";
 import ReplyMessageBox from "./ReplyMessageBox";
-import { useEffect } from "react";
+import { ChangeEvent, useEffect } from "react";
+import Emoji_Picker from "../Emoji_Picker";
 
 export default function SendMessageBox(props: any) {
   const {
@@ -31,12 +31,12 @@ export default function SendMessageBox(props: any) {
             onSendMessageIconClick(chatId);
           }
         }}
-        className="flex gap-2 items-center"
+        className="relative flex gap-2 items-center"
       >
-        <BsEmojiGrin className="text-orange text-2xl cursor-pointer" />
+        <Emoji_Picker emojiPicketClassName="-top-[350px] left-0" onPickup={(emoji: string) => { onContentChange(`${Content}${emoji}`) }} />
         <input
           autoComplete="off"
-          onChange={onContentChange}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => onContentChange(e.target.value)}
           value={Content}
           placeholder="Type a message"
           type="text"
