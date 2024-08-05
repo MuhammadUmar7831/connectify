@@ -271,7 +271,7 @@ export const updateGroup = async (req: authRequest, res: Response, next: NextFun
     })
 }
 
-export const addMemberToGroup = async (req: authRequest, res: Response, next: NextFunction) => {
+export const addMembersToGroup = async (req: authRequest, res: Response, next: NextFunction) => {
     const { groupId, membersId } = req.body
     if (typeof groupId !== 'number' || !Array.isArray(membersId) || membersId.length === 0 || !membersId.every(id => typeof id === 'number')) {
         return res.status(400).send({ success: false, message: 'Invalid request body expected {groupId: number, membersId: number[]}' });

@@ -6,14 +6,14 @@ import { motion } from "framer-motion";
 import MembersListItems from "./MembersListItems";
 import { RootState } from "../../../redux/store";
 import { useEffect, useState } from "react";
-import { getGroupInfoApi, leaveGroupApi } from "../../../api/group.api";
+import { addMembersApi, getGroupInfoApi, leaveGroupApi } from "../../../api/group.api";
 import { setError } from "../../../redux/slices/error";
 import GroupInfoResponse from "../../../types/groupInfo.type";
 import { setSuccess } from "../../../redux/slices/success";
 import { useMenu } from "../../../hooks/useMenu";
 import { ClipLoader } from "react-spinners";
 import themeColor from "../../../config/theme.config";
-import Search from "./Search";
+import UserSearchAndSelect, { User } from "./UserSearchAndSelect";
 
 export default function GroupInfo() {
     const [groupInfo, setGroupInfo] = useState<GroupInfoResponse | null>(null);
@@ -63,11 +63,39 @@ export default function GroupInfo() {
         return groupInfo?.Members.map(member => member.UserId);
     };
 
+    const addMemebrs = async (users: User[]) => {
+        const membersId = users.map(user => user.UserId);
+        const body = { groupId: groupInfo?.GroupId, membersId: membersId }
+        const res = await addMembersApi(body);
+        if (res.success) {
+            dispatch(setSuccess(res.message));
+            setGroupInfo((prevGroupInfo) => {
+                if (prevGroupInfo) {
+                    return {
+                        ...prevGroupInfo,
+                        Members: [
+                            ...prevGroupInfo.Members,
+                            ...users.map(user => ({ ...user, isAdmin: 0 }))
+                        ]
+                    };
+                }
+                return prevGroupInfo;
+            })
+        } else {
+            dispatch(setError(res.message));
+        }
+        setAddMemberSearch(false);
+    }
+
+    if (addMemberSearch) {
+        {/* search component for the add member search */ }
+        return (
+            <UserSearchAndSelect notInclude={extractUserIds()} onClose={() => { setAddMemberSearch(false) }} proceed={addMemebrs} />
+        )
+    }
+
     return (
         <>
-            {/* search component for the add member search */}
-            <Search notInclude={extractUserIds()} isOpen={addMemberSearch} onClose={() => { console.log('first'); setAddMemberSearch(false) }} />
-
             <div className="w-2/3 min-w-[820px] h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar">
                 <div className="bg-white rounded-2xl p-4">
                     <div className="flex justify-end relative" ref={menuRef}>
@@ -93,9 +121,12 @@ export default function GroupInfo() {
                         <p className="text-gray-300">Group • {groupInfo.Members.length} Members</p>
                     </div>
                     <div className="flex justify-center mt-5">
-                        <div onClick={() => setAddMemberSearch(true)} className="border border-orange p-4 flex items-center justify-center rounded-md group hover:bg-orange cursor-pointer">
-                            <IoPersonAdd size={30} className="text-orange group-hover:text-white" />
-                        </div>
+                        {userItselfAdmin &&
+                            //add members only for admins 
+                            <div onClick={() => setAddMemberSearch(true)} className="border border-black p-4 flex items-center justify-center rounded-md group hover:bg-black cursor-pointer">
+                                <IoPersonAdd size={30} className="text-black group-hover:text-white" />
+                            </div>
+                        }
                     </div>
                 </div>
                 <div className="bg-white rounded-2xl p-4">
