@@ -17,7 +17,6 @@ export default function useGroupInfo() {
     const [groupName, setGroupName] = useState<string | null>(null);
     const [groupDesc, setGroupDesc] = useState<string | null>(null);
     const [groupAvatar, setGroupAvatar] = useState<string | null>(null);
-    const { pinnedChats } = useSelector((state: RootState) => state.pinnedChats);
     const navigate = useNavigate();
 
     const getGroupInfo = async () => {
@@ -136,10 +135,6 @@ export default function useGroupInfo() {
         }
     };
 
-    const isPinned = useMemo(() => {
-        return pinnedChats?.some((pinnedChat) => pinnedChat.ChatId === groupInfo?.ChatId);
-    }, [pinnedChats, groupInfo]);
-
     return {
         groupInfo,
         setGroupInfo,
@@ -160,6 +155,5 @@ export default function useGroupInfo() {
         handleEditGroupDescClick,
         updateGroup,
         extractUserIds,
-        isPinned,
     };
 }

@@ -77,3 +77,29 @@ export const unArchiveChatApi = async (body: { chatId: number }) => {
         }
     }
 }
+
+export const pinChatApi = async (body: { chatId: number }) => {
+    try {
+        const response = await axios.put(`/api/chat/pin`, body);
+        return response.data;
+    } catch (error: any) {
+        if (error.response) {
+            return error.response.data;
+        } else {
+            return { success: false, message: 'Server is Down' }
+        }
+    }
+}
+
+export const unPinChatApi = async (body: { chatId: number }) => {
+    try {
+        const response = await axios.delete(`/api/chat/unPin`, { data: body });
+        return response.data;
+    } catch (error: any) {
+        if (error.response) {
+            return error.response.data;
+        } else {
+            return { success: false, message: 'Server is Down' }
+        }
+    }
+}

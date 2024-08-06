@@ -12,6 +12,7 @@ import UserSearchAndSelect from "./UserSearchAndSelect";
 import Emoji_Picker from "../../Emoji_Picker";
 import useGroupInfo from "../../../hooks/useGroupInfo";
 import { useChatArchiving } from "../../../hooks/useArchivingChat";
+import { usePiningChat } from "../../../hooks/usePiningChat";
 
 export default function GroupInfo() {
     const { showMenu, setShowMenu, menuRef } = useMenu();
@@ -27,18 +28,18 @@ export default function GroupInfo() {
         setGroupName,
         groupDesc,
         setGroupDesc,
-        groupAvatar, // will be used later on
-        setGroupAvatar, // will be used later on
+        // groupAvatar, // will be used later on
+        // setGroupAvatar, // will be used later on
         leaveGroup,
         addMembers,
         handleEditGroupNameClick,
         handleEditGroupDescClick,
         updateGroup,
-        extractUserIds,
-        isPinned
+        extractUserIds
     } = useGroupInfo();
 
     const { isArchived, archiveChat, unArchiveChat } = useChatArchiving({ chatId: groupInfo !== null ? groupInfo?.ChatId : -1, chatType: 'group', setLoading });
+    const { isPinned, pinChat, unPinChat } = usePiningChat({ chatId: groupInfo !== null ? groupInfo?.ChatId : -1, chatType: 'group', setLoading });
 
     if (groupInfo === null) {
         return <div className="w-2/3 min-w-[820px] h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar" />
@@ -71,8 +72,8 @@ export default function GroupInfo() {
                                         <>
                                             <li onClick={() => { setShowMenu(false); archiveChat() }} className="px-4 py-1 hover:bg-gray-100 cursor-pointer">Archive Chat</li>
                                             {isPinned ?
-                                                <li onClick={() => { }} className="px-4 py-1 hover:bg-gray-100 cursor-pointer">UnPin Chat</li> :
-                                                <li onClick={() => { }} className="px-4 py-1 hover:bg-gray-100 cursor-pointer">Pin Chat</li>
+                                                <li onClick={() => { setShowMenu(false); unPinChat() }} className="px-4 py-1 hover:bg-gray-100 cursor-pointer">UnPin Chat</li> :
+                                                <li onClick={() => { setShowMenu(false); pinChat() }} className="px-4 py-1 hover:bg-gray-100 cursor-pointer">Pin Chat</li>
                                             }
                                         </>
                                     }
