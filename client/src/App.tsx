@@ -6,6 +6,7 @@ import Signin from "./pages/Signin";
 import SuccessToaster from "./interface/toasters/SuccessToaster";
 import ErrorToaster from "./interface/toasters/ErrorToaster";
 import PrivateRoutes from "./components/PrivateRoutes";
+import CreateGroup from "./pages/CreateGroup";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
             <Route path="/" element={<Hero />} />
             <Route path="/chat/:chatId" element={<ChatArea />} />
             <Route path="/info/*" element={<Info />} />
+            <Route path="/create/group" element={<CreateGroup />} />
           </Route>
         </Routes>
       </BrowserRouter>

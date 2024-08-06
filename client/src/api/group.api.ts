@@ -107,3 +107,16 @@ export const removeAdminApi = async (body: { groupId: number, toBeRemoveId: numb
         }
     }
 };
+
+export const createGroupApi = async (body: { name: string, avatar: string, description: string, members: number[] }) => {
+    try {
+        const response = await axios.post(`/api/group/create`, body);
+        return response.data;
+    } catch (error: any) {
+        if (error.response) {
+            return error.response.data;
+        } else {
+            return { success: false, message: 'Server is Down' };
+        }
+    }
+};

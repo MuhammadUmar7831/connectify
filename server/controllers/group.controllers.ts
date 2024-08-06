@@ -208,7 +208,7 @@ export const createGroup = async (req: authRequest, res: Response, next: NextFun
                         connection.commit((err: QueryError | null) => {
                             if (err) { return connection.rollback(() => next(err)) }
 
-                            res.status(201).send({ success: true, message: 'Group Created', groupId })
+                            res.status(201).send({ success: true, message: 'Group Created', groupId, chatId })
                         })
                     })
                 })
