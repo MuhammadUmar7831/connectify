@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { archiveChat, createPersonalChat, getPersonalChats, getGroupChats, getArchivedChats, getPinnedChats } from "../controllers/chat.controllers";
+import { archiveChat, createPersonalChat, getPersonalChats, getGroupChats, getArchivedChats, getPinnedChats, unArchiveChat } from "../controllers/chat.controllers";
 import tryCatch from "../middlewares/tryCatch";
 import authenticate from "../middlewares/authenticate";
 
@@ -12,5 +12,6 @@ router.get('/get/pinned', authenticate, tryCatch(getPinnedChats)); //route to ge
 router.post('/create/personal', authenticate, tryCatch(createPersonalChat)); //route for creating a new chat with user (no need to be firend just send a message and chat is created)
 // router.delete('/delete', authenticate, tryCatch(deleteChat)); //route for deleting chat
 router.put('/archive', authenticate, tryCatch(archiveChat)); //route for archiving chat
+router.delete('/unArchive', authenticate, tryCatch(unArchiveChat)); //route for unArchiving chat
 
 export default router;

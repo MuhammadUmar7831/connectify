@@ -1,7 +1,7 @@
 import { NextFunction, Response } from "express";
 import { authRequest } from "../middlewares/authenticate";
 import connection from "../config/db";
-import { QueryError, QueryResult, RowDataPacket } from "mysql2";
+import { QueryError, QueryResult, ResultSetHeader, RowDataPacket } from "mysql2";
 import errorHandler from "../errors/error";
 import {
   getGroupChatsQuery,
@@ -92,32 +92,75 @@ export const archiveChat = async (
   const { chatId } = req.body;
 
   // case to check if the passed chat is users chat or not
-  var sql =
-    "SELECT * FROM Chats c JOIN Members m ON c.ChatId = m.ChatId WHERE c.ChatId = ? AND m.UserId = ?;";
-  connection.query(
-    sql,
-    [chatId, req.userId],
-    (err: QueryError | null, result: RowDataPacket[]) => {
-      if (err) {
-        return next(err);
-      }
-      if (result.length === 0) {
-        return next(errorHandler(400, "Forbidden! Not Allowed"));
-      }
+  var sql = "SELECT * FROM Chats c JOIN Members m ON c.ChatId = m.ChatId WHERE c.ChatId = ? AND m.UserId = ?;";
+  connection.query(sql, [chatId, req.userId], (err: QueryError | null, result: RowDataPacket[]) => {
+    if (err) {
+      return next(err);
     }
+    if (result.length === 0) {
+      return next(errorHandler(400, "Forbidden! Not Allowed"));
+    }
+  }
   );
 
   // now insert the archived chat in ArchivedChats Table
-  sql = "INSERT INTO ArchivedChats (ChatId, UserId) VALUES (?, ?);";
-  connection.query(
-    sql,
-    [chatId, req.userId],
-    (err: QueryError | null, result: QueryResult) => {
+  connection.beginTransaction((err: QueryError | null) => {
+    sql = "INSERT INTO ArchivedChats (ChatId, UserId) VALUES (?, ?);";
+    connection.query(sql, [chatId, req.userId], (err: QueryError | null, result: QueryResult) => {
+      if (err) {
+        return connection.rollback(() => next(err));
+      }
+
+      sql = "DELETE FROM PinnedChats WHERE ChatId = ? AND UserId = ?;";
+      connection.query(sql, [chatId, req.userId], (err: QueryError | null, result: QueryResult) => {
+        if (err) {
+          return connection.rollback(() => next(err));
+        }
+
+        connection.commit((err: QueryError | null) => {
+          if (err) {
+            return connection.rollback(() => next(err));
+          }
+          res.status(201).send({ success: true, message: "Chat Archived" });
+        })
+      })
+    });
+  })
+};
+
+export const unArchiveChat = async (req: authRequest, res: Response, next: NextFunction) => {
+  const { chatId } = req.body;
+
+  // Validate chatId
+  if (typeof chatId !== 'number') {
+    return next(errorHandler(400, "Invalid chatId format expected {chatId: number}"));
+  }
+
+  // Check if the chat belongs to the user
+  let sql = "SELECT * FROM Chats c JOIN Members m ON c.ChatId = m.ChatId WHERE c.ChatId = ? AND m.UserId = ?;";
+  connection.query(sql, [chatId, req.userId], (err: QueryError | null, result: RowDataPacket[]) => {
+    if (err) {
+      return next(err);
+    }
+    if (result.length === 0) {
+      return next(errorHandler(404, "You are not Member of this Chat"));
+    }
+
+    // Remove chat from ArchivedChats table
+    sql = "DELETE FROM ArchivedChats WHERE ChatId = ? AND UserId = ?;";
+    connection.query(sql, [chatId, req.userId], (err: QueryError | null, result: ResultSetHeader) => {
       if (err) {
         return next(err);
       }
-      res.status(201).send({ success: true, message: "Chat Archived" });
-    }
+
+      // Check if any rows were affected
+      if (result.affectedRows === 0) {
+        return next(errorHandler(404, "Chat was not Archive"));
+      }
+
+      res.status(200).send({ success: true, message: "Chat Unarchived" });
+    });
+  }
   );
 };
 
