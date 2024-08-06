@@ -46,9 +46,14 @@ export function useChatArchiving({ chatId, chatType, setLoading }: UseChatArchiv
                 chat = personalChats?.find(chat => chat.ChatId === chatId);
                 if (chat) {
                     dispatch(setPersonalChats(personalChats?.filter(chat => chat.ChatId !== chatId) || []));
+                } else {
+                    chat = pinnedChats?.find(chat => chat.ChatId === chatId);
+                    if (chat) {
+                        dispatch(setPinnedChats(pinnedChats?.filter(chat => chat.ChatId !== chatId) || []));
+                    }
                 }
             }
-
+            console.log(chat)
             if (chat) {
                 dispatch(setArchiveChats(archiveChats ? [...archiveChats, chat] : [chat]));
             }

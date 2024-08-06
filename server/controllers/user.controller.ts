@@ -15,19 +15,43 @@ export const getUser = async (req: authRequest, res: Response, next: NextFunctio
 }
 
 export const getFriendInfo = async (req: Request, res: Response, next: NextFunction) => {
-    if (isNaN(parseInt(req.params.friendId))) {
-        return next(errorHandler(400, 'Invalid Request Params Expected friendId: type(number)'))
+    const myId = parseInt(req.query.myId as string);
+    const friendId = parseInt(req.query.friendId as string);
+
+    // Validate query parameters
+    if (isNaN(myId) || isNaN(friendId)) {
+        return next(errorHandler(400, 'Invalid Request Params: Expected myId and friendId to be numbers'));
     }
-    const query = `SELECT UserId, Name, Email, Avatar, Bio FROM Users WHERE UserId = ?`;
-    connection.query(query, [req.params.friendId], (err: QueryError | null, result: RowDataPacket[]) => {
-        if (err) { return next(err) }
+
+    const query = `
+        SELECT
+            u.UserId, u.Name, u.Bio, u.Email, u.Avatar, uc2.ChatId
+        FROM Users u
+        LEFT JOIN (
+            SELECT m.*
+            FROM Members m
+            JOIN Chats c ON m.ChatId = c.ChatId
+            WHERE m.UserId = ? AND c.Type = 'Personal'
+        ) uc1 ON u.UserId = uc1.UserId
+        LEFT JOIN (
+            SELECT m.ChatId
+            FROM Members m
+            JOIN Chats c ON m.ChatId = c.ChatId
+            WHERE m.UserId = ? AND c.Type = 'Personal'
+        ) uc2 ON uc1.ChatId = uc2.ChatId
+        WHERE u.UserId = ?;
+    `;
+
+    connection.query(query, [friendId, myId, friendId], (err: QueryError | null, result: RowDataPacket[]) => {
+        if (err) {
+            return next(err);
+        }
         if (result.length === 0) {
             return next(errorHandler(404, 'No User Found'));
         }
-        return res.status(200).send({ success: true, data: result[0] })
-    })
-
-}
+        return res.status(200).send({ success: true, data: result[0] });
+    });
+};
 
 export const search = async (req: Request, res: Response, next: NextFunction) => {
     const { query, notInclude } = req.body;

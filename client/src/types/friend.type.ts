@@ -1,7 +1,8 @@
 export default interface friendType {
-    UserId: Number,
+    UserId: number,
     Name: string,
     Email: string,
     Avatar: string,
-    Bio: string
+    Bio: string,
+    ChatId: number | null
 }
