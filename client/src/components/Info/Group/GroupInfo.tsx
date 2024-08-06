@@ -112,7 +112,7 @@ export default function GroupInfo() {
                                 <IoPersonAdd size={30} className="text-black group-hover:text-white" />
                             </div>
                         }
-                        <Link to={`/c/${groupInfo?.ChatId}`} className="border border-black p-4 flex items-center justify-center rounded-md group hover:bg-black cursor-pointer">
+                        <Link to={`/chat/${groupInfo?.ChatId}`} className="border border-black p-4 flex items-center justify-center rounded-md group hover:bg-black cursor-pointer">
                             <MdOutlineMessage size={30} className="text-black group-hover:text-white" />
                         </Link>
                     </div>

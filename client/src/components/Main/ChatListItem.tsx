@@ -15,7 +15,7 @@ interface props {
 
 export default function ChatListItem({ chatId, image, name, senderName, lastMessage, lastMessageTime, notification, isActive }: props) {
     return (
-        <Link to={`/c/${chatId}`}>
+        <Link to={`/chat/${chatId}`}>
             <div className="flex justify-between gap-2 p-4 text-gray-200 hover:bg-gray-100">
                 <div className="flex gap-2 w-5/6">
                     <Avatar image={image} isActive={isActive} />

@@ -98,7 +98,7 @@ export default function PersonalInfo() {
                 </div>
                 {friend.ChatId &&
                     <div className="flex justify-center mt-5 gap-2">
-                        <Link to={`/c/${friend.ChatId}`} className="border border-black p-4 flex items-center justify-center rounded-md group hover:bg-black cursor-pointer">
+                        <Link to={`/chat/${friend.ChatId}`} className="border border-black p-4 flex items-center justify-center rounded-md group hover:bg-black cursor-pointer">
                             <MdOutlineMessage size={30} className="text-black group-hover:text-white" />
                         </Link>
                     </div>
@@ -108,8 +108,8 @@ export default function PersonalInfo() {
                 <h1 className="text-gray-300">About</h1>
                 <p>{friend.Bio}</p>
             </div>
-            <div className="bg-white rounded-2xl p-4">
-                <h1 className="text-gray-300">{commonGroups.length > 0 ? commonGroups.length : 'No '} Groups in Common</h1>
+            <div className="bg-white rounded-2xl py-4">
+                <h1 className="text-gray-300 p-4">{commonGroups.length > 0 ? commonGroups.length : 'No '} Groups in Common</h1>
                 {commonGroups.map((commonGroup) =>
                     <GroupInCommonListItems group={commonGroup} key={commonGroup.GroupId} />
                 )}
