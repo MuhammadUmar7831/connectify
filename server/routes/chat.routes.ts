@@ -1,7 +1,8 @@
 import { Router } from 'express';
-import { archiveChat, createPersonalChat, getPersonalChats, getGroupChats, getArchivedChats, getPinnedChats, unArchiveChat } from "../controllers/chat.controllers";
+import { archiveChat, createPersonalChat, getPersonalChats, getGroupChats, getArchivedChats, getPinnedChats, unArchiveChat, pinChat, unPinChat } from "../controllers/chat.controllers";
 import tryCatch from "../middlewares/tryCatch";
 import authenticate from "../middlewares/authenticate";
+import isMember from '../middlewares/isMember';
 
 const router = Router();
 
@@ -13,5 +14,7 @@ router.post('/create/personal', authenticate, tryCatch(createPersonalChat)); //r
 // router.delete('/delete', authenticate, tryCatch(deleteChat)); //route for deleting chat
 router.put('/archive', authenticate, tryCatch(archiveChat)); //route for archiving chat
 router.delete('/unArchive', authenticate, tryCatch(unArchiveChat)); //route for unArchiving chat
+router.put('/pin', authenticate, tryCatch(isMember), tryCatch(pinChat)); //route for pinning chat
+router.delete('/unPin', authenticate, tryCatch(isMember), tryCatch(unPinChat)); //route for unArchiving chat
 
 export default router;

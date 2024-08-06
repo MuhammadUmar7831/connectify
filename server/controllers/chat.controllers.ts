@@ -121,7 +121,7 @@ export const archiveChat = async (
           if (err) {
             return connection.rollback(() => next(err));
           }
-          res.status(201).send({ success: true, message: "Chat Archived" });
+          return res.status(201).send({ success: true, message: "Chat Archived" });
         })
       })
     });
@@ -158,11 +158,44 @@ export const unArchiveChat = async (req: authRequest, res: Response, next: NextF
         return next(errorHandler(404, "Chat was not Archive"));
       }
 
-      res.status(200).send({ success: true, message: "Chat Unarchived" });
+      return res.status(200).send({ success: true, message: "Chat Un-Archived" });
     });
   }
   );
 };
+
+export const pinChat = async (req: authRequest, res: Response, next: NextFunction) => {
+  const { chatId } = req.body;
+
+  var query = "SELECT * FROM ArchivedChats WHERE ChatId = ? AND UserId = ?;";
+  connection.query(query, [chatId, req.userId], (err: QueryError | null, result: RowDataPacket[]) => {
+    if (err) { return next(err) }
+    if (result.length > 0) {
+      return next(errorHandler(400, 'Can not Pin an Archived Chat'));
+    }
+
+    query = "INSERT INTO PinnedChats (ChatId, UserId) VALUES (?,?);";
+    connection.query(query, [chatId, req.userId], (err: QueryError | null, result: RowDataPacket[]) => {
+      if (err) { return next(err) }
+
+      return res.status(200).send({ success: true, message: "Chat Pinned" });
+    })
+  })
+}
+
+export const unPinChat = async (req: authRequest, res: Response, next: NextFunction) => {
+  const { chatId } = req.body;
+
+  var query = "DELETE FROM PinnedChats WHERE ChatId = ? AND UserId = ?;";
+  connection.query(query, [chatId, req.userId], (err: QueryError | null, result: ResultSetHeader) => {
+    if (err) { return next(err) }
+    if (result.affectedRows === 0) {
+      return next(errorHandler(404, 'This Chat is not Pinned'));
+    }
+
+    return res.status(200).send({ success: true, message: "Chat Un-Pinned" });
+  })
+}
 
 // Negotiateable
 // export const deleteChat = async (req: authRequest, res: Response, next: NextFunction) => {
