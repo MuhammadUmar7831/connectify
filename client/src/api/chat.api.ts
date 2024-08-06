@@ -51,3 +51,29 @@ export const getArchiveChatsApi = async () => {
         }
     }
 }
+
+export const archiveChatApi = async (body: { chatId: number }) => {
+    try {
+        const response = await axios.put(`/api/chat/archive`, body);
+        return response.data;
+    } catch (error: any) {
+        if (error.response) {
+            return error.response.data;
+        } else {
+            return { success: false, message: 'Server is Down' }
+        }
+    }
+}
+
+export const unArchiveChatApi = async (body: { chatId: number }) => {
+    try {
+        const response = await axios.delete(`/api/chat/unArchive`, { data: body });
+        return response.data;
+    } catch (error: any) {
+        if (error.response) {
+            return error.response.data;
+        } else {
+            return { success: false, message: 'Server is Down' }
+        }
+    }
+}

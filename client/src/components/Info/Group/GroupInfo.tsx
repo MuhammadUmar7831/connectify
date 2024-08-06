@@ -1,158 +1,54 @@
-import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { IoPersonAdd } from "react-icons/io5";
 import { MdOutlineMessage, MdEdit } from "react-icons/md";
 import { AiOutlineCheck } from "react-icons/ai";
 import { motion } from "framer-motion";
 import MembersListItems from "./MembersListItems";
-import { RootState } from "../../../redux/store";
-import { useEffect, useState } from "react";
-import { addMembersApi, getGroupInfoApi, leaveGroupApi, updateGroupApi } from "../../../api/group.api";
-import { setError } from "../../../redux/slices/error";
-import GroupInfoResponse from "../../../types/groupInfo.type";
-import { setSuccess } from "../../../redux/slices/success";
 import { useMenu } from "../../../hooks/useMenu";
 import { ClipLoader } from "react-spinners";
 import themeColor from "../../../config/theme.config";
-import UserSearchAndSelect, { User } from "./UserSearchAndSelect";
+import UserSearchAndSelect from "./UserSearchAndSelect";
 import Emoji_Picker from "../../Emoji_Picker";
+import useGroupInfo from "../../../hooks/useGroupInfo";
+import { useChatArchiving } from "../../../hooks/useArchivingChat";
 
 export default function GroupInfo() {
-    const [groupInfo, setGroupInfo] = useState<GroupInfoResponse | null>(null);
-    const { user } = useSelector((state: RootState) => state.user);
-    const dispatch = useDispatch();
     const { showMenu, setShowMenu, menuRef } = useMenu();
-    const [loading, setLoading] = useState<boolean>(false);
-    const [addMemberSearch, setAddMemberSearch] = useState<boolean>(false);
-    const [groupName, setGroupName] = useState<string | null>(null);
-    const [groupDesc, setGroupDesc] = useState<string | null>(null);
-    const [groupAvatar, setGroupAvatar] = useState<string | null>(null);
-    const navigate = useNavigate();
+    const {
+        groupInfo,
+        setGroupInfo,
+        userItselfAdmin,
+        loading,
+        setLoading,
+        addMemberSearch,
+        setAddMemberSearch,
+        groupName,
+        setGroupName,
+        groupDesc,
+        setGroupDesc,
+        groupAvatar, // will be used later on
+        setGroupAvatar, // will be used later on
+        leaveGroup,
+        addMembers,
+        handleEditGroupNameClick,
+        handleEditGroupDescClick,
+        updateGroup,
+        extractUserIds,
+        isPinned
+    } = useGroupInfo();
 
-    const getGroupInfo = async () => {
-        const res = await getGroupInfoApi(1);
-        if (res.success) {
-            setGroupInfo(res.data);
-        } else {
-            dispatch(setError(res.message));
-        }
-    }
-
-    useEffect(() => {
-        getGroupInfo();
-    }, [])
+    const { isArchived, archiveChat, unArchiveChat } = useChatArchiving({ chatId: groupInfo !== null ? groupInfo?.ChatId : -1, chatType: 'group', setLoading });
 
     if (groupInfo === null) {
         return <div className="w-2/3 min-w-[820px] h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar" />
 
     }
 
-    const userItselfAdmin = groupInfo.Members.some(
-        (member) => member.UserId === user?.UserId && member.isAdmin
-    );
-
-    const leaveGroup = async () => {
-        setShowMenu(false);
-        setLoading(true);
-        const res = await leaveGroupApi({ groupId: groupInfo?.GroupId });
-        if (res.success) {
-            dispatch(setSuccess(res.message));
-            navigate("/");
-        } else {
-            dispatch(setError(res.message));
-        }
-        setLoading(false);
-    }
-
-    const extractUserIds = (): number[] => {
-        return groupInfo?.Members.map(member => member.UserId);
-    };
-
-    const addMemebrs = async (users: User[]) => {
-        const membersId = users.map(user => user.UserId);
-        const body = { groupId: groupInfo?.GroupId, membersId: membersId }
-        const res = await addMembersApi(body);
-        if (res.success) {
-            dispatch(setSuccess(res.message));
-            setGroupInfo((prevGroupInfo) => {
-                if (prevGroupInfo) {
-                    return {
-                        ...prevGroupInfo,
-                        Members: [
-                            ...prevGroupInfo.Members,
-                            ...users.map(user => ({ ...user, isAdmin: 0 }))
-                        ]
-                    };
-                }
-                return prevGroupInfo;
-            })
-        } else {
-            dispatch(setError(res.message));
-        }
-    }
-
-    const handleEditGroupNameClick = () => {
-        if (groupName === null) {
-            setGroupName(groupInfo?.GroupName)
-        } else {
-            setGroupName(null)
-        }
-    }
-
-    const handleEditGroupDescClick = () => {
-        if (groupDesc === null) {
-            setGroupDesc(groupInfo?.Description)
-        } else {
-            setGroupDesc(null)
-        }
-    }
-
-    const updateGroup = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const newName = groupName === null ? groupInfo?.GroupName : groupName;
-        const newDesc = groupDesc === null ? groupInfo?.Description : groupDesc;
-        const newAvatar = groupAvatar === null ? groupInfo?.Avatar : groupAvatar;
-
-        if (
-            (newName !== groupInfo?.GroupName && newName !== "") ||
-            (newDesc !== groupInfo?.Description && newDesc !== "") ||
-            (newAvatar !== groupInfo?.Avatar && newAvatar !== "")
-        ) {
-            const body = {
-                groupId: groupInfo?.GroupId,
-                name: newName,
-                avatar: newAvatar,
-                description: newDesc
-            };
-            const res = await updateGroupApi(body);
-            if (res.success) {
-                setGroupInfo((prevGroupInfo) => {
-                    if (prevGroupInfo) {
-                        return {
-                            ...prevGroupInfo,
-                            GroupName: body.name,
-                            Avatar: body.avatar,
-                            Description: body.description
-                        };
-                    }
-                    return prevGroupInfo;
-                });
-                dispatch(setSuccess(res.message));
-            } else {
-                dispatch(setError(res.message));
-            }
-        }
-        setGroupName(null);
-        setGroupDesc(null);
-        setGroupAvatar(null);
-    };
-
-
     if (addMemberSearch) {
         {/* search component for the add member search */ }
         return (
-            <UserSearchAndSelect notInclude={extractUserIds()} onClose={() => { setAddMemberSearch(false) }} proceed={addMemebrs} />
+            <UserSearchAndSelect notInclude={extractUserIds()} onClose={() => { setAddMemberSearch(false) }} proceed={addMembers} />
         )
     }
 
@@ -168,7 +64,18 @@ export default function GroupInfo() {
                                 transition={{ duration: 0.3 }}
                                 className="bg-white rounded-lg py-2 shadow absolute top-0 right-0">
                                 <ul>
-                                    <li onClick={() => { }} className="px-4 py-1 hover:bg-gray-100 cursor-pointer">Archive Group Chat</li>
+                                    {isArchived ? // first check if chat is archive if yes than user can unarchive it 
+                                        // only if no than check uf chat is pinned if yes than user can only unpin 
+                                        // it or archive it if no user can pin it or archive it
+                                        <li onClick={() => { setShowMenu(false); unArchiveChat() }} className="px-4 py-1 hover:bg-gray-100 cursor-pointer">UnArchive Chat</li> :
+                                        <>
+                                            <li onClick={() => { setShowMenu(false); archiveChat() }} className="px-4 py-1 hover:bg-gray-100 cursor-pointer">Archive Chat</li>
+                                            {isPinned ?
+                                                <li onClick={() => { }} className="px-4 py-1 hover:bg-gray-100 cursor-pointer">UnPin Chat</li> :
+                                                <li onClick={() => { }} className="px-4 py-1 hover:bg-gray-100 cursor-pointer">Pin Chat</li>
+                                            }
+                                        </>
+                                    }
                                     <li onClick={leaveGroup} className="px-4 py-1 hover:bg-gray-100 cursor-pointer">Leave Group</li>
                                 </ul>
                             </motion.div>

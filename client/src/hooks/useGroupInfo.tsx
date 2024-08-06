@@ -17,7 +17,6 @@ export default function useGroupInfo() {
     const [groupName, setGroupName] = useState<string | null>(null);
     const [groupDesc, setGroupDesc] = useState<string | null>(null);
     const [groupAvatar, setGroupAvatar] = useState<string | null>(null);
-    const { archiveChats } = useSelector((state: RootState) => state.archiveChats);
     const { pinnedChats } = useSelector((state: RootState) => state.pinnedChats);
     const navigate = useNavigate();
 
@@ -137,10 +136,6 @@ export default function useGroupInfo() {
         }
     };
 
-    const isArchive = useMemo(() => {
-        return archiveChats?.some((archiveChat) => archiveChat.ChatId === groupInfo?.ChatId);
-    }, [archiveChats, groupInfo]);
-
     const isPinned = useMemo(() => {
         return pinnedChats?.some((pinnedChat) => pinnedChat.ChatId === groupInfo?.ChatId);
     }, [pinnedChats, groupInfo]);
@@ -150,6 +145,7 @@ export default function useGroupInfo() {
         setGroupInfo,
         userItselfAdmin,
         loading,
+        setLoading,
         addMemberSearch,
         setAddMemberSearch,
         groupName,
@@ -164,7 +160,6 @@ export default function useGroupInfo() {
         handleEditGroupDescClick,
         updateGroup,
         extractUserIds,
-        isArchive,
-        isPinned
+        isPinned,
     };
 }
