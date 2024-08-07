@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { ChangeEvent, useEffect, useMemo, useState } from 'react'
 import GroupInfoResponse from '../types/groupInfo.type';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
@@ -7,6 +7,7 @@ import { addMembersApi, getGroupInfoApi, leaveGroupApi, updateGroupApi } from '.
 import { setError } from '../redux/slices/error';
 import { setSuccess } from '../redux/slices/success';
 import { User } from '../types/user.type';
+import useCloudinary from './useCloudinary';
 
 export default function useGroupInfo() {
     const [groupInfo, setGroupInfo] = useState<GroupInfoResponse | null>(null);
@@ -17,6 +18,9 @@ export default function useGroupInfo() {
     const [groupName, setGroupName] = useState<string | null>(null);
     const [groupDesc, setGroupDesc] = useState<string | null>(null);
     const [groupAvatar, setGroupAvatar] = useState<string | null>(null);
+    const [groupAvatarFile, setGroupAvatarFile] = useState<null | File>(null);
+    const [updating, setUpdating] = useState<boolean>(false)
+    const { uploadImage, deleteImage } = useCloudinary();
     const navigate = useNavigate();
 
     const getGroupInfo = async () => {
@@ -52,6 +56,19 @@ export default function useGroupInfo() {
         }
     };
 
+    const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setGroupAvatarFile(file)
+            if (!file.type.startsWith('image/')) {
+                dispatch(setError('The selected file is not an image'));
+                return;
+            }
+            const imageUrl = URL.createObjectURL(file);
+            setGroupAvatar(imageUrl);
+        }
+    };
+
     const extractUserIds = (): number[] => {
         return groupInfo !== null ? groupInfo?.Members.map(member => member.UserId) : [];
     };
@@ -75,6 +92,7 @@ export default function useGroupInfo() {
                     }
                     return prevGroupInfo;
                 });
+                setAddMemberSearch(false);
             } else {
                 dispatch(setError(res.message));
             }
@@ -95,10 +113,33 @@ export default function useGroupInfo() {
 
     const updateGroup = async (e: React.FormEvent) => {
         e.preventDefault();
+        setUpdating(true);
         if (groupInfo) {
             const newName = groupName === null ? groupInfo?.GroupName : groupName;
             const newDesc = groupDesc === null ? groupInfo?.Description : groupDesc;
-            const newAvatar = groupAvatar === null ? groupInfo?.Avatar : groupAvatar;
+            let newAvatar = groupAvatar === null ? groupInfo?.Avatar : groupAvatar;
+
+            //not default avatar so delete it first from cloud
+            if (newAvatar !== '/group.png') {
+                const isDeleted = await deleteImage(groupInfo?.Avatar);
+                if (!isDeleted.success) {
+                    setUpdating(false);
+                    return;
+                }
+            }
+
+            if (groupAvatarFile !== null) {
+                const isUploaded = await uploadImage(groupAvatarFile);
+                if (isUploaded.success) {
+                    if (isUploaded.imageUrl) {
+                        setGroupAvatar(isUploaded.imageUrl);
+                        newAvatar = isUploaded.imageUrl;
+                    }
+                } else {
+                    setUpdating(false);
+                    return;
+                }
+            }
 
             if (
                 (newName !== groupInfo?.GroupName && newName !== "") ||
@@ -118,7 +159,7 @@ export default function useGroupInfo() {
                             return {
                                 ...prevGroupInfo,
                                 GroupName: body.name,
-                                Avatar: body.avatar,
+                                Avatar: newAvatar,
                                 Description: body.description
                             };
                         }
@@ -133,6 +174,7 @@ export default function useGroupInfo() {
             setGroupDesc(null);
             setGroupAvatar(null);
         }
+        setUpdating(false);
     };
 
     return {
@@ -155,5 +197,7 @@ export default function useGroupInfo() {
         handleEditGroupDescClick,
         updateGroup,
         extractUserIds,
+        handleImageChange,
+        updating
     };
 }

@@ -28,14 +28,15 @@ export default function GroupInfo() {
         setGroupName,
         groupDesc,
         setGroupDesc,
-        // groupAvatar, // will be used later on
-        // setGroupAvatar, // will be used later on
+        groupAvatar,
         leaveGroup,
         addMembers,
         handleEditGroupNameClick,
         handleEditGroupDescClick,
         updateGroup,
-        extractUserIds
+        extractUserIds,
+        handleImageChange,
+        updating
     } = useGroupInfo();
 
     const { isArchived, archiveChat, unArchiveChat } = useChatArchiving({ chatId: groupInfo !== null ? groupInfo?.ChatId : -1, chatType: 'group', setLoading });
@@ -57,6 +58,9 @@ export default function GroupInfo() {
         <>
             <div className="w-2/3 min-w-[820px] h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar">
                 <div className="bg-white rounded-2xl p-4">
+                    <div className="relative flex justify-center">
+                        {updating ? <ClipLoader size={30} color={themeColor} className="top-0 absolute z-10"/> : <></>}
+                    </div>
                     <div className="flex justify-end relative" ref={menuRef}>
                         {showMenu &&
                             <motion.div
@@ -83,12 +87,27 @@ export default function GroupInfo() {
                         }
                         {loading ? <ClipLoader size={20} color={themeColor} /> : <BsThreeDotsVertical onClick={() => setShowMenu(true)} className="cursor-pointer" />}
                     </div>
-                    <div className="relative rounded-full overflow-hidden mx-auto w-44 h-44 group cursor-pointer">
-                        <div className="flex justify-center items-center absolute top-0 left-0 bg-gray-200 w-full h-full opacity-0 group-hover:opacity-100 group-hover:bg-opacity-60">
+                    <div className="relative rounded-full overflow-hidden mx-auto w-44 h-44 group cursor-pointer bg-gray">
+                        <div
+                            onClick={() => document.getElementById('file-input')?.click()}
+                            className="flex justify-center items-center absolute top-0 left-0 bg-gray-200 w-full h-full opacity-0 group-hover:opacity-100 group-hover:bg-opacity-60"
+                        >
                             <MdEdit size={40} className="cursor-pointer" />
                         </div>
-                        <img src={groupInfo.Avatar} alt="avatar" />
+                        <img src={groupAvatar === null ? groupInfo.Avatar : groupAvatar} alt="avatar" className="w-full h-full object-cover" />
+                        <input
+                            type="file"
+                            id="file-input"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="absolute inset-0 opacity-0 cursor-pointer"
+                        />
                     </div>
+                    {groupAvatar !== null &&
+                        <div className="flex justify-center mt-2">
+                            <button disabled={updating} onClick={updateGroup} className="bg-orange disabled:bg-opacity-70 text-white text-lg- px-4 py-2 rounded-lg">Upload</button>
+                        </div>
+                    }
                     <div className="flex flex-col gap-1 items-center w-full mt-3">
                         <div className="flex gap-2 items-center">
                             {groupName === null ?
