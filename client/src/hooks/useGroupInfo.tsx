@@ -24,7 +24,7 @@ export default function useGroupInfo() {
     const navigate = useNavigate();
 
     const getGroupInfo = async () => {
-        const res = await getGroupInfoApi(27);
+        const res = await getGroupInfoApi(1);
         if (res.success) {
             setGroupInfo(res.data);
         } else {
@@ -55,7 +55,7 @@ export default function useGroupInfo() {
             setLoading(false);
         }
     };
-    
+
     const deleteGroup = async () => {
         if (groupInfo) {
             setLoading(true);
@@ -127,6 +127,7 @@ export default function useGroupInfo() {
 
     const updateGroup = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (updating) { return }
         setUpdating(true);
         if (groupInfo) {
             const newName = groupName === null ? groupInfo?.GroupName : groupName;
@@ -179,6 +180,9 @@ export default function useGroupInfo() {
                         }
                         return prevGroupInfo;
                     });
+                    setGroupName(null)
+                    setGroupDesc(null)
+                    setGroupAvatar(null)
                     dispatch(setSuccess(res.message));
                 } else {
                     dispatch(setError(res.message));
@@ -213,6 +217,7 @@ export default function useGroupInfo() {
         updateGroup,
         extractUserIds,
         handleImageChange,
-        updating
+        updating,
+        setUpdating
     };
 }

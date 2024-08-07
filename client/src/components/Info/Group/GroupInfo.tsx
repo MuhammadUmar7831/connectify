@@ -29,6 +29,7 @@ export default function GroupInfo() {
         groupDesc,
         setGroupDesc,
         groupAvatar,
+        setGroupAvatar,
         leaveGroup,
         deleteGroup,
         addMembers,
@@ -37,7 +38,8 @@ export default function GroupInfo() {
         updateGroup,
         extractUserIds,
         handleImageChange,
-        updating
+        updating,
+        setUpdating
     } = useGroupInfo();
 
     const { isArchived, archiveChat, unArchiveChat } = useChatArchiving({ chatId: groupInfo !== null ? groupInfo?.ChatId : -1, chatType: 'group', setLoading });
@@ -98,18 +100,19 @@ export default function GroupInfo() {
                         >
                             <MdEdit size={40} className="cursor-pointer" />
                         </div>
-                        <img src={groupAvatar === null ? groupInfo.Avatar : groupAvatar} alt="avatar" className="w-full h-full object-cover" />
+                        <img src={groupAvatar === null ? groupInfo.Avatar : groupAvatar} alt="avatar" className={`w-full h-full object-cover ${updating ? 'animate-pulse' : ''}`} />
                         <input
                             type="file"
                             id="file-input"
                             accept="image/*"
                             onChange={handleImageChange}
-                            className="absolute inset-0 opacity-0 cursor-pointer"
+                            className='absolute inset-0 opacity-0 cursor-pointer'
                         />
                     </div>
                     {groupAvatar !== null &&
-                        <div className="flex justify-center mt-2">
+                        <div className="flex justify-center mt-2 gap-2">
                             <button disabled={updating} onClick={updateGroup} className="bg-orange disabled:bg-opacity-70 text-white text-lg- px-4 py-2 rounded-lg">Upload</button>
+                            <button disabled={updating} onClick={() => { setGroupAvatar(null); setUpdating(false) }} className="bg-black disabled:bg-opacity-70 text-white text-lg- px-4 py-2 rounded-lg">Cancel</button>
                         </div>
                     }
                     <div className="flex flex-col gap-1 items-center w-full mt-3">
