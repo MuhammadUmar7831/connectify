@@ -1,6 +1,6 @@
 import { MdArrowForward, MdEdit } from "react-icons/md";
 import Emoji_Picker from "../components/Emoji_Picker";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { IoPersonAdd } from "react-icons/io5";
 import UserSearchAndSelect from "../components/Info/Group/UserSearchAndSelect";
 import { useDispatch, useSelector } from "react-redux";
@@ -14,16 +14,19 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { setGroupChats } from "../redux/slices/groupChats";
 import Chat from "../types/chat.types";
+import useCloudinary from "../hooks/useCloudinary";
 
 export default function CreateGroup() {
     const [groupName, setGroupName] = useState<string>("");
     const [groupDesc, setGroupDesc] = useState<string>("");
     const [groupAvatar, setGroupAvatar] = useState<string>("/group.png");
+    const [groupAvatarFile, setGroupAvatarFile] = useState<null | File>(null);
     const [addMemberSearch, setAddMemberSearch] = useState<boolean>(false);
     const { user } = useSelector((state: RootState) => state.user);
     const { groupChats } = useSelector((state: RootState) => state.groupChats);
     const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
+    const { uploadImage } = useCloudinary();
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -32,6 +35,19 @@ export default function CreateGroup() {
             setSelectedUsers([user]);
         }
     }, [user]);
+
+    const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setGroupAvatarFile(file)
+            if (!file.type.startsWith('image/')) {
+                dispatch(setError('The selected file is not an image'));
+                return;
+            }
+            const imageUrl = URL.createObjectURL(file);
+            setGroupAvatar(imageUrl);
+        }
+    };
 
     const deSelectUser = (userId: number) => {
         setSelectedUsers((prevSelectedUsers) =>
@@ -54,8 +70,23 @@ export default function CreateGroup() {
             return;
         }
         setLoading(true);
+
+        let avatar = groupAvatar;
+        if (groupAvatarFile !== null) {
+            const isUploaded = await uploadImage(groupAvatarFile, user?.Name);
+            console.log(isUploaded)
+            if (isUploaded.success) {
+                if (isUploaded.imageUrl) {
+                    setGroupAvatar(isUploaded.imageUrl);
+                    avatar = isUploaded.imageUrl;
+                }
+            } else {
+                return;
+            }
+        }
+
         const members = extractIds().filter(userId => userId !== user?.UserId);
-        const body = { name: groupName, avatar: groupAvatar, description: groupDesc, members }
+        const body = { name: groupName, avatar, description: groupDesc, members };
         const res = await createGroupApi(body);
         if (res.success) {
             dispatch(setSuccess(res.message));
@@ -64,17 +95,17 @@ export default function CreateGroup() {
                 ChatId: res.chatId,
                 UserId: null,
                 Name: groupName,
-                Avatar: groupAvatar,
+                Avatar: avatar,
                 isActive: false
-            }
+            };
 
             dispatch(setGroupChats(groupChats ? [...groupChats, chat] : [chat]));
-            navigate(`/chat/${res.chatId}`)
+            navigate(`/chat/${res.chatId}`);
         } else {
             dispatch(setError(res.message));
         }
         setLoading(false);
-    }
+    };
 
     if (user && addMemberSearch) {
         return (
@@ -89,10 +120,20 @@ export default function CreateGroup() {
     return (
         <div className="w-2/3 min-w-[820px] h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar bg-white rounded-2xl p-4">
             <div className="relative rounded-full overflow-hidden mx-auto w-44 h-44 group cursor-pointer bg-gray">
-                <div className="flex justify-center items-center absolute top-0 left-0 bg-gray-200 w-full h-full opacity-0 group-hover:opacity-100 group-hover:bg-opacity-60">
+                <div
+                    onClick={() => document.getElementById('file-input')?.click()}
+                    className="flex justify-center items-center absolute top-0 left-0 bg-gray-200 w-full h-full opacity-0 group-hover:opacity-100 group-hover:bg-opacity-60"
+                >
                     <MdEdit size={40} className="cursor-pointer" />
                 </div>
-                <img src={groupAvatar} alt="avatar" />
+                <img src={groupAvatar} alt="avatar" className="w-full h-full object-cover" />
+                <input
+                    type="file"
+                    id="file-input"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                />
             </div>
             <form onSubmit={() => { }} className="flex flex-col gap-5 items-center w-full mt-3">
                 <div className="relative flex gap-2 text-2xl border-b-2 p-2 justify-between">
@@ -132,11 +173,13 @@ export default function CreateGroup() {
                     <IoPersonAdd size={30} className="text-black group-hover:text-white" />
                 </div>
             </div>
-            {selectedUsers.length > 0 && (
-                <h1 className="p-4 text-2xl">
-                    Members <span className="text-base">(including you)</span>
-                </h1>
-            )}
+            {
+                selectedUsers.length > 0 && (
+                    <h1 className="p-4 text-2xl">
+                        Members <span className="text-base">(including you)</span>
+                    </h1>
+                )
+            }
             <div className="flex px-4 gap-5">
                 {selectedUsers.map((selectedUser) => (
                     <div key={selectedUser.UserId} className="relative w-fit">
@@ -154,22 +197,23 @@ export default function CreateGroup() {
                     </div>
                 ))}
             </div>
-            {!(groupName === "" || groupAvatar === "" || groupDesc === "" || selectedUsers.length < 2) ?
-                loading ?
-                    <div
-                        className="fixed bottom-[50px] right-[50px] w-fit p-4 rounded-full bg-orange cursor-pointer group animate-pulse">
-                        <MdArrowForward size={30} className="text-white" />
-                    </div>
-                    :
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.5 }}
-                        className="fixed bottom-[50px] right-[50px] w-fit p-4 rounded-full border border-orange bg-orange hover:bg-white cursor-pointer group"
-                        onClick={createGroup}>
-                        <MdArrowForward size={30} className="text-white group-hover:text-orange" />
-                    </motion.div> : <></>
+            {
+                !(groupName === "" || groupAvatar === "" || groupDesc === "" || selectedUsers.length < 2) ?
+                    loading ?
+                        <div
+                            className="fixed bottom-[50px] right-[50px] w-fit p-4 rounded-full bg-orange cursor-pointer group animate-pulse">
+                            <MdArrowForward size={30} className="text-white" />
+                        </div>
+                        :
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.5 }}
+                            className="fixed bottom-[50px] right-[50px] w-fit p-4 rounded-full border border-orange bg-orange hover:bg-white cursor-pointer group"
+                            onClick={createGroup}>
+                            <MdArrowForward size={30} className="text-white group-hover:text-orange" />
+                        </motion.div> : <></>
             }
-        </div>
+        </div >
     );
 }
