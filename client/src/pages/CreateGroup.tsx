@@ -136,18 +136,18 @@ export default function CreateGroup() {
                 />
             </div>
             <form onSubmit={() => { }} className="flex flex-col gap-5 items-center w-full mt-3">
-                <div className="relative flex gap-2 text-2xl border-b-2 p-2 justify-between">
+                <div className="relative flex gap-2 text-2xl border-b-2 p-2 justify-between w-1/2">
                     <input
                         required
-                        className="focus:outline-none"
+                        className="focus:outline-none w-full"
                         type="text"
                         placeholder="Group Name"
                         value={groupName}
-                        onChange={(e) => setGroupName(e.target.value)}
+                        onChange={(e) => { if (e.target.value.length < 30) { setGroupName(e.target.value) } }}
                     />
                     <Emoji_Picker
                         emojiPicketClassName="top-[60px] right-0 z-10"
-                        onPickup={(emoji: string) => setGroupName(`${groupName}${emoji}`)}
+                        onPickup={(emoji: string) => { if (`${groupName}${emoji}`.length < 30) { setGroupName(`${groupName}${emoji}`) } }}
                     />
                 </div>
                 <div className="relative flex gap-2 text-lg border-b p-2 w-2/3 justify-between">
@@ -157,11 +157,11 @@ export default function CreateGroup() {
                         type="text"
                         placeholder="Group Description"
                         value={groupDesc}
-                        onChange={(e) => setGroupDesc(e.target.value)}
+                        onChange={(e) => { if (e.target.value.length < 200) { setGroupDesc(e.target.value) } }}
                     />
                     <Emoji_Picker
                         emojiPicketClassName="top-[60px] right-0 z-10"
-                        onPickup={(emoji: string) => setGroupDesc(`${groupDesc}${emoji}`)}
+                        onPickup={(emoji: string) => { if (`${groupDesc}${emoji}`.length < 200) { setGroupDesc(`${groupDesc}${emoji}`) } }}
                     />
                 </div>
             </form>
