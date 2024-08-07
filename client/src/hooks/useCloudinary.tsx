@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { setError } from '../redux/slices/error';
+import CLOUD_NAME from '../config/cloudinary.config';
 
 const useCloudinary = () => {
   const dispatch = useDispatch();
@@ -22,7 +23,7 @@ const useCloudinary = () => {
 
     try {
       const response = await axios.post(
-        'https://api.cloudinary.com/v1_1/dj3vgnj0u/image/upload',
+        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
         formData,
         {
           headers: { 'Content-Type': 'multipart/form-data' },
