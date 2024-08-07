@@ -30,6 +30,7 @@ export default function GroupInfo() {
         setGroupDesc,
         groupAvatar,
         leaveGroup,
+        deleteGroup,
         addMembers,
         handleEditGroupNameClick,
         handleEditGroupDescClick,
@@ -59,7 +60,7 @@ export default function GroupInfo() {
             <div className="w-2/3 min-w-[820px] h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar">
                 <div className="bg-white rounded-2xl p-4">
                     <div className="relative flex justify-center">
-                        {updating ? <ClipLoader size={30} color={themeColor} className="top-0 absolute z-10"/> : <></>}
+                        {updating ? <ClipLoader size={30} color={themeColor} className="top-0 absolute z-10" /> : <></>}
                     </div>
                     <div className="flex justify-end relative" ref={menuRef}>
                         {showMenu &&
@@ -82,6 +83,9 @@ export default function GroupInfo() {
                                         </>
                                     }
                                     <li onClick={leaveGroup} className="px-4 py-1 hover:bg-gray-100 cursor-pointer">Leave Group</li>
+                                    {userItselfAdmin &&
+                                        <li onClick={deleteGroup} className="px-4 py-1 hover:bg-gray-100 cursor-pointer">Delete Group</li>
+                                    }
                                 </ul>
                             </motion.div>
                         }

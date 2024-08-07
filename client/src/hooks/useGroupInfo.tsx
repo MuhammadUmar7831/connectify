@@ -3,7 +3,7 @@ import GroupInfoResponse from '../types/groupInfo.type';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
 import { useNavigate } from 'react-router-dom';
-import { addMembersApi, getGroupInfoApi, leaveGroupApi, updateGroupApi } from '../api/group.api';
+import { addMembersApi, deleteGroupApi, getGroupInfoApi, leaveGroupApi, updateGroupApi } from '../api/group.api';
 import { setError } from '../redux/slices/error';
 import { setSuccess } from '../redux/slices/success';
 import { User } from '../types/user.type';
@@ -24,7 +24,7 @@ export default function useGroupInfo() {
     const navigate = useNavigate();
 
     const getGroupInfo = async () => {
-        const res = await getGroupInfoApi(1);
+        const res = await getGroupInfoApi(27);
         if (res.success) {
             setGroupInfo(res.data);
         } else {
@@ -46,6 +46,20 @@ export default function useGroupInfo() {
         if (groupInfo) {
             setLoading(true);
             const res = await leaveGroupApi({ groupId: groupInfo.GroupId });
+            if (res.success) {
+                dispatch(setSuccess(res.message));
+                navigate("/");
+            } else {
+                dispatch(setError(res.message));
+            }
+            setLoading(false);
+        }
+    };
+    
+    const deleteGroup = async () => {
+        if (groupInfo) {
+            setLoading(true);
+            const res = await deleteGroupApi({ groupId: groupInfo.GroupId });
             if (res.success) {
                 dispatch(setSuccess(res.message));
                 navigate("/");
@@ -192,6 +206,7 @@ export default function useGroupInfo() {
         groupAvatar,
         setGroupAvatar,
         leaveGroup,
+        deleteGroup,
         addMembers,
         handleEditGroupNameClick,
         handleEditGroupDescClick,

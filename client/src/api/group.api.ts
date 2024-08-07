@@ -120,3 +120,16 @@ export const createGroupApi = async (body: { name: string, avatar: string, descr
         }
     }
 };
+
+export const deleteGroupApi = async (body: { groupId: number }) => {
+    try {
+        const response = await axios.delete(`/api/group/delete`, { data: body });
+        return response.data;
+    } catch (error: any) {
+        if (error.response) {
+            return error.response.data;
+        } else {
+            return { success: false, message: 'Server is Down' };
+        }
+    }
+};

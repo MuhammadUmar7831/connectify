@@ -119,7 +119,7 @@ export default function CreateGroup() {
 
     return (
         <div className="w-2/3 min-w-[820px] h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar bg-white rounded-2xl p-4">
-            <div className="relative rounded-full overflow-hidden mx-auto w-44 h-44 group cursor-pointer bg-gray">
+            <div className="relative rounded-full overflow-hidden mx-auto w-42 h-42 group cursor-pointer bg-gray">
                 <div
                     onClick={() => document.getElementById('file-input')?.click()}
                     className="flex justify-center items-center absolute top-0 left-0 bg-gray-200 w-full h-full opacity-0 group-hover:opacity-100 group-hover:bg-opacity-60"
