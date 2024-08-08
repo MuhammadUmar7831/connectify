@@ -32,12 +32,7 @@ export default function useChatArea() {
     useState<ChatHeaderResponse | null>(null);
   const { user } = useSelector((state: RootState) => state.user);
   const dispatch = useDispatch();
-  const [reply, setReply] = useState<Reply>({
-    ReplyId: null,
-    ReplyContent: null,
-    ReplySenderId: null,
-    ReplySender: null,
-  });
+  const [reply, setReply] = useState<Reply>({ ReplyId: null, ReplyContent: null, ReplySenderId: null, ReplySender: null, });
 
   // update reply state on click
   const onSetReplyClick = (
@@ -76,14 +71,16 @@ export default function useChatArea() {
 
   // ** GET MESSAGE LOGIC STARTS HERE
 
-  const fetchMessages = async (): Promise<boolean> => {
-    const res = await getMessageByChatIdApi(chatId, messages.length);
+  const fetchMessages = async (skip?: number): Promise<boolean> => {
+    if (typeof skip === 'undefined') {
+      skip = messages.length
+    }
+    const res = await getMessageByChatIdApi(chatId, skip);
     if (res.success) {
       setChatHeaderData(res.chatHeaderData);
       if (res.data.length === 0) {
         return true; // No more messages to load so indicate no more load
       }
-
       setMessages((prevMessages) => [...prevMessages, ...res.data]);
     } else {
       dispatch(setError(res.message));
@@ -153,7 +150,7 @@ export default function useChatArea() {
 
   // SEND MESSAGE LOGIN ENDS HERE **
 
-  const messageReceived = (data: any) => {
+  const messageReceived = (data?: any) => {
     const { ChatId, Content, Timestamp, UserStatus, Sender, SenderId } = data;
 
     // local function that actually return the passed state with updated status
@@ -190,6 +187,27 @@ export default function useChatArea() {
     dispatch(setArchiveChats(updateChatArray(archiveChats)));
   };
 
+  const allMessagesSeen = () => {
+    // local function that actually return the passed state with updated status
+    const updateChatArray = (chats: any) => {
+      return chats.map((chat: any) => {
+        // if (chat.ChatId == chatId) { // this is the chat i want to push notification to
+        return {
+          ...chat,
+          unSeenMessages: 0,
+        };
+
+        // }
+        // return chat;
+      });
+    };
+
+    dispatch(setPersonalChats(updateChatArray(personalChats)));
+    dispatch(setGroupChats(updateChatArray(groupChats)));
+    dispatch(setPinnedChats(updateChatArray(pinnedChats)));
+    dispatch(setArchiveChats(updateChatArray(archiveChats)));
+  };
+
   useEffect(() => {
     if (socket) {
       // socket function that listen to the message that is newly received (wether i sent it or anyone else)
@@ -210,7 +228,7 @@ export default function useChatArea() {
       });
 
       // the user with userId opened chat and seen all the messages (this user is garaunteed not to be me)
-      socket.on('seenAllMessage', (userId) => {
+      socket.on('seenAllMessage', ({ userId }) => {
         setMessages((prevMessages) => {
           const updatedMessages = prevMessages.map((message) => ({
             ...message,
@@ -245,7 +263,9 @@ export default function useChatArea() {
   }, [socket, chatId, personalChats, groupChats, archiveChats, pinnedChats]);
 
   useEffect(() => {
+    setMessages([]);
     if (socket) {
+      allMessagesSeen();
       socket.emit('chatOpened', chatId);
       return () => {
         socket.off("chatOpened");

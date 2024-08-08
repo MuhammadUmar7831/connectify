@@ -24,7 +24,7 @@ export default function ChatArea() {
   } = useChatArea();
 
   useEffect(() => {
-    fetchMessages();
+    fetchMessages(0);
   }, [chatId]);
 
   return (

@@ -10,7 +10,6 @@ import { setArchiveChats } from "../redux/slices/archiveChats";
 import { combineGroupAndPersonalChats } from "../utils/combineGroupAndPersonalChats";
 import { setAllChats } from "../redux/slices/allChats";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 
 export default function useChatList() {
     const { chatListType } = useSelector((state: RootState) => state.chatListType);
@@ -19,7 +18,6 @@ export default function useChatList() {
     const { groupChats } = useSelector((state: RootState) => state.groupChats);
     const { pinnedChats } = useSelector((state: RootState) => state.pinnedChats);
     const { archiveChats } = useSelector((state: RootState) => state.archiveChats);
-    const { chatId } = useParams<{ chatId: string }>();
 
     const [onlineUser, setOnlineUsers] = useState<number[]>([]); // state to store all active users
 
