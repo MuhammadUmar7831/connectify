@@ -45,7 +45,7 @@ export default function ChatSection({
     const strTime = hours + ":" + minutesStr + " " + ampm;
     return strTime;
   }
-  // const sortedMessages = [...message].sort((a, b) => a.MessageId - b.MessageId);
+  
   return (
     <div
       ref={chatContainerRef}
@@ -59,10 +59,10 @@ export default function ChatSection({
             me={m.SenderId === userId}
             content={m.Content}
             time={`${formatTime(m.Timestamp)}`}
-            status={m.UserStatus[0].Status}
             senderName={m.Sender}
             senderId={m.SenderId}
             messageId={m.MessageId}
+            userStatus={m.UserStatus}
           />
         ) : (
           <MessageReply
@@ -72,10 +72,10 @@ export default function ChatSection({
             message={getMessage(m.ReplyId)?.Content || ""}
             content={m.Content}
             time={`${formatTime(m.Timestamp)}`}
-            status={m.UserStatus[0].Status}
             senderId={m.SenderId}
             messageId={m.MessageId}
             senderName={m.Sender}
+            userStatus={m.UserStatus}
           />
         )
       )}

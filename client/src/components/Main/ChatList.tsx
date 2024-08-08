@@ -25,9 +25,11 @@ export default function ChatList() {
                     {pinnedChats && pinnedChats.map((chat, index) => (
                         <ChatListItem
                             key={index}
+                            userId={chat.UserId}
                             chatId={chat.ChatId}
                             image={chat.Avatar}
                             name={chat.Name}
+                            senderName={chat.SenderName}
                             lastMessage={chat.Content}
                             lastMessageTime={chat.TimeStamp}
                             notification={chat.unSeenMessages}
@@ -42,6 +44,7 @@ export default function ChatList() {
             {chatsToRender && chatsToRender.map((chat, index) => (
                 <ChatListItem
                     key={index}
+                    userId={chat.UserId}
                     chatId={chat.ChatId}
                     image={chat.Avatar}
                     name={chat.Name}

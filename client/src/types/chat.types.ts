@@ -3,12 +3,12 @@ export default interface Chat {
     UserId: number | null;
     Name: string;
     Avatar: string;
-    SenderName?: string | null;
-    MessageId?: number | null;
-    SenderId?: number | null;
-    Content?: string | null;
-    TimeStamp?: string | null;
-    unSeenMessages?: number;
+    SenderName: string | null;
+    MessageId: number | null;
+    SenderId: number | null;
+    Content: string | null;
+    TimeStamp: string | null;
+    unSeenMessages: number;
     isActive: boolean;
     Status: string | null;
 }

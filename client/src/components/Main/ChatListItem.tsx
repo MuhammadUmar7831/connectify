@@ -4,19 +4,22 @@ import Avatar from "../../interface/Avatar";
 import SingleTick from "../../interface/SingleTick";
 import DoubleTick from "../../interface/DoubleTick";
 
+// userId will be null in case of group chat
+// if chat is group chat (i.e. userId is null) than there is chance that the chat has no last message 
 interface props {
+    userId: number | null;
     chatId: number;
     image: string;
     name: string;
-    senderName?: string | null,
-    lastMessage?: string | null;
-    lastMessageTime?: string | null;
-    notification?: number;
-    isActive?: boolean;
+    senderName: string | null,
+    lastMessage: string | null;
+    lastMessageTime: string | null;
+    notification: number;
+    isActive: boolean;
     status: string | null
 }
 
-export default function ChatListItem({ chatId, image, name, senderName, lastMessage, lastMessageTime, notification, isActive, status }: props) {
+export default function ChatListItem({ userId, chatId, image, name, senderName, lastMessage, lastMessageTime, notification, isActive, status }: props) {
     return (
         <Link to={`/chat/${chatId}`}>
             <div className="flex justify-between gap-2 p-4 text-gray-200 hover:bg-gray-100">
@@ -33,7 +36,7 @@ export default function ChatListItem({ chatId, image, name, senderName, lastMess
                                 <DoubleTick size="16" className="text-orange" />
                             ) : <></>
                             }
-                            {senderName ? <>{senderName}: </> : <></>}{lastMessage?.substring(0, 30)}
+                            {userId === null && senderName ? <>{senderName}: </> : <></>}{lastMessage?.substring(0, 30)}
                             {lastMessage && lastMessage.length > 30 && <>...</>}
                         </p>
                     </div>

@@ -3,41 +3,42 @@ import Clock from "../../interface/Clock";
 import DoubleTick from "../../interface/DoubleTick";
 import SingleTick from "../../interface/SingleTick";
 import { IoIosArrowDown } from "react-icons/io";
+import getMessageStatus from "../../utils/getMessageStatus";
 
-export default function Message({
-  me,
-  content,
-  time,
-  status,
-  senderName,
-  senderId,
-  messageId,
-  onSetReplyClick,
-}: {
+interface Props {
   me: Boolean;
   content: String;
   time: String;
-  status: String;
   senderName: String;
   senderId: number;
   messageId: number;
   onSetReplyClick: any;
-}) {
+  userStatus: {
+    Status: string;
+    UserId: number;
+    UserName: string;
+  }[];
+}
+
+export default function Message(props: Props) {
+  const { me, content, time, senderName, senderId, messageId, onSetReplyClick, userStatus } = props;
+
+  const status = getMessageStatus(userStatus);
+
+
   return (
     <div className={`flex flex-col gap-2 ${me ? "items-end" : "items-start"}`}>
       <span
-        className={`text-xs font-semibold hover:underline cursor-pointer ${
-          me ? " text-orange" : "text-black"
-        }`}
+        className={`text-xs font-semibold hover:underline cursor-pointer ${me ? " text-orange" : "text-black"
+          }`}
       >
         {me ? "You" : senderName}
       </span>
       <div
-        className={`${
-          me
-            ? "bg-orange rounded-l-2xl text-white"
-            : "bg-gray-200 rounded-r-2xl text-black"
-        } rounded-t-2xl p-4 text-sm relative group`}
+        className={`${me
+          ? "bg-orange rounded-l-2xl text-white"
+          : "bg-gray-200 rounded-r-2xl text-black"
+          } rounded-t-2xl p-4 text-sm relative group`}
       >
         <IoIosArrowDown
           onClick={() => {
