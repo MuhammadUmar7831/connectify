@@ -225,7 +225,7 @@ export const getPersonalChats = async (
     ORDER BY TimeStamp DESC;`;
   connection.query(
     sql,
-    [req.userId, req.userId, req.userId, req.userId, req.userId, req.userId],
+    [req.userId, req.userId, req.userId],
     (err: QueryError | null, result: RowDataPacket[]) => {
       if (err) {
         return next(err);
@@ -238,7 +238,6 @@ export const getPersonalChats = async (
           message: "Personal Chats retrieved",
           data: result,
         });
-      // res.status(200).json(result);
     }
   );
 };
@@ -248,8 +247,7 @@ export const getGroupChats = async (
   res: Response,
   next: NextFunction
 ) => {
-  const sql = `${getGroupChatsQuery}
-    WHERE 
+  const sql = `${getGroupChatsQuery} AND
     g.ChatId NOT IN (
         select ChatId from PinnedChats Where UserId = ?
     ) AND 
@@ -259,12 +257,10 @@ export const getGroupChats = async (
     ORDER BY TimeStamp DESC;`;
   connection.query(
     sql,
-    [req.userId, req.userId, req.userId, req.userId, req.userId],
+    [req.userId, req.userId, req.userId],
     (err: QueryError | null, result: RowDataPacket[]) => {
       if (err) {
         return next(err);
-        // console.error('Error executing query:', err);
-        // return res.status(500).json({ error: 'Error executing query' });
       }
 
       res
@@ -289,8 +285,7 @@ export const getArchivedChats = (
         )
         UNION
         ${getGroupChatsQuery}
-        WHERE 
-        g.ChatId IN (
+        AND g.ChatId IN (
             SELECT ChatId FROM ArchivedChats WHERE UserId = ?
         )
         ORDER BY TimeStamp DESC;`;
@@ -301,12 +296,7 @@ export const getArchivedChats = (
       req.userId,
       req.userId,
       req.userId,
-      req.userId,
-      req.userId,
-      req.userId,
-      req.userId,
-      req.userId,
-      req.userId,
+      req.userId
     ],
     (err: QueryError | null, result: RowDataPacket[]) => {
       if (err) {
@@ -338,8 +328,7 @@ export const getPinnedChats = (
         )
         UNION
         ${getGroupChatsQuery}
-        WHERE 
-        g.ChatId IN (
+        AND g.ChatId IN (
             select ChatId from PinnedChats Where UserId = ?
         ) AND 
         g.ChatId NOT IN (
@@ -355,21 +344,12 @@ export const getPinnedChats = (
       req.userId,
       req.userId,
       req.userId,
-      req.userId,
-      req.userId,
-      req.userId,
-      req.userId,
-      req.userId,
-      req.userId,
+      req.userId
     ],
     (err: QueryError | null, result: RowDataPacket[]) => {
       if (err) {
         return next(err);
       }
-      if (result.length == 0)
-        return res
-          .status(404)
-          .send({ success: false, message: "chat not Existed", data: result });
 
       return res
         .status(200)
