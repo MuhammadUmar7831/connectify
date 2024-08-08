@@ -10,4 +10,5 @@ export default interface Chat {
     TimeStamp?: string | null;
     unSeenMessages?: number;
     isActive: boolean;
+    Status: string | null;
 }

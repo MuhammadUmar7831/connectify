@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import formatTimestamp from "../../utils/messageTimeFormater";
 import Avatar from "../../interface/Avatar";
+import SingleTick from "../../interface/SingleTick";
+import DoubleTick from "../../interface/DoubleTick";
 
 interface props {
     chatId: number;
@@ -10,10 +12,11 @@ interface props {
     lastMessage?: string | null;
     lastMessageTime?: string | null;
     notification?: number;
-    isActive?: boolean
+    isActive?: boolean;
+    status: string | null
 }
 
-export default function ChatListItem({ chatId, image, name, senderName, lastMessage, lastMessageTime, notification, isActive }: props) {
+export default function ChatListItem({ chatId, image, name, senderName, lastMessage, lastMessageTime, notification, isActive, status }: props) {
     return (
         <Link to={`/chat/${chatId}`}>
             <div className="flex justify-between gap-2 p-4 text-gray-200 hover:bg-gray-100">
@@ -21,7 +24,18 @@ export default function ChatListItem({ chatId, image, name, senderName, lastMess
                     <Avatar image={image} isActive={isActive} />
                     <div className="flex flex-col gap-2 w-full text-nowrap overflow-hidden">
                         <h1 className="text-black font-semibold overflow-hidden text-ellipsis">{name}</h1>
-                        <p className="text-sm overflow-hidden text-ellipsis">{senderName ? <>{senderName}: </> : <></>}{lastMessage}</p>
+                        <p className="text-sm overflow-hidden flex items-center gap-1">
+                            {status === "sent" ? (
+                                <SingleTick size="16" className="text-gray-200" />
+                            ) : status === "received" ? (
+                                <DoubleTick size="16" className="text-gray-200" />
+                            ) : status === "received" ? (
+                                <DoubleTick size="16" className="text-orange" />
+                            ) : <></>
+                            }
+                            {senderName ? <>{senderName}: </> : <></>}{lastMessage?.substring(0, 30)}
+                            {lastMessage && lastMessage.length > 30 && <>...</>}
+                        </p>
                     </div>
                 </div>
                 <div className="text-sm flex flex-col items-end justify-between gap-1 text-nowrap">

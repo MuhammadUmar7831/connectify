@@ -4,6 +4,13 @@ export const getPersonalChatQuery = `
     u.UserId,
     u.Name, 
     u.Avatar, 
+    CASE
+		WHEN mg_all.SenderId = ? THEN 
+        (
+			select Status from MessageStatusView ms WHERE mg_all.MessageId = ms.MessageId
+        )
+        ELSE null
+	END AS Status,
     CASE 
         WHEN mg_all.SenderId = ? THEN null 
         ELSE null 
@@ -39,6 +46,13 @@ export const getGroupChatsQuery = `
     null As UserId,
     g.Name, 
     g.Avatar, 
+    CASE
+		WHEN mg_all.SenderId = ? THEN 
+        (
+			select Status from MessageStatusView ms WHERE mg_all.MessageId = ms.MessageId
+        )
+        ELSE null
+	END AS Status,
     CASE 
         WHEN mg_all.SenderId = ? THEN 'You' 
         ELSE u.Name 

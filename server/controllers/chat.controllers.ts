@@ -225,7 +225,7 @@ export const getPersonalChats = async (
     ORDER BY TimeStamp DESC;`;
   connection.query(
     sql,
-    [req.userId, req.userId, req.userId, req.userId, req.userId],
+    [req.userId, req.userId, req.userId, req.userId, req.userId, req.userId],
     (err: QueryError | null, result: RowDataPacket[]) => {
       if (err) {
         return next(err);
@@ -259,7 +259,7 @@ export const getGroupChats = async (
     ORDER BY TimeStamp DESC;`;
   connection.query(
     sql,
-    [req.userId, req.userId, req.userId, req.userId],
+    [req.userId, req.userId, req.userId, req.userId, req.userId],
     (err: QueryError | null, result: RowDataPacket[]) => {
       if (err) {
         return next(err);
@@ -298,6 +298,8 @@ export const getArchivedChats = (
   connection.query(
     sqlQuery,
     [
+      req.userId,
+      req.userId,
       req.userId,
       req.userId,
       req.userId,
@@ -348,6 +350,8 @@ export const getPinnedChats = (
   connection.query(
     sqlQuery,
     [
+      req.userId,
+      req.userId,
       req.userId,
       req.userId,
       req.userId,

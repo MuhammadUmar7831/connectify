@@ -32,6 +32,7 @@ export default function ChatList() {
                             lastMessageTime={chat.TimeStamp}
                             notification={chat.unSeenMessages}
                             isActive={isActive(chat.UserId)}
+                            status={chat.Status}
                         />
                     ))}
                 </>
@@ -49,6 +50,7 @@ export default function ChatList() {
                     lastMessageTime={chat.TimeStamp}
                     notification={chat.unSeenMessages}
                     isActive={isActive(chat.UserId)}
+                    status={chat.Status}
                 />
             ))}
         </div>
