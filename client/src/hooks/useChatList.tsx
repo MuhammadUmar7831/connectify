@@ -100,53 +100,6 @@ export default function useChatList() {
         return onlineUser.includes(userId || -1);
     };
 
-    const messageReceived = (data: any) => {
-        const { ChatId, Content, Timestamp, UserStatus, chatType } = data;
-        console.log("Received message data:", data);
-        console.log("Current personalChats:", personalChats);
-        console.log("Current groupChats:", groupChats);
-        console.log("Current pinnedChats:", pinnedChats);
-        console.log("Current archiveChats:", archiveChats);
-
-
-        // local function that actually return the passed state with updated status
-        const updateChatArray = (chats: any) => {
-            console.log("chats", chats)
-            return chats.map((chat: any) => {
-                if (chat.ChatId == ChatId) { // this is the chat i want to push notification to
-                    if (chat.ChatId == chatId) { // this chat is in view
-                        return {
-                            ...chat,
-                            Content,
-                            Timestamp,
-                            UserStatus,
-                            unSeenMessages: 0,
-                        };
-                    } else { // chat not in view
-                        return {
-                            ...chat,
-                            Content,
-                            Timestamp,
-                            UserStatus,
-                            unSeenMessages: (chat.unSeenMessages || 0) + 1,
-                        };
-                    }
-                }
-                return chat;
-            });
-        };
-
-        if (chatType === 'personal') {
-            dispatch(setPersonalChats(updateChatArray(personalChats)));
-        } else if (chatType === 'group') {
-            dispatch(setGroupChats(updateChatArray(groupChats)));
-        } else if (chatType === 'pinned') {
-            dispatch(setPinnedChats(updateChatArray(pinnedChats)));
-        } else if (chatType === 'archived') {
-            dispatch(setArchiveChats(updateChatArray(archiveChats)));
-        }
-    };
-
     // listen to event (emitted every time someone joins or leave socket) 
     // return all the online users
     useEffect(() => {
@@ -156,11 +109,9 @@ export default function useChatList() {
             };
 
             socket.on("getOnlineUsers", handleGetOnlineUsers);
-            // socket.on("messageReceived", messageReceived);
 
             return () => {
                 socket.off("getOnlineUsers", handleGetOnlineUsers);
-                // socket.off("messageReceived", messageReceived);
             };
         }
     }, [socket]);

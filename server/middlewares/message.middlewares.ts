@@ -18,6 +18,9 @@ const isChatMember = async (
     if (!ChatId) {
       ChatId = req.body.ChatId;
     }
+    if (!ChatId) {
+      ChatId = req.query.chatId as string
+    }
 
     const query: string =
       "SELECT * FROM Members WHERE ChatId = ? AND UserId = ?";
@@ -67,7 +70,7 @@ const isMessageTimeFiveMinutes = async (
         next(errorHandler(403, "More than 5 minutes passed for the message"));
       }
       console.log(differenceInMinutes)
-      
+
       next();
     }
   );

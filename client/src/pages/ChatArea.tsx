@@ -32,8 +32,9 @@ export default function ChatArea() {
       <ChatHeader data={chatHeaderData} />
       <ChatSection
         onSetReplyClick={onSetReplyClick}
-        message={messages}
+        messages={messages}
         userId={data.user.UserId}
+        fetchMoreMessages={fetchMessages}
       />
       <SendMessageBox
         onSetReplyClick={onSetReplyClick}

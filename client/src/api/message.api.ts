@@ -1,8 +1,8 @@
 import axios from "../config/axios.config";
 
-export const getMessageByChatIdApi = async (chatId: any) => {
+export const getMessageByChatIdApi = async (chatId: any, skip: number) => {
   try {
-    const response = await axios.get(`/api/message/get/${chatId}`);
+    const response = await axios.get(`/api/message/get?chatId=${chatId}&limit=${5}&skip=${skip}`);
     return response.data;
   } catch (error: any) {
     if (error.response) return error.response.data;

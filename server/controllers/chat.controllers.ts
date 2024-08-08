@@ -210,154 +210,91 @@ export const unPinChat = async (req: authRequest, res: Response, next: NextFunct
 //     sql = 'DELETE FROM Chats WHERE '
 // }
 
-export const getPersonalChats = async (
-  req: authRequest,
-  res: Response,
-  next: NextFunction
-) => {
+export const getPersonalChats = async (req: authRequest, res: Response, next: NextFunction) => {
   const sql = `${getPersonalChatQuery}  AND
     c.ChatId NOT IN (
-        select ChatId from PinnedChats Where UserId = ?
+        select ChatId from PinnedChats Where UserId = m.UserId
     ) AND 
     c.ChatId NOT IN (
-        SELECT ChatId FROM ArchivedChats WHERE UserId = ?
+        SELECT ChatId FROM ArchivedChats WHERE UserId = m.UserId
     )
     ORDER BY TimeStamp DESC;`;
-  connection.query(
-    sql,
-    [req.userId, req.userId, req.userId],
-    (err: QueryError | null, result: RowDataPacket[]) => {
-      if (err) {
-        return next(err);
-      }
-
-      res
-        .status(200)
-        .send({
-          success: true,
-          message: "Personal Chats retrieved",
-          data: result,
-        });
+  connection.query(sql, [req.userId], (err: QueryError | null, result: RowDataPacket[]) => {
+    if (err) {
+      return next(err);
     }
+
+    res.status(200).send({ success: true, message: "Personal Chats retrieved", data: result, });
+  }
   );
 };
 
-export const getGroupChats = async (
-  req: authRequest,
-  res: Response,
-  next: NextFunction
-) => {
+export const getGroupChats = async (req: authRequest, res: Response, next: NextFunction) => {
   const sql = `${getGroupChatsQuery} AND
     g.ChatId NOT IN (
-        select ChatId from PinnedChats Where UserId = ?
+        select ChatId from PinnedChats Where UserId = m.UserId
     ) AND 
     g.ChatId NOT IN (
-        SELECT ChatId FROM ArchivedChats WHERE UserId = ?
+        SELECT ChatId FROM ArchivedChats WHERE UserId = m.UserId
     )
     ORDER BY TimeStamp DESC;`;
-  connection.query(
-    sql,
-    [req.userId, req.userId, req.userId],
-    (err: QueryError | null, result: RowDataPacket[]) => {
-      if (err) {
-        return next(err);
-      }
-
-      res
-        .status(200)
-        .send({
-          success: true,
-          message: "Group chats retrieved",
-          data: result,
-        });
+  connection.query(sql, [req.userId], (err: QueryError | null, result: RowDataPacket[]) => {
+    if (err) {
+      return next(err);
     }
+
+    res.status(200).send({ success: true, message: "Group chats retrieved", data: result });
+  }
   );
 };
-export const getArchivedChats = (
-  req: authRequest,
-  res: Response,
-  next: NextFunction
-) => {
+
+export const getArchivedChats = (req: authRequest, res: Response, next: NextFunction) => {
   const sqlQuery = `
         ${getPersonalChatQuery} AND
         c.ChatId IN (
-            SELECT ChatId FROM ArchivedChats WHERE UserId = ?
+            SELECT ChatId FROM ArchivedChats WHERE UserId = m.UserId
         )
         UNION
         ${getGroupChatsQuery}
         AND g.ChatId IN (
-            SELECT ChatId FROM ArchivedChats WHERE UserId = ?
+            SELECT ChatId FROM ArchivedChats WHERE UserId = m.UserId
         )
         ORDER BY TimeStamp DESC;`;
-
-  connection.query(
-    sqlQuery,
-    [
-      req.userId,
-      req.userId,
-      req.userId,
-      req.userId
-    ],
-    (err: QueryError | null, result: RowDataPacket[]) => {
-      if (err) {
-        return next(err);
-      }
-      res
-        .status(200)
-        .send({
-          success: true,
-          message: "Archived chats retrieved successfully",
-          data: result,
-        });
+        
+  connection.query(sqlQuery, new Array(2).fill(req.userId), (err: QueryError | null, result: RowDataPacket[]) => {
+    if (err) {
+      return next(err);
     }
+    res.status(200).send({ success: true, message: "Archived chats retrieved successfully", data: result, });
+  }
   );
 };
 
-export const getPinnedChats = (
-  req: authRequest,
-  res: Response,
-  next: NextFunction
-) => {
+export const getPinnedChats = (req: authRequest, res: Response, next: NextFunction) => {
   const sqlQuery = `
         ${getPersonalChatQuery} AND
         c.ChatId IN (
-        SELECT ChatId FROM PinnedChats Where UserId = ?
+        SELECT ChatId FROM PinnedChats Where UserId = m.UserId
         ) AND 
         c.ChatId NOT IN (
-            SELECT ChatId FROM ArchivedChats WHERE UserId = ?
+            SELECT ChatId FROM ArchivedChats WHERE UserId = m.UserId
         )
         UNION
         ${getGroupChatsQuery}
         AND g.ChatId IN (
-            select ChatId from PinnedChats Where UserId = ?
+            select ChatId from PinnedChats Where UserId = m.UserId
         ) AND 
         g.ChatId NOT IN (
-            SELECT ChatId FROM ArchivedChats WHERE UserId = ?
+            SELECT ChatId FROM ArchivedChats WHERE UserId = m.UserId
         )
         ORDER BY TimeStamp DESC;`;
 
-  connection.query(
-    sqlQuery,
-    [
-      req.userId,
-      req.userId,
-      req.userId,
-      req.userId,
-      req.userId,
-      req.userId
-    ],
-    (err: QueryError | null, result: RowDataPacket[]) => {
-      if (err) {
-        return next(err);
-      }
-
-      return res
-        .status(200)
-        .send({
-          success: true,
-          message: "Archieved chats retrieved successfully",
-          data: result,
-        });
+  connection.query(sqlQuery, new Array(2).fill(req.userId), (err: QueryError | null, result: RowDataPacket[]) => {
+    if (err) {
+      return next(err);
     }
+
+    return res.status(200).send({ success: true, message: "Pinned chats retrieved successfully", data: result, });
+  }
   );
 };

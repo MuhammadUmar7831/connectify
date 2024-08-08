@@ -11,6 +11,7 @@ interface props {
     chatId: number;
     image: string;
     name: string;
+    senderIsMe: boolean;
     senderName: string | null,
     lastMessage: string | null;
     lastMessageTime: string | null;
@@ -19,7 +20,15 @@ interface props {
     status: string | null
 }
 
-export default function ChatListItem({ userId, chatId, image, name, senderName, lastMessage, lastMessageTime, notification, isActive, status }: props) {
+export default function ChatListItem({ userId, chatId, image, name, senderIsMe, senderName, lastMessage, lastMessageTime, notification, isActive, status }: props) {
+    const content =
+        lastMessage ?
+            userId === null ? // mean this is group chat
+                senderIsMe ?
+                    `You: ${lastMessage}` // sender is me
+                    : `${senderName}: ${lastMessage}`  // // sender is not me
+                : lastMessage // not group so not senderName
+            : ''; // there is no last message for this chat
     return (
         <Link to={`/chat/${chatId}`}>
             <div className="flex justify-between gap-2 p-4 text-gray-200 hover:bg-gray-100">
@@ -28,16 +37,16 @@ export default function ChatListItem({ userId, chatId, image, name, senderName, 
                     <div className="flex flex-col gap-2 w-full text-nowrap overflow-hidden">
                         <h1 className="text-black font-semibold overflow-hidden text-ellipsis">{name}</h1>
                         <p className="text-sm overflow-hidden flex items-center gap-1">
-                            {status === "sent" ? (
+                            {senderIsMe && (status === "sent" ? (
                                 <SingleTick size="16" className="text-gray-200" />
                             ) : status === "received" ? (
                                 <DoubleTick size="16" className="text-gray-200" />
                             ) : status === "received" ? (
                                 <DoubleTick size="16" className="text-orange" />
-                            ) : <></>
+                            ) : <></>)
                             }
-                            {userId === null && senderName ? <>{senderName}: </> : <></>}{lastMessage?.substring(0, 30)}
-                            {lastMessage && lastMessage.length > 30 && <>...</>}
+                            {content?.substring(0, 30)}
+                            {content && content.length > 30 && <>...</>}
                         </p>
                     </div>
                 </div>
@@ -47,6 +56,6 @@ export default function ChatListItem({ userId, chatId, image, name, senderName, 
                 </div>
             </div>
             <div className="h-[1px] bg-gray-100 mx-auto w-5/6 my-[-1px]" />
-        </Link>
+        </Link >
     )
 }

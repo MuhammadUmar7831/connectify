@@ -5,40 +5,32 @@ import { QueryError, RowDataPacket } from "mysql2";
 import errorHandler from "../errors/error";
 import chatHeaderDataQuery from '../utils/chatHeaderdataQuery';
 
-export const getMessageOfChats = async (
-  req: authRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  const chatId = parseInt(req.params.ChatId);
-  if (isNaN(chatId)) {
-    return next(errorHandler(400, 'Invalid Params Expected {ChatId: number}'));
-  }
+export const getMessageOfChats = async (req: authRequest, res: Response, next: NextFunction) => {
+  const chatId = parseInt(req.query.chatId as string);
+  const limit = parseInt(req.query.limit as string);
+  const skip = parseInt(req.query.skip as string);
 
   //   Query to get Chat Messages based on ChatId with message status
   // selecting from view ChatMessages (for detail see lib/views/ChatMessages.sql)
-  var query = `SELECT * FROM ChatMessages WHERE ChatId = ? ORDER BY Timestamp;`;
+  var query = `SELECT * FROM ChatMessages WHERE ChatId = ? ORDER BY Timestamp DESC LIMIT ? OFFSET ?;`;
 
-  connection.query(
-    query,
-    [req.params.ChatId, req.userId],
-    (err: QueryError | null, result: RowDataPacket[]) => {
-      if (err) {
-        return next(err);
-      }
-
-      query = `${chatHeaderDataQuery}`;
-      connection.query(query, [req.userId, req.userId, chatId, req.userId], (err: QueryError | null, chatHeaderData: RowDataPacket[]) => {
-        if (err) { return next(err); }
-
-        res.status(200).send({
-          success: true,
-          message: "Messages for Chat found",
-          data: result,
-          chatHeaderData: chatHeaderData[0]
-        });
-      })
+  connection.query(query, [chatId, limit, skip], (err: QueryError | null, result: RowDataPacket[]) => {
+    if (err) {
+      return next(err);
     }
+
+    query = `${chatHeaderDataQuery}`;
+    connection.query(query, [req.userId, req.userId, chatId, req.userId], (err: QueryError | null, chatHeaderData: RowDataPacket[]) => {
+      if (err) { return next(err); }
+
+      res.status(200).send({
+        success: true,
+        message: "Messages for Chat found",
+        data: result,
+        chatHeaderData: chatHeaderData[0]
+      });
+    })
+  }
   );
 };
 

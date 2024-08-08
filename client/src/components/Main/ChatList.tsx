@@ -1,8 +1,12 @@
 import ChatListItem from "./ChatListItem";
 import useChatList from "../../hooks/useChatList";
 import ChatListSkeleton from "../../interface/skeletons/ChatListSkeleton";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
 
 export default function ChatList() {
+
+    const { user } = useSelector((state: RootState) => state.user)
 
     const {
         chatsToRender,
@@ -29,9 +33,10 @@ export default function ChatList() {
                             chatId={chat.ChatId}
                             image={chat.Avatar}
                             name={chat.Name}
+                            senderIsMe={user !== null ? user.UserId === chat.SenderId : false}
                             senderName={chat.SenderName}
                             lastMessage={chat.Content}
-                            lastMessageTime={chat.TimeStamp}
+                            lastMessageTime={chat.Timestamp}
                             notification={chat.unSeenMessages}
                             isActive={isActive(chat.UserId)}
                             status={chat.Status}
@@ -48,9 +53,10 @@ export default function ChatList() {
                     chatId={chat.ChatId}
                     image={chat.Avatar}
                     name={chat.Name}
+                    senderIsMe={user !== null ? user.UserId === chat.SenderId : false}
                     senderName={chat.SenderName}
                     lastMessage={chat.Content}
-                    lastMessageTime={chat.TimeStamp}
+                    lastMessageTime={chat.Timestamp}
                     notification={chat.unSeenMessages}
                     isActive={isActive(chat.UserId)}
                     status={chat.Status}

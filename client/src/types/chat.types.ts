@@ -7,7 +7,7 @@ export default interface Chat {
     MessageId: number | null;
     SenderId: number | null;
     Content: string | null;
-    TimeStamp: string | null;
+    Timestamp: string | null;
     unSeenMessages: number;
     isActive: boolean;
     Status: string | null;

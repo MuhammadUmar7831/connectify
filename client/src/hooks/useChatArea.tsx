@@ -11,10 +11,19 @@ import { getSocket } from "../config/scoket.config";
 import ChatHeaderResponse from "../types/chatHeaderReponse.type";
 import { RootState } from "../redux/store";
 import Reply from "../types/reply.type";
+import { setPersonalChats } from "../redux/slices/personalChats";
+import { setGroupChats } from "../redux/slices/groupChats";
+import { setPinnedChats } from "../redux/slices/pinnedChats";
+import { setArchiveChats } from "../redux/slices/archiveChats";
 
 // Define the types for the message
 
 export default function useChatArea() {
+  const { personalChats } = useSelector((state: RootState) => state.personalChats);
+  const { groupChats } = useSelector((state: RootState) => state.groupChats);
+  const { pinnedChats } = useSelector((state: RootState) => state.pinnedChats);
+  const { archiveChats } = useSelector((state: RootState) => state.archiveChats);
+
   const socket = getSocket();
   const [Content, setContent] = useState("");
   const { chatId } = useParams<{ chatId: string }>();
@@ -44,44 +53,42 @@ export default function useChatArea() {
     Content: string,
     reply: Reply
   ) => {
-    // Getting any message object of sender
-    const messageFromSender = messages.find(
-      (message) => message.SenderId === user?.UserId
-    );
 
-    if (messageFromSender) {
-      // Create a new message object
-      const newMessage: MessageResponse = {
-        ...messageFromSender,
-        Content,
-        MessageId: -1,
-        Timestamp: "",
-        UserStatus: [{ Status: "sending", UserId: -1, UserName: "" }],
-        ReplyId: reply.ReplyId,
-        ReplyContent: reply.ReplyContent,
-        ReplySenderId: reply.ReplySenderId,
-        ReplySender: reply.ReplySender,
-        // Add any other properties as needed
-      };
-
-      // Add the new message to the messages array
-      setMessages((prevMessages) => {
-        const updatedMessages = [...prevMessages, newMessage];
-        return updatedMessages;
-      });
-    }
+    // Create a new message object
+    const newMessage: MessageResponse = {
+      Content,
+      ChatId: parseInt(chatId ? chatId : 'This is not Possible.'),
+      MessageId: -1,
+      Timestamp: "",
+      SenderId: user !== null ? user.UserId : -1,
+      Sender: user !== null ? user.Name : 'Why not you stupid Bastard',
+      UserStatus: [{ Status: "sending", UserId: -1, UserName: "" }],
+      ReplyId: reply.ReplyId,
+      ReplyContent: reply.ReplyContent,
+      ReplySenderId: reply.ReplySenderId,
+      ReplySender: reply.ReplySender
+    };
+    setMessages((prevMessages) => {
+      const updatedMessages = [newMessage, ...prevMessages];
+      return updatedMessages;
+    });
   };
 
   // ** GET MESSAGE LOGIC STARTS HERE
 
-  const fetchMessages = async () => {
-    const res = await getMessageByChatIdApi(chatId);
+  const fetchMessages = async (): Promise<boolean> => {
+    const res = await getMessageByChatIdApi(chatId, messages.length);
     if (res.success) {
       setChatHeaderData(res.chatHeaderData);
-      setMessages(res.data);
+      if (res.data.length === 0) {
+        return true; // No more messages to load so indicate no more load
+      }
+
+      setMessages((prevMessages) => [...prevMessages, ...res.data]);
     } else {
       dispatch(setError(res.message));
     }
+    return false;
   };
   // GET MESSAGE LOGIC ENDS HERE **
 
@@ -116,9 +123,11 @@ export default function useChatArea() {
       tempReply.ReplyId
     );
     // socket trigger to push notification
-    socket?.emit("messageSent", response.data.MessageId);
-    // socket trigger to update seen status for each member of chat except me
-    if (!response.success) {
+    if (response.success) {
+      // socket trigger to update seen status for each member of chat
+      socket?.emit("messageSent", response.data.MessageId);
+    }
+    else {
       // Showing that message was not sent and error occurred
       setMessages((prevMessages) => {
         return prevMessages.map((message) =>
@@ -144,22 +153,55 @@ export default function useChatArea() {
 
   // SEND MESSAGE LOGIN ENDS HERE **
 
+  const messageReceived = (data: any) => {
+    const { ChatId, Content, Timestamp, UserStatus, Sender, SenderId } = data;
+
+    // local function that actually return the passed state with updated status
+    const updateChatArray = (chats: any) => {
+      return chats.map((chat: any) => {
+        if (chat.ChatId == ChatId) { // this is the chat i want to push notification to
+          if (chat.ChatId == chatId) { // this chat is in view
+            return {
+              ...chat,
+              SenderName: Sender,
+              SenderId,
+              Content,
+              Timestamp,
+              UserStatus,
+              unSeenMessages: 0,
+            };
+          } else { // chat not in view
+            return {
+              ...chat,
+              Content,
+              Timestamp,
+              UserStatus,
+              unSeenMessages: (chat.unSeenMessages || 0) + 1,
+            };
+          }
+        }
+        return chat;
+      });
+    };
+
+    dispatch(setPersonalChats(updateChatArray(personalChats)));
+    dispatch(setGroupChats(updateChatArray(groupChats)));
+    dispatch(setPinnedChats(updateChatArray(pinnedChats)));
+    dispatch(setArchiveChats(updateChatArray(archiveChats)));
+  };
+
   useEffect(() => {
     if (socket) {
       // socket function that listen to the message that is newly received (wether i sent it or anyone else)
       socket.on("messageReceived", (data) => {
+        messageReceived(data) // function to update chat list on left (main area)
         if (data.ChatId == chatId) { // do only if we have oppened the same chat
           setMessages((prevMessages) => {
             const updatedMessages = prevMessages.filter(
               (message) => message.MessageId !== -1
             );
 
-            updatedMessages.push({
-              ...data,
-              UserStatus: data.UserStatus,
-            });
-
-            return updatedMessages;
+            return [data, ...updatedMessages];
           });
           socket.emit('singleMessageSeen', data.MessageId);
         } else {
@@ -200,7 +242,7 @@ export default function useChatArea() {
         socket.off("singleMessageHasBeenSeen");
       };
     }
-  }, [socket, chatId]);
+  }, [socket, chatId, personalChats, groupChats, archiveChats, pinnedChats]);
 
   useEffect(() => {
     if (socket) {
