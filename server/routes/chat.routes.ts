@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import { archiveChat, createPersonalChat, getPersonalChats, getGroupChats, getArchivedChats, getPinnedChats, unArchiveChat, pinChat, unPinChat } from "../controllers/chat.controllers";
+import { archiveChat, createPersonalChat, getPersonalChats, getGroupChats, getArchivedChats, getPinnedChats, unArchiveChat, pinChat, unPinChat, getChatHeader } from "../controllers/chat.controllers";
 import tryCatch from "../middlewares/tryCatch";
 import authenticate from "../middlewares/authenticate";
 import isMember from '../middlewares/isMember';
+import { isChatMember } from '../middlewares/message.middlewares';
 
 const router = Router();
 
@@ -16,5 +17,8 @@ router.put('/archive', authenticate, tryCatch(archiveChat)); //route for archivi
 router.delete('/unArchive', authenticate, tryCatch(unArchiveChat)); //route for unArchiving chat
 router.put('/pin', authenticate, tryCatch(isMember), tryCatch(pinChat)); //route for pinning chat
 router.delete('/unPin', authenticate, tryCatch(isMember), tryCatch(unPinChat)); //route for unArchiving chat
+
+// keep it separate (as this is not a sementic route just created to get data for chat area header section)
+router.get('/get/header', authenticate, isChatMember, tryCatch(getChatHeader));
 
 export default router;

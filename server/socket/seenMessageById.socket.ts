@@ -24,6 +24,9 @@ export const messageSeenById = async (userId: string, messageId: number) => {
             connection.query(query, [messageId], (err: QueryError | null, result: RowDataPacket[]) => {
                 if (err) {
                     reject(err);
+                } else if (result.length === 0) {
+                    console.log('This is not Possible')
+                    reject(new Error('Why not You Stupid Bastard?'))
                 } else {
                     resolve(result[0]);
                 }

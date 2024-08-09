@@ -39,9 +39,9 @@ export default function SendMessageBox(props: any) {
           onChange={(e: ChangeEvent<HTMLInputElement>) => onContentChange(e.target.value)}
           value={Content}
           placeholder="Type a message"
+          id="sendMessageInput"
           type="text"
           name="Content"
-          id="Content"
           className="p-2 w-full outline-none  rounded-md"
         />
         <button title="send button" type="submit">

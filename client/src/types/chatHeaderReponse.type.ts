@@ -8,6 +8,7 @@ interface Members {
 }
 
 export default interface ChatHeaderResponse {
+    InfoId: number;
     Type: string;
     ChatName: string;
     ChatAvatar: string;

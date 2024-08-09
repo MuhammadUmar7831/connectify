@@ -2,6 +2,16 @@ const query = `
 SELECT 
     c.Type,
     CASE
+        WHEN c.Type = 'Group' THEN g.GroupId
+        ELSE (
+            SELECT u.UserId
+            FROM Users u
+            JOIN Members m ON u.UserId = m.UserId
+            WHERE m.ChatId = c.ChatId AND u.UserId != ?
+            LIMIT 1
+        )
+    END AS InfoId,
+    CASE
         WHEN c.Type = 'Group' THEN g.Name
         ELSE (
             SELECT u.Name

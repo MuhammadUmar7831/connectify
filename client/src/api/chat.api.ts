@@ -103,3 +103,16 @@ export const unPinChatApi = async (body: { chatId: number }) => {
         }
     }
 }
+
+export const getChatHeaderDataApi = async (chatId: number) => {
+    try {
+        const response = await axios.get(`/api/chat/get/header?chatId=${chatId}`);
+        return response.data;
+    } catch (error: any) {
+        if (error.response) {
+            return error.response.data;
+        } else {
+            return { success: false, message: 'Server is Down' }
+        }
+    }
+}

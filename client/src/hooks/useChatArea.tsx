@@ -15,6 +15,8 @@ import { setPersonalChats } from "../redux/slices/personalChats";
 import { setGroupChats } from "../redux/slices/groupChats";
 import { setPinnedChats } from "../redux/slices/pinnedChats";
 import { setArchiveChats } from "../redux/slices/archiveChats";
+import getMessageStatus from "../utils/getMessageStatus";
+import { getChatHeaderDataApi } from "../api/chat.api";
 
 // Define the types for the message
 
@@ -43,6 +45,9 @@ export default function useChatArea() {
   ) => {
     setReply({ ReplyId, ReplyContent, ReplySenderId, ReplySender });
   };
+  const sendInput: HTMLElement | null = document.getElementById('sendMessageInput')
+  if (sendInput !== null)
+    sendInput.focus();
 
   const addDummyMessageObjectToMessageArray = async (
     Content: string,
@@ -77,7 +82,6 @@ export default function useChatArea() {
     }
     const res = await getMessageByChatIdApi(chatId, skip);
     if (res.success) {
-      setChatHeaderData(res.chatHeaderData);
       if (res.data.length === 0) {
         return true; // No more messages to load so indicate no more load
       }
@@ -88,6 +92,21 @@ export default function useChatArea() {
     return false;
   };
   // GET MESSAGE LOGIC ENDS HERE **
+
+  const getChatHeaderData = async () => {
+    if (!chatId || isNaN(parseInt(chatId))) {
+      return;
+    }
+    const res = await getChatHeaderDataApi(parseInt(chatId));
+    if (res.success) {
+      console.log(res.data)
+      setChatHeaderData(res.data)
+    }
+    else {
+      dispatch(setError(res.message));
+    }
+
+  }
 
   // ** SEND MESSAGE LOGIC STARTS HERE
 
@@ -191,14 +210,35 @@ export default function useChatArea() {
     // local function that actually return the passed state with updated status
     const updateChatArray = (chats: any) => {
       return chats.map((chat: any) => {
-        // if (chat.ChatId == chatId) { // this is the chat i want to push notification to
-        return {
-          ...chat,
-          unSeenMessages: 0,
-        };
+        if (chat.ChatId == chatId) { // this is the chat i want to set un seen messages to 0
+          return {
+            ...chat,
+            unSeenMessages: 0,
+          };
 
-        // }
-        // return chat;
+        } else
+          return chat;
+      });
+    };
+
+    dispatch(setPersonalChats(updateChatArray(personalChats)));
+    dispatch(setGroupChats(updateChatArray(groupChats)));
+    dispatch(setPinnedChats(updateChatArray(pinnedChats)));
+    dispatch(setArchiveChats(updateChatArray(archiveChats)));
+  };
+
+  const singleMessageHasBeenSeen = (newUserStatus: any, chatId: any) => {
+    // local function that actually return the passed state with updated status
+    const updateChatArray = (chats: any) => {
+      return chats.map((chat: any) => {
+        if (chat.ChatId == chatId) { // this is the chat i want to update the status calculated as one user seen the last message
+          return {
+            ...chat,
+            Status: getMessageStatus(newUserStatus),
+          };
+
+        } else
+          return chat;
       });
     };
 
@@ -212,6 +252,7 @@ export default function useChatArea() {
     if (socket) {
       // socket function that listen to the message that is newly received (wether i sent it or anyone else)
       socket.on("messageReceived", (data) => {
+        console.log('first')
         messageReceived(data) // function to update chat list on left (main area)
         if (data.ChatId == chatId) { // do only if we have oppened the same chat
           setMessages((prevMessages) => {
@@ -228,7 +269,7 @@ export default function useChatArea() {
       });
 
       // the user with userId opened chat and seen all the messages (this user is garaunteed not to be me)
-      socket.on('seenAllMessage', ({ userId }) => {
+      socket.on('seenAllMessage', (userId) => {
         setMessages((prevMessages) => {
           const updatedMessages = prevMessages.map((message) => ({
             ...message,
@@ -240,17 +281,27 @@ export default function useChatArea() {
         });
       });
 
-      socket.on('singleMessageHasBeenSeen', (data: any) => {
+      socket.on('singleMessageHasBeenSeen', (userId, messageId) => {
+        let newUserStatus: any = [];
+        let chatId = -1;
         setMessages((prevMessages) => {
           const updateSeenMessage = prevMessages.map((message) => {
-            if (message.MessageId == data.MessageId) {
-              return { ...message, ...data };
+            if (message.MessageId == messageId) {
+              chatId = message.ChatId;
+              newUserStatus = message.UserStatus.map((status) =>
+                status.UserId == userId ? { ...status, Status: 'seen' } : status
+              )
+              return {
+                ...message,
+                UserStatus: newUserStatus
+              };
             } else {
               return message
             }
           })
           return updateSeenMessage;
         })
+        singleMessageHasBeenSeen(newUserStatus, chatId);
       })
 
       // Clean up the socket listener when the component unmounts
@@ -264,8 +315,11 @@ export default function useChatArea() {
 
   useEffect(() => {
     setMessages([]);
+    if ([] && []) { }
     if (socket) {
-      allMessagesSeen();
+      if (personalChats !== null && groupChats !== null && archiveChats !== null && pinnedChats !== null) {
+        allMessagesSeen();
+      }
       socket.emit('chatOpened', chatId);
       return () => {
         socket.off("chatOpened");
@@ -273,6 +327,11 @@ export default function useChatArea() {
     }
   }, [socket, chatId]);
 
+
+  useEffect(() => {
+    getChatHeaderData();
+    fetchMessages(0);
+  }, [chatId]);
 
   return {
     onContentChange,

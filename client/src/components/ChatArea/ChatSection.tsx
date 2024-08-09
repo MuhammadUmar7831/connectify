@@ -88,8 +88,10 @@ export default function ChatSection({ messages, userId, onSetReplyClick, fetchMo
               content={m.Content}
               time={`${formatTime(m.Timestamp)}`}
               senderId={m.SenderId}
-              messageId={m.MessageId}
               senderName={m.Sender}
+              replySenderId={m.ReplySenderId}
+              replySender={m.ReplySender}
+              messageId={m.MessageId}
               userStatus={m.UserStatus}
             />
           )

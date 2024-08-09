@@ -3,7 +3,6 @@ import { authRequest } from "../middlewares/authenticate";
 import connection from "../config/db";
 import { QueryError, RowDataPacket } from "mysql2";
 import errorHandler from "../errors/error";
-import chatHeaderDataQuery from '../utils/chatHeaderdataQuery';
 
 export const getMessageOfChats = async (req: authRequest, res: Response, next: NextFunction) => {
   const chatId = parseInt(req.query.chatId as string);
@@ -19,17 +18,11 @@ export const getMessageOfChats = async (req: authRequest, res: Response, next: N
       return next(err);
     }
 
-    query = `${chatHeaderDataQuery}`;
-    connection.query(query, [req.userId, req.userId, chatId, req.userId], (err: QueryError | null, chatHeaderData: RowDataPacket[]) => {
-      if (err) { return next(err); }
-
-      res.status(200).send({
-        success: true,
-        message: "Messages for Chat found",
-        data: result,
-        chatHeaderData: chatHeaderData[0]
-      });
-    })
+    res.status(200).send({
+      success: true,
+      message: "Messages for Chat found",
+      data: result
+    });
   }
   );
 };

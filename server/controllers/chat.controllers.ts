@@ -7,6 +7,7 @@ import {
   getGroupChatsQuery,
   getPersonalChatQuery,
 } from "../utils/getChatQuries";
+import chatHeaderDataQuery from '../utils/chatHeaderdataQuery';
 
 export const createPersonalChat = async (
   req: authRequest,
@@ -260,7 +261,7 @@ export const getArchivedChats = (req: authRequest, res: Response, next: NextFunc
             SELECT ChatId FROM ArchivedChats WHERE UserId = m.UserId
         )
         ORDER BY TimeStamp DESC;`;
-        
+
   connection.query(sqlQuery, new Array(2).fill(req.userId), (err: QueryError | null, result: RowDataPacket[]) => {
     if (err) {
       return next(err);
@@ -298,3 +299,20 @@ export const getPinnedChats = (req: authRequest, res: Response, next: NextFuncti
   }
   );
 };
+
+export const getChatHeader = (req: authRequest, res: Response, next: NextFunction) => {
+  const chatId = parseInt(req.query.chatId as string);
+
+  connection.query(chatHeaderDataQuery, [req.userId, req.userId, req.userId, chatId, req.userId], (err: QueryError | null, chatHeaderData: RowDataPacket[]) => {
+    if (err) { return next(err); }
+    if (chatHeaderData.length === 0) {
+      return next(errorHandler(404, 'Chat not Found'))
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "Messages for Chat found",
+      data: chatHeaderData[0]
+    });
+  })
+}
