@@ -99,7 +99,6 @@ export default function useChatArea() {
     }
     const res = await getChatHeaderDataApi(parseInt(chatId));
     if (res.success) {
-      console.log(res.data)
       setChatHeaderData(res.data)
     }
     else {
@@ -252,7 +251,6 @@ export default function useChatArea() {
     if (socket) {
       // socket function that listen to the message that is newly received (wether i sent it or anyone else)
       socket.on("messageReceived", (data) => {
-        console.log('first')
         messageReceived(data) // function to update chat list on left (main area)
         if (data.ChatId == chatId) { // do only if we have oppened the same chat
           setMessages((prevMessages) => {
@@ -262,6 +260,7 @@ export default function useChatArea() {
 
             return [data, ...updatedMessages];
           });
+          // singleMessageSeen emitted
           socket.emit('singleMessageSeen', data.MessageId);
         } else {
           document.getElementById("notification")?.click(); // if this chat is not view whose message is received than play audio
@@ -282,6 +281,7 @@ export default function useChatArea() {
       });
 
       socket.on('singleMessageHasBeenSeen', (userId, messageId) => {
+        // singleMessageHasBeenSeen is being listened
         let newUserStatus: any = [];
         let chatId = -1;
         setMessages((prevMessages) => {

@@ -29,6 +29,7 @@ export default function ChatListItem({ userId, chatId, image, name, senderIsMe, 
                     : `${senderName}: ${lastMessage}`  // // sender is not me
                 : lastMessage // not group so not senderName
             : ''; // there is no last message for this chat
+
     return (
         <Link to={`/chat/${chatId}`}>
             <div className="flex justify-between gap-2 p-4 text-gray-200 hover:bg-gray-100">
@@ -41,7 +42,7 @@ export default function ChatListItem({ userId, chatId, image, name, senderIsMe, 
                                 <SingleTick size="16" className="text-gray-200" />
                             ) : status === "received" ? (
                                 <DoubleTick size="16" className="text-gray-200" />
-                            ) : status === "received" ? (
+                            ) : status === "seen" ? (
                                 <DoubleTick size="16" className="text-orange" />
                             ) : <></>)
                             }

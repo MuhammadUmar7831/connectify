@@ -19,7 +19,7 @@ const getMessageStatus = (userStatus: {
             sent++;
         } else if (userStatus[i].Status === 'received') {
             received++;
-        } else {
+        } else if (userStatus[i].Status === 'seen') {
             seen++;
         }
     }

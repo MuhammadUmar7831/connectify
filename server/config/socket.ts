@@ -65,7 +65,7 @@ io.on('connection', (socket) => {
     socket.on('singleMessageSeen', async (messageId: number) => {
         const res = await messageSeenById(userId, messageId);
         if (res.success && res.data) {
-            io.emit('singleMessageHasBeenSeen', res.data.UserId, res.data.MessageId);
+            io.emit('singleMessageHasBeenSeen', userId, res.data.MessageId);
         } else {
             io.emit('error', res.message);
         }

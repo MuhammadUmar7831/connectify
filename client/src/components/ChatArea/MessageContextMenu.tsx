@@ -24,9 +24,6 @@ export default function MessageContextMenu({ isOpen, options, actions, position 
                 top: position.top - 8,
                 left: position.left,
             }}
-            onClick={(e) =>
-                console.log(e)
-            }
             id="messageMenu"
             className="absolute z-10 bg-white shadow-lg rounded-lg w-[100px]"
         >
