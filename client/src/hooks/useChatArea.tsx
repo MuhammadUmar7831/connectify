@@ -169,6 +169,7 @@ export default function useChatArea() {
   // SEND MESSAGE LOGIN ENDS HERE **
 
   const messageReceived = (data?: any) => {
+    console.log('message received')
     const { ChatId, Content, Timestamp, UserStatus, Sender, SenderId } = data;
 
     // local function that actually return the passed state with updated status
@@ -176,6 +177,16 @@ export default function useChatArea() {
       return chats.map((chat: any) => {
         if (chat.ChatId == ChatId) { // this is the chat i want to push notification to
           if (chat.ChatId == chatId) { // this chat is in view
+            console.log('chat', chat)
+            console.log('in view', {
+              ...chat,
+              SenderName: Sender,
+              SenderId,
+              Content,
+              Timestamp,
+              UserStatus,
+              unSeenMessages: 0,
+            })
             return {
               ...chat,
               SenderName: Sender,

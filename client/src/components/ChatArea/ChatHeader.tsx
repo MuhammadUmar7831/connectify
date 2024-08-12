@@ -22,7 +22,7 @@ export default function ChatHeader({ data }: Props) {
     const [status, setStatus] = useState<string>('');
     const [typingTimeout, setTypingTimeout] = useState<number | null>(null);
     const userId = data?.Type === 'Personal' ?
-        data?.Members[0].IsActivePrivacy === 0 ?
+        data?.Members[0].IsActivePrivacy === 0 ? // case: active privacy is false
             data?.Members[0].UserId :
             null :
         null;
@@ -57,7 +57,11 @@ export default function ChatHeader({ data }: Props) {
 
     const handleUserTyping = (userId: number, userName: string, _chatId: string) => {
         if (user?.UserId != userId && chatId === _chatId) {
-            setStatus(`${userName} is Typing...`);
+            if (data?.Type === 'Personal') {
+                setStatus(`Typing...`);
+            } else {
+                setStatus(`${userName} is Typing...`);
+            }
 
             if (typingTimeout) {
                 clearTimeout(typingTimeout);
