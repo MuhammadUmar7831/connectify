@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import SendMessageBox from "../components/ChatArea/SendMessageBox";
 import useChatArea from "../hooks/useChatArea";
 import MessageInfoPanel from "../components/ChatArea/MessageInfoPanel";
-import { MessageInfoProvider } from "../components/context/MessageInfoContext";
+import { MessageInfoProvider } from "../context/MessageInfoContext";
 
 export default function ChatArea() {
   const data = useSelector((state: any) => state.user);

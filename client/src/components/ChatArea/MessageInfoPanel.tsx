@@ -3,7 +3,7 @@ import { RxCrossCircled } from "react-icons/rx";
 import CircleAlert from "../../interface/CircleAlert";
 import DoubleTick from "../../interface/DoubleTick";
 import SingleTick from "../../interface/SingleTick";
-import { MessageInfoContext } from '../context/MessageInfoContext';
+import { MessageInfoContext } from '../../context/MessageInfoContext';
 import { motion } from "framer-motion";
 
 export default function MessageInfoPanel() {

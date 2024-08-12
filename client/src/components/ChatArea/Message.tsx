@@ -8,7 +8,7 @@ import getMessageStatus from "../../utils/getMessageStatus";
 import MessageContextMenu from "./MessageContextMenu";
 import { useMenu } from "../../hooks/useMenu";
 import themeColor from "../../config/theme.config";
-import { MessageInfoContext } from "../context/MessageInfoContext";
+import { MessageInfoContext } from "../../context/MessageInfoContext";
 import { useContext, useState } from "react";
 
 interface Props {

@@ -9,7 +9,7 @@ import MessageContextMenu from "./MessageContextMenu";
 import { useMenu } from "../../hooks/useMenu";
 import themeColor from "../../config/theme.config";
 import { useContext, useState } from "react";
-import { MessageInfoContext } from "../context/MessageInfoContext";
+import { MessageInfoContext } from "../../context/MessageInfoContext";
 
 interface Props {
   me: Boolean;

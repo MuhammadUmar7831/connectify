@@ -9,7 +9,7 @@ import { Link, useParams } from "react-router-dom";
 import ChatHeaderResponse from "../../types/chatHeaderReponse.type";
 import formatTimestamp from "../../utils/messageTimeFormater";
 import useActive from "../../hooks/useActive";
-import { MessageInfoContext } from "../context/MessageInfoContext";
+import { MessageInfoContext } from "../../context/MessageInfoContext";
 
 interface Props {
     data: ChatHeaderResponse | null;
