@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../redux/store";
 import { setPersonalChats } from "../redux/slices/personalChats";
@@ -19,12 +19,25 @@ export default function useSyncChatList() {
     const dispatch = useDispatch();
     const { chatId } = useParams<{ chatId: string }>();
 
+    // Create a memoized hashmap to store chatId to chat type mapping
+    const chatTypeMap = useMemo(() => {
+        const map = new Map<number, 'personal' | 'group' | 'pinned' | 'archive'>();
+
+        personalChats?.forEach(chat => map.set(chat.ChatId, 'personal'));
+        groupChats?.forEach(chat => map.set(chat.ChatId, 'group'));
+        pinnedChats?.forEach(chat => map.set(chat.ChatId, 'pinned'));
+        archiveChats?.forEach(chat => map.set(chat.ChatId, 'archive'));
+
+        return map;
+    }, [personalChats, groupChats, pinnedChats, archiveChats]);
+
     const messageReceived = (data?: any) => {
         const { ChatId, Content, Timestamp, UserStatus, Sender, SenderId } = data;
         if (chatId != ChatId) {
             // if this chat is not view whose message is received than play audio
             document.getElementById("notification")?.click();
         }
+        const chatType = chatTypeMap.get(ChatId);
 
         // local function that actually return the passed state with updated status
         const updateChatArray = (chats: any) => {
@@ -54,14 +67,25 @@ export default function useSyncChatList() {
             });
         };
 
-        dispatch(setPersonalChats(updateChatArray(personalChats)));
-        dispatch(setGroupChats(updateChatArray(groupChats)));
-        dispatch(setPinnedChats(updateChatArray(pinnedChats)));
-        dispatch(setArchiveChats(updateChatArray(archiveChats)));
+        switch (chatType) {
+            case 'personal':
+                dispatch(setPersonalChats(updateChatArray(personalChats)));
+                break;
+            case 'group':
+                dispatch(setGroupChats(updateChatArray(groupChats)));
+                break;
+            case 'pinned':
+                dispatch(setPinnedChats(updateChatArray(pinnedChats)));
+                break;
+            case 'archive':
+                dispatch(setArchiveChats(updateChatArray(archiveChats)));
+                break;
+        }
     };
 
     const allMessagesSeen = (userId: string, _chatId: string) => {
         if (chatId !== _chatId) { return }
+        const chatType = chatTypeMap.get(parseInt(chatId));
 
         const updateChatArray = (chats: Chat[] | null) => {
             if (!chats) { return null }
@@ -84,13 +108,24 @@ export default function useSyncChatList() {
             });
         };
 
-        dispatch(setPersonalChats(updateChatArray(personalChats)));
-        dispatch(setGroupChats(updateChatArray(groupChats)));
-        dispatch(setPinnedChats(updateChatArray(pinnedChats)));
-        dispatch(setArchiveChats(updateChatArray(archiveChats)));
+        switch (chatType) {
+            case 'personal':
+                dispatch(setPersonalChats(updateChatArray(personalChats)));
+                break;
+            case 'group':
+                dispatch(setGroupChats(updateChatArray(groupChats)));
+                break;
+            case 'pinned':
+                dispatch(setPinnedChats(updateChatArray(pinnedChats)));
+                break;
+            case 'archive':
+                dispatch(setArchiveChats(updateChatArray(archiveChats)));
+                break;
+        }
     };
 
     const singleMessageHasBeenSeen = (userId: string, chatId: number) => {
+        const chatType = chatTypeMap.get(chatId);
         // local function that actually return the passed state with updated status
         const updateChatArray = (chats: Chat[] | null) => {
             if (!chats) { return null }
@@ -112,10 +147,20 @@ export default function useSyncChatList() {
             });
         };
 
-        dispatch(setPersonalChats(updateChatArray(personalChats)));
-        dispatch(setGroupChats(updateChatArray(groupChats)));
-        dispatch(setPinnedChats(updateChatArray(pinnedChats)));
-        dispatch(setArchiveChats(updateChatArray(archiveChats)));
+        switch (chatType) {
+            case 'personal':
+                dispatch(setPersonalChats(updateChatArray(personalChats)));
+                break;
+            case 'group':
+                dispatch(setGroupChats(updateChatArray(groupChats)));
+                break;
+            case 'pinned':
+                dispatch(setPinnedChats(updateChatArray(pinnedChats)));
+                break;
+            case 'archive':
+                dispatch(setArchiveChats(updateChatArray(archiveChats)));
+                break;
+        }
     };
 
     const setSentStatusToReceived = (userId: string) => {
@@ -137,6 +182,7 @@ export default function useSyncChatList() {
             });
         };
 
+        // received status is set for all chats
         dispatch(setPersonalChats(updateChatArray(personalChats)));
         dispatch(setGroupChats(updateChatArray(groupChats)));
         dispatch(setPinnedChats(updateChatArray(pinnedChats)));
