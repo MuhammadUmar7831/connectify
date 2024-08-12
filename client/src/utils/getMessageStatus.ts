@@ -2,7 +2,9 @@ const getMessageStatus = (userStatus: {
     Status: string;
     UserId: number;
     UserName: string;
-}[]): string => {
+}[] | null): string => {
+    if (userStatus === null) { return '' };
+
     let sending = 0;
     let error = 0;
     let sent = 0;

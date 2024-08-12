@@ -1,12 +1,8 @@
 CREATE VIEW MessageStatusView AS
 SELECT 
     MessageId,
-    CASE
-        WHEN SUM(CASE WHEN Status = 'sent' THEN 1 ELSE 0 END) > 0 THEN 'sent'
-        WHEN SUM(CASE WHEN Status = 'received' THEN 1 ELSE 0 END) > 0 THEN 'received'
-        ELSE 'seen'
-    END AS Status
-FROM 
-    MessagesStatus
+   JSON_ARRAYAGG(JSON_OBJECT('UserId', ms.UserId, 'UserName', u.Name, 'Status', ms.Status)) AS UserStatus
+FROM MessagesStatus ms
+JOIN Users u ON ms.UserId = u.UserId
 GROUP BY 
     MessageId;

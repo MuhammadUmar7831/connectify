@@ -21,7 +21,7 @@ interface props {
     lastMessageTime: string | null;
     notification: number;
     isActive: boolean;
-    status: string | null
+    status: string
 }
 
 export default function ChatListItem({ userId, chatId, image, name, senderIsMe, senderName, lastMessage, lastMessageTime, notification, isActive, status }: props) {

@@ -6,6 +6,7 @@ import { Server } from "socket.io";
 import { sendMessage } from "../socket/sendMessage.socket";
 import { allMessageSeen } from "../socket/allMessagesSeen.scoket";
 import { messageSeenById } from "../socket/seenMessageById.socket";
+import setSentMessagesToReceived from "../socket/setSentMessagesToReceived";
 
 export const app = express();
 app.use(express.json());
@@ -37,8 +38,10 @@ const getReceiverSocketId = (receiverId: number): string | undefined => {
 io.on('connection', (socket) => {
     const userId = socket.handshake.query.userId as string;
     userSocketMap[parseInt(userId)] = socket.id;
+    setSentMessagesToReceived(parseInt(userId));
 
     io.emit("getOnlineUsers", Object.keys(userSocketMap).map(key => parseInt(key)));
+    socket.broadcast.emit("userOnline", userId); // tell all other users that someone is online
 
     socket.on("startTyping", (chatId, userName) => {
         io.emit('userTyping', userId, userName, chatId);
@@ -65,7 +68,7 @@ io.on('connection', (socket) => {
     socket.on('singleMessageSeen', async (messageId: number) => {
         const res = await messageSeenById(userId, messageId);
         if (res.success && res.data) {
-            io.emit('singleMessageHasBeenSeen', userId, res.data.MessageId);
+            io.emit('singleMessageHasBeenSeen', userId, res.data.ChatId, res.data.MessageId);
         } else {
             io.emit('error', res.message);
         }

@@ -2,7 +2,7 @@ export const getPersonalChatQuery = `
     SELECT 
         otherUser.UserId, otherUser.Name, otherUser.Avatar,
         mg.ChatId, mg.MessageId, mg.SenderId, mg.Content, mg.Timestamp,
-        msv.Status,
+        msv.UserStatus,
         sender.Name as SenderName,
         (
             SELECT count(*) FROM UnSeenMessages usm 
@@ -24,7 +24,7 @@ export const getGroupChatsQuery = `
         null AS UserId, 
         g.Name, g.Avatar, g.ChatId,
         mg.MessageId, mg.SenderId, mg.Content, mg.Timestamp, 
-        msv.Status, sender.Name as SenderName,
+        msv.UserStatus, sender.Name as SenderName,
         (
             SELECT count(*) FROM UnSeenMessages usm 
             WHERE usm.ChatId = c.ChatId AND usm.UserId = u.UserId

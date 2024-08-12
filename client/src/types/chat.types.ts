@@ -10,5 +10,9 @@ export default interface Chat {
     Timestamp: string | null;
     unSeenMessages: number;
     isActive: boolean;
-    Status: string | null;
+    UserStatus: {
+        Status: string;
+        UserId: number;
+        UserName: string;
+    }[] | null;
 }

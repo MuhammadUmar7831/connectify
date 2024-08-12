@@ -3,6 +3,8 @@ import useChatList from "../../hooks/useChatList";
 import ChatListSkeleton from "../../interface/skeletons/ChatListSkeleton";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
+import useSyncChatList from "../../hooks/useSyncChatList";
+import getMessageStatus from "../../utils/getMessageStatus";
 
 export default function ChatList() {
 
@@ -14,6 +16,8 @@ export default function ChatList() {
         chatListType,
         isActive
     } = useChatList();
+
+    useSyncChatList();
 
     if (chatsToRender === null) {
         return (
@@ -39,7 +43,7 @@ export default function ChatList() {
                             lastMessageTime={chat.Timestamp}
                             notification={chat.unSeenMessages}
                             isActive={isActive(chat.UserId)}
-                            status={chat.Status}
+                            status={getMessageStatus(chat.UserStatus)}
                         />
                     ))}
                 </>
@@ -59,7 +63,7 @@ export default function ChatList() {
                     lastMessageTime={chat.Timestamp}
                     notification={chat.unSeenMessages}
                     isActive={isActive(chat.UserId)}
-                    status={chat.Status}
+                    status={getMessageStatus(chat.UserStatus)}
                 />
             ))}
         </div>
