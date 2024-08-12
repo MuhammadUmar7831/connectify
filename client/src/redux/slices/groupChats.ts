@@ -13,7 +13,7 @@ export const groupChatsSlice = createSlice({
     name: "groupChats",
     initialState,
     reducers: {
-        setGroupChats: (state, action: PayloadAction<Chat[]>) => {
+        setGroupChats: (state, action: PayloadAction<Chat[] | null>) => {
             state.groupChats = action.payload;
         },
     },

@@ -13,7 +13,7 @@ export const archiveChatsSlice = createSlice({
     name: "archiveChats",
     initialState,
     reducers: {
-        setArchiveChats: (state, action: PayloadAction<Chat[]>) => {
+        setArchiveChats: (state, action: PayloadAction<Chat[] | null>) => {
             state.archiveChats = action.payload;
         },
     },

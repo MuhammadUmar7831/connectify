@@ -5,8 +5,8 @@ import { QueryError, RowDataPacket } from "mysql2";
 import errorHandler from "../errors/error";
 
 export const getUser = async (req: authRequest, res: Response, next: NextFunction) => {
-    const columns = 'UserId, Name, Email, Avatar, Bio, LastSeen, IsActivePrivacy, IsLastSeenPrivacy'
-    const sql = `SELECT ${columns} FROM Users WHERE UserId = ?`;
+    const columns = 'u.UserId, Name, Email, Avatar, Bio, LastSeen, IsActivePrivacy, IsLastSeenPrivacy, JSON_ARRAYAGG(m.ChatId) as ChatIds'
+    const sql = `SELECT ${columns} FROM Users u JOIN Members m ON u.UserId = m.UserId WHERE u.UserId = ? GROUP BY u.UserId`;
     connection.query(sql, [req.userId], (err: QueryError | null, result: RowDataPacket[]) => {
         if (err) { return next(err) }
 

@@ -6,8 +6,8 @@ import { setGroupChats } from "../redux/slices/groupChats";
 import { setPinnedChats } from "../redux/slices/pinnedChats";
 import { setArchiveChats } from "../redux/slices/archiveChats";
 import { getSocket } from "../config/scoket.config";
-import { useParams } from "react-router-dom";
 import Chat from "../types/chat.types";
+import { useParams } from "react-router-dom";
 
 export default function useSyncChatList() {
     const { personalChats } = useSelector((state: RootState) => state.personalChats);
@@ -21,6 +21,10 @@ export default function useSyncChatList() {
 
     const messageReceived = (data?: any) => {
         const { ChatId, Content, Timestamp, UserStatus, Sender, SenderId } = data;
+        if (chatId != ChatId) {
+            // if this chat is not view whose message is received than play audio
+            document.getElementById("notification")?.click();
+        }
 
         // local function that actually return the passed state with updated status
         const updateChatArray = (chats: any) => {
@@ -56,10 +60,11 @@ export default function useSyncChatList() {
         dispatch(setArchiveChats(updateChatArray(archiveChats)));
     };
 
-    const allMessagesSeen = (userId: string) => {
-        if (!chatId) { return }
+    const allMessagesSeen = (userId: string, _chatId: string) => {
+        if (chatId !== _chatId) { return }
+
         const updateChatArray = (chats: Chat[] | null) => {
-            if (!chats) { return [] }
+            if (!chats) { return null }
             return chats.map((chat: Chat) => {
                 if (chat.ChatId == parseInt(chatId)) { // this is the chat i want to set un seen messages to 0
                     let newUserStatus = null;
@@ -88,7 +93,7 @@ export default function useSyncChatList() {
     const singleMessageHasBeenSeen = (userId: string, chatId: number) => {
         // local function that actually return the passed state with updated status
         const updateChatArray = (chats: Chat[] | null) => {
-            if (!chats) { return [] }
+            if (!chats) { return null }
             return chats.map((chat: Chat) => {
                 if (chat.ChatId === chatId) { // this is the chat i want to update the status calculated as one user seen the last message
                     let newUserStatus = null;
@@ -113,15 +118,15 @@ export default function useSyncChatList() {
         dispatch(setArchiveChats(updateChatArray(archiveChats)));
     };
 
-    const setSentStatusToReceived = (userId: number) => {
+    const setSentStatusToReceived = (userId: string) => {
         // local function that actually return the passed state with updated status
         const updateChatArray = (chats: Chat[] | null) => {
-            if (!chats) { return [] }
+            if (!chats) { return null }
             return chats.map((chat: Chat) => {
                 let newUserStatus = null;
                 if (chat.UserStatus) {
                     newUserStatus = chat.UserStatus.map((status) => (
-                        status.UserId === userId && status.Status === 'sent' ? { ...status, Status: 'received' } : status
+                        status.UserId === parseInt(userId) && status.Status === 'sent' ? { ...status, Status: 'received' } : status
                     ))
                 }
                 return {
@@ -141,24 +146,17 @@ export default function useSyncChatList() {
     useEffect(() => {
         if (socket) {
             // socket function that listen to the message that is newly received (wether i sent it or anyone else)
-            socket.on("messageReceived", (data) => {
-                messageReceived(data) // function to update chat list on left (main area)
-            });
-            socket.on("seenAllMessage", (userId: string) => {
-                allMessagesSeen(userId);
-            })
-            socket.on("singleMessageHasBeenSeen", (userId, chatId) => {
-                singleMessageHasBeenSeen(userId, chatId)
-            })
-            socket.on("userOnline", (userId: string) => {
-                setSentStatusToReceived(parseInt(userId))
-            })
+            socket.on("messageReceived", messageReceived);
+            socket.on("seenAllMessage", allMessagesSeen)
+            socket.on("singleMessageHasBeenSeen", singleMessageHasBeenSeen)
+            socket.on("userOnline", setSentStatusToReceived)
+
             // Clean up the socket listener when the component unmounts
             return () => {
-                socket.off("messageReceived");
-                socket.off("seenAllMessage");
-                socket.off("singleMessageHasBeenSeen");
-                socket.off("userOnline");
+                socket.off("messageReceived", messageReceived);
+                socket.off("seenAllMessage", allMessagesSeen)
+                socket.off("singleMessageHasBeenSeen", singleMessageHasBeenSeen)
+                socket.off("userOnline", setSentStatusToReceived)
             };
         }
     }, [socket, chatId, personalChats, groupChats, archiveChats, pinnedChats]);

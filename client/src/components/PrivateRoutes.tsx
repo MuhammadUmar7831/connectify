@@ -23,7 +23,7 @@ export default function PrivateRoutes() {
         if (!res.success) {
             dispatch(setError(res.message));
         } else {
-            createSocket(res.user.UserId);
+            createSocket(res.user.UserId, res.user.ChatIds);
             dispatch(setUser(res.user));
         }
         setLoading(false);

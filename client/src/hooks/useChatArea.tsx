@@ -164,10 +164,11 @@ export default function useChatArea() {
   // SEND MESSAGE LOGIN ENDS HERE **
 
   useEffect(() => {
-    if (socket) {
+    if (socket && chatId) {
       // socket function that listen to the message that is newly received (wether i sent it or anyone else)
       socket.on("messageReceived", (data) => {
         if (data.ChatId == chatId) { // do only if we have oppened the same chat
+
           setMessages((prevMessages) => {
             const updatedMessages = prevMessages.filter(
               (message) => message.MessageId !== -1
@@ -177,22 +178,22 @@ export default function useChatArea() {
           });
           // singleMessageSeen emitted
           socket.emit('singleMessageSeen', data.MessageId);
-        } else {
-          document.getElementById("notification")?.click(); // if this chat is not view whose message is received than play audio
         }
       });
 
       // the user with userId opened chat and seen all the messages (this user is garaunteed not to be me)
-      socket.on('seenAllMessage', (userId) => {
-        setMessages((prevMessages) => {
-          const updatedMessages = prevMessages.map((message) => ({
-            ...message,
-            UserStatus: message.UserStatus.map((status) =>
-              status.UserId == userId ? { ...status, Status: 'seen' } : status
-            ),
-          }));
-          return updatedMessages;
-        });
+      socket.on('seenAllMessage', (userId: string, _chatId: string) => {
+        if (chatId === _chatId) {
+          setMessages((prevMessages) => {
+            const updatedMessages = prevMessages.map((message) => ({
+              ...message,
+              UserStatus: message.UserStatus.map((status) =>
+                status.UserId === parseInt(userId) ? { ...status, Status: 'seen' } : status
+              ),
+            }));
+            return updatedMessages;
+          });
+        }
       });
 
       socket.on('singleMessageHasBeenSeen', (userId: string, _chatId: number, messageId: number) => {
@@ -232,6 +233,7 @@ export default function useChatArea() {
 
       // Clean up the socket listener when the component unmounts
       return () => {
+        socket.off("messageReceived");
         socket.off("seenAllMessage");
         socket.off("singleMessageHasBeenSeen");
         socket.off("userOnline");

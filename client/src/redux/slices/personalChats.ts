@@ -13,7 +13,7 @@ export const personalChatsSlice = createSlice({
     name: "personalChats",
     initialState,
     reducers: {
-        setPersonalChats: (state, action: PayloadAction<Chat[]>) => {
+        setPersonalChats: (state, action: PayloadAction<Chat[] | null>) => {
             state.personalChats = action.payload;
         },
     },

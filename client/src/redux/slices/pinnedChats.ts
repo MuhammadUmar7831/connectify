@@ -13,7 +13,7 @@ export const pinnedChatsSlice = createSlice({
     name: "pinnedChats",
     initialState,
     reducers: {
-        setPinnedChats: (state, action: PayloadAction<Chat[]>) => {
+        setPinnedChats: (state, action: PayloadAction<Chat[] | null>) => {
             state.pinnedChats = action.payload;
         },
     },

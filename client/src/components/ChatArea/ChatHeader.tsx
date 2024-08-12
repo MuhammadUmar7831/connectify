@@ -106,7 +106,7 @@ export default function ChatHeader({ data }: Props) {
             <div className="flex gap-4">
                 <Avatar
                     image={data !== null ? data.ChatAvatar : ''}
-                    isActive={active}
+                    isActive={active && data?.Type === 'Personal'}
                     className="w-12 h-14" />
                 <div>
                     <h1 className="text-xl font-semibold">{data?.ChatName}</h1>
@@ -115,7 +115,7 @@ export default function ChatHeader({ data }: Props) {
             </div>
             <div className="flex items-center gap-4 justify-between">
                 <div className="pr-2 border-r border-gray">
-                    <Link to={`/info/${data?.Type}/${data?.InfoId}`} className={`rounded-3xl border border-black hover:bg-black hover:text-white cursor-pointer py-2 px-4`}>
+                    <Link to={`/info/${data?.Type.toLocaleLowerCase()}/${data?.InfoId}`} className={`rounded-3xl border border-black hover:bg-black hover:text-white cursor-pointer py-2 px-4`}>
                         <span className="font-semibold">Profile</span>
                     </Link>
                 </div>

@@ -37,47 +37,65 @@ const getReceiverSocketId = (receiverId: number): string | undefined => {
 
 io.on('connection', (socket) => {
     const userId = socket.handshake.query.userId as string;
+    let chatIds: string[] = [];
+
+    // Directly handle chatIds if it's already an array
+    if (socket.handshake.query.chatIds) {
+        chatIds = (socket.handshake.query.chatIds as string).split(',');
+
+        // Validate if chatIds is an array of numbers
+        if (!Array.isArray(chatIds) || !chatIds.every(id => typeof id === 'string')) {
+            console.error('Invalid chatIds format');
+            socket.disconnect();
+            return;
+        }
+    }
+    // this join user all chat room in which he is member
+    chatIds.forEach((chatId: string) => {
+        const room = `chat_${chatId}`;
+        socket.join(room);
+    })
+
     userSocketMap[parseInt(userId)] = socket.id;
     setSentMessagesToReceived(parseInt(userId));
 
     io.emit("getOnlineUsers", Object.keys(userSocketMap).map(key => parseInt(key)));
     socket.broadcast.emit("userOnline", userId); // tell all other users that someone is online
 
+    socket.on("chatOpened", async (chatId: number) => {
+        const room = `chat_${chatId}`;
+        const res = await allMessageSeen(userId, chatId);
+        if (res.success) {
+            io.to(room).emit('seenAllMessage', userId, chatId);
+        } else {
+            io.to(room).emit('error', res.message);
+        }
+    });
+
     socket.on("startTyping", (chatId, userName) => {
-        io.emit('userTyping', userId, userName, chatId);
-    })
+        const room = `chat_${chatId}`;
+        io.to(room).emit('userTyping', userId, userName, chatId);
+    });
 
     socket.on("messageSent", async (messageId: number) => {
         const res = await sendMessage(messageId);
         if (res.success) {
-            io.emit('messageReceived', res.data);
+            const room = `chat_${res.data.ChatId}`;
+            io.to(room).emit('messageReceived', res.data);
         } else {
-            io.emit('error', res.message);
+            console.log(res.message);
         }
-    })
-
-    socket.on("chatOpened", async (chatId: number) => {
-        const res = await allMessageSeen(userId, chatId);
-        if (res.success) {
-            io.emit('seenAllMessage', userId);
-        } else {
-            io.emit('error', res.message);
-        }
-    })
+    });
 
     socket.on('singleMessageSeen', async (messageId: number) => {
         const res = await messageSeenById(userId, messageId);
         if (res.success && res.data) {
-            io.emit('singleMessageHasBeenSeen', userId, res.data.ChatId, res.data.MessageId);
+            const room = `chat_${res.data.ChatId}`;
+            io.to(room).emit('singleMessageHasBeenSeen', userId, res.data.ChatId, res.data.MessageId);
         } else {
-            io.emit('error', res.message);
+            console.log(res.message);
         }
-    })
-    // TO DO
-    // 1. a scoket on that will listen when message is sent successfully
-    // 2. inside above socket on an emit that will be listened by client side chat list component that there is some message (with cheen tapak dum dum)
-    // 3. on client side use usePara to get chatId if chatId is equal to the chatId of the message ChatId emitted then no Cheen Tapak Dum Dum
-    // 4. also if param chatId is not eqault to chatId of emitted message than increase the notification number by in chatList Item
+    });
 
     // Handle other socket events
     socket.on('disconnect', () => {
@@ -87,5 +105,6 @@ io.on('connection', (socket) => {
         io.emit("getOnlineUsers", Object.keys(userSocketMap).map(key => parseInt(key)));
     });
 });
+
 
 export default server;
