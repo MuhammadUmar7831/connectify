@@ -5,6 +5,8 @@ import { Link } from "react-router-dom";
 import { LuEye, LuEyeOff } from "react-icons/lu";
 import ClipLoader from "react-spinners/ClipLoader";
 import loginButton from "../components/loginButton";
+import { useEffect } from "react";
+import {gapi} from "gapi-script"
 
 const Signup = () => {
   const [email, setEmail] = useState("");
@@ -29,6 +31,18 @@ const Signup = () => {
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
   };
+
+  const clientId = "476553953625-r86dopv2fee9gtsnln507855orn3jko4.apps.googleusercontent.com";
+  useEffect(() => {
+    function start() {
+      gapi.client.init({
+        clientId: clientId,
+        scope: "",
+      });
+    }
+    gapi.load("client:auth2", start);
+  }, []);
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center">

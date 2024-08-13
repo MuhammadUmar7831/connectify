@@ -5,13 +5,12 @@ const clientId =
   "476553953625-r86dopv2fee9gtsnln507855orn3jko4.apps.googleusercontent.com";
 
 const onSuccess = (res: any) => {
-  console.log("Login Success", res.profileObj);
+  console.log("Login Success 2812", res.profileObj);
 
 };
 
 const onFailure = (res: any) => {
   console.log("Login Failed", res);
-  return false
 };
 function loginButton() {
   return (
@@ -21,7 +20,7 @@ function loginButton() {
         onSuccess={onSuccess}
         onFailure={onFailure}
         cookiePolicy={"single_host_origin"}
-        isSignedIn={true}
+        isSignedIn={false}
         render={(renderProps) => (
           <button
             onClick={renderProps.onClick}

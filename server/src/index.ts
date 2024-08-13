@@ -8,12 +8,16 @@ import chatRoutes from "../routes/chat.routes";
 import groupRoutes from "../routes/group.routes";
 import messageRoutes from "../routes/message.routes";
 import server, { app } from "../config/socket";
+import CORS from "cors"
 
 dotenv.config();
+
+
 
 app.get("/", tryCatch((req: Request, res: Response, next: NextFunction) => {
     res.status(200).send('Wellcome to Connectify');
 }));
+app.use(CORS({ origin: 'http://localhost:5173' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/chat', chatRoutes);
