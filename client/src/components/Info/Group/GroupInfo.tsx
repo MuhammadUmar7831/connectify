@@ -65,7 +65,7 @@ export default function GroupInfo() {
                         {updating ? <ClipLoader size={30} color={themeColor} className="top-0 absolute z-10" /> : <></>}
                     </div>
                     <div className="flex justify-end relative" ref={menuRef}>
-                        {showMenu &&
+                        {showMenu && !loading &&
                             <motion.div
                                 initial={{ opacity: 0, y: '-50%' }}
                                 animate={{ opacity: 1, y: '0%' }}
@@ -94,20 +94,20 @@ export default function GroupInfo() {
                         {loading ? <ClipLoader size={20} color={themeColor} /> : <BsThreeDotsVertical onClick={() => setShowMenu(true)} className="cursor-pointer" />}
                     </div>
                     <div className="relative rounded-full overflow-hidden mx-auto w-44 h-44 group cursor-pointer bg-gray">
-                        <div
+                        {userItselfAdmin && <div
                             onClick={() => document.getElementById('file-input')?.click()}
                             className="flex justify-center items-center absolute top-0 left-0 bg-gray-200 w-full h-full opacity-0 group-hover:opacity-100 group-hover:bg-opacity-60"
                         >
-                            {userItselfAdmin && <MdEdit size={40} className="cursor-pointer" />}
-                        </div>
+                            <MdEdit size={40} className="cursor-pointer" />
+                        </div>}
                         <img src={groupAvatar === null ? groupInfo.Avatar : groupAvatar} alt="avatar" className={`w-full h-full object-cover ${updating ? 'animate-pulse' : ''}`} />
-                        <input
+                        {userItselfAdmin && <input
                             type="file"
                             id="file-input"
                             accept="image/*"
                             onChange={handleImageChange}
                             className='absolute inset-0 opacity-0 cursor-pointer'
-                        />
+                        />}
                     </div>
                     {groupAvatar !== null &&
                         <div className="flex justify-center mt-2 gap-2">
