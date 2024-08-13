@@ -123,11 +123,13 @@ io.on('connection', (socket) => {
 
     socket.on("chatLeft", (chatId: number) => {
         const roomName = `chat_${chatId}`;
+        socket.emit("chatLeft", chatId) // tell the user about chat left
         socket.leave(roomName);
     })
 
     socket.on("chatDeleted", (chatId: number) => {
         const roomName = `chat_${chatId}`;
+        io.to(roomName).emit("chatDeleted", chatId) // tell all users about that chat delted
         io.sockets.adapter.rooms.delete(roomName);
     })
 

@@ -202,6 +202,32 @@ export default function useSyncChatList() {
         }
     }
 
+    const popChat = (chatId: number) => {
+        const chatType = chatTypeMap.get(chatId);
+        console.log(chatId, typeof chatId, chatType);
+
+        const updateChatArray = (chats: Chat[] | null) => {
+            if (!chats) { return null }
+            const updatedChats = chats.filter((chat) => chat.ChatId !== chatId);
+            return updatedChats;
+        };
+
+        switch (chatType) {
+            case 'personal':
+                dispatch(setPersonalChats(updateChatArray(personalChats)));
+                break;
+            case 'group':
+                dispatch(setGroupChats(updateChatArray(groupChats)));
+                break;
+            case 'pinned':
+                dispatch(setPinnedChats(updateChatArray(pinnedChats)));
+                break;
+            case 'archive':
+                dispatch(setArchiveChats(updateChatArray(archiveChats)));
+                break;
+        }
+    }
+
     useEffect(() => {
         if (socket) {
             // socket function that listen to the message that is newly received (wether i sent it or anyone else)
@@ -210,6 +236,8 @@ export default function useSyncChatList() {
             socket.on("singleMessageHasBeenSeen", singleMessageHasBeenSeen)
             socket.on("userOnline", setSentStatusToReceived)
             socket.on("chatIsBeingCreated", chatIsBeingCreated)
+            socket.on("chatLeft", popChat)
+            socket.on("chatDeleted", popChat)
 
             // Clean up the socket listener when the component unmounts
             return () => {
@@ -218,6 +246,8 @@ export default function useSyncChatList() {
                 socket.off("singleMessageHasBeenSeen", singleMessageHasBeenSeen)
                 socket.off("userOnline", setSentStatusToReceived)
                 socket.off("chatIsBeingCreated")
+                socket.off("chatLeft")
+                socket.off("chatDeleted")
             };
         }
     }, [socket, chatId, personalChats, groupChats, archiveChats, pinnedChats]);
