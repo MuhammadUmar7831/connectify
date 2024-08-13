@@ -1,8 +1,13 @@
 import axios from "../config/axios.config";
 
-export const getUserApi = async () => {
+export const getUserApi = async (userId?: number) => {
     try {
-        const response = await axios.get(`/api/user/get`);
+        let url = "/api/user/get";
+        if (userId) {
+            url = `/api/user/get?userId=${userId}`
+        }
+
+        const response = await axios.get(url);
         return response.data;
     } catch (error: any) {
         if (error.response) {

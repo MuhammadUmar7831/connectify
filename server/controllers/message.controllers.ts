@@ -72,6 +72,7 @@ export const sendMessage = async (
                   message: "Message Sent with a reply",
                   data: {
                     MessageId: messageId,
+                    ChatId,
                     Timestamp: currentTime,
                   },
                 });
@@ -91,6 +92,7 @@ export const sendMessage = async (
               message: "Message Sent",
               data: {
                 MessageId: messageId,
+                ChatId,
                 Timestamp: currentTime,
               },
             });

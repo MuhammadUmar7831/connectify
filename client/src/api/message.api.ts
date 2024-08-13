@@ -11,16 +11,28 @@ export const getMessageByChatIdApi = async (chatId: any, skip: number) => {
 };
 
 export const sendMessageToChatApi = async (
-  ChatId: number,
+  ChatId: number | boolean, // false in case of new personal chat 
   Content: String,
-  ReplyId: any
+  ReplyId: any,
+  receiverId: number | null
 ) => {
   try {
-    const response = await axios.post(`/api/message/send`, {
+    let body: any = {
       ChatId,
       Content,
-      ReplyId,
-    });
+      ReplyId
+    }
+    if (typeof receiverId === 'number' && ChatId === false) {
+      body = {
+        ChatId,
+        Content,
+        ReplyId,
+        receiverId,
+      }
+    }
+    console.log(body)
+
+    const response = await axios.post(`/api/message/send`, body);
     return response.data;
   } catch (error: any) {
     if (error.response) return error.response.data;

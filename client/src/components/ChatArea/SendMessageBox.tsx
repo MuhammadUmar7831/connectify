@@ -1,5 +1,4 @@
 import { IoSend } from "react-icons/io5";
-import { useParams } from "react-router-dom";
 import ReplyMessageBox from "./ReplyMessageBox";
 import { ChangeEvent, useEffect } from "react";
 import Emoji_Picker from "../Emoji_Picker";
@@ -12,7 +11,6 @@ export default function SendMessageBox(props: any) {
     reply,
     onSetReplyClick,
   } = props;
-  const { chatId } = useParams();
 
   useEffect(() => {
     // everytime reply is changed, the message box is re-rendered
@@ -28,7 +26,7 @@ export default function SendMessageBox(props: any) {
         onSubmit={(event) => {
           event.preventDefault();
           if (Content !== "") {
-            onSendMessageIconClick(chatId);
+            onSendMessageIconClick();
           }
         }}
         className="relative flex gap-2 items-center"

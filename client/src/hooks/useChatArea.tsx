@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   getMessageByChatIdApi,
   sendMessageToChatApi,
@@ -12,6 +12,7 @@ import ChatHeaderResponse from "../types/chatHeaderReponse.type";
 import { RootState } from "../redux/store";
 import Reply from "../types/reply.type";
 import { getChatHeaderDataApi } from "../api/chat.api";
+import { getUserApi } from "../api/user.api";
 
 // Define the types for the message
 
@@ -23,13 +24,14 @@ export default function useChatArea() {
 
   const socket = getSocket();
   const [Content, setContent] = useState("");
-  const { chatId } = useParams<{ chatId: string }>();
+  let { chatId } = useParams<{ chatId: string }>();
   const [messages, setMessages] = useState<MessageResponse[]>([]);
   const [chatHeaderData, setChatHeaderData] =
     useState<ChatHeaderResponse | null>(null);
   const { user } = useSelector((state: RootState) => state.user);
   const dispatch = useDispatch();
   const [reply, setReply] = useState<Reply>({ ReplyId: null, ReplyContent: null, ReplySenderId: null, ReplySender: null, });
+  const navigate = useNavigate();
 
   // update reply state on click
   const onSetReplyClick = (
@@ -89,15 +91,47 @@ export default function useChatArea() {
   // GET MESSAGE LOGIC ENDS HERE **
 
   const getChatHeaderData = async () => {
-    if (!chatId || isNaN(parseInt(chatId))) {
+    if (!chatId) {
       return;
     }
-    const res = await getChatHeaderDataApi(parseInt(chatId));
-    if (res.success) {
-      setChatHeaderData(res.data)
-    }
-    else {
-      dispatch(setError(res.message));
+
+    if (chatId.startsWith('new')) { // the chat is not created so we have fetch the data of user with id 'new:userId'
+      const res = await getUserApi(parseInt(chatId.slice(3)));
+      if (!res.success) {
+        dispatch(setError(res.message));
+      } else {
+        const headerData: ChatHeaderResponse = { // transform user data into chat header data
+          ChatName: res.user.Name,
+          ChatAvatar: res.user.Avatar,
+          InfoId: res.user.UserId,
+          Type: 'Personal',
+          Members: [{
+            Avatar: res.user.Avatar,
+            Name: res.user.Name,
+            UserId: res.user.UserId,
+            IsActivePrivacy: res.user.IsActivePrivacy,
+            IsLastSeenPrivacy: res.user.IsLastSeenPrivacy,
+            LastSeen: res.user.LastSeen,
+          }, {
+            Avatar: user?.Avatar,
+            Name: user?.Name,
+            UserId: user?.UserId,
+            IsActivePrivacy: user?.IsActivePrivacy,
+            IsLastSeenPrivacy: user?.IsLastSeenPrivacy,
+            LastSeen: user?.LastSeen,
+          }
+          ]
+        }
+        setChatHeaderData(headerData);
+      }
+    } else { // user is not new
+      const res = await getChatHeaderDataApi(parseInt(chatId));
+      if (res.success) {
+        setChatHeaderData(res.data)
+      }
+      else {
+        dispatch(setError(res.message));
+      }
     }
 
   }
@@ -113,7 +147,8 @@ export default function useChatArea() {
   };
 
   // handle send message button click
-  const onSendMessageIconClick = async (chatId: any) => {
+  const onSendMessageIconClick = async () => {
+    if (!chatId) return;
     // in order to clear the text field immediately, gives fast user experience
     const tempContent = Content;
     const tempReply: Reply = reply;
@@ -124,16 +159,29 @@ export default function useChatArea() {
       ReplySenderId: null,
       ReplySender: null,
     });
+    let receiverId: number | null = null
+    let _chatId: number | boolean = parseInt(chatId);
+
+    //case if the chat is not created so send will create new
+    if (chatId.startsWith('new')) {
+      receiverId = parseInt(chatId.slice(3));
+      _chatId = false;
+    }
 
     // Showing dummy message on the frontend
     await addDummyMessageObjectToMessageArray(tempContent, tempReply);
     const response = await sendMessageToChatApi(
-      chatId,
+      _chatId,
       tempContent,
-      tempReply.ReplyId
+      tempReply.ReplyId,
+      receiverId
     );
     // socket trigger to push notification
     if (response.success) {
+      if (chatId.startsWith('new')) {
+        // TODO: create a new room and join user in that room
+        navigate(`/chat/${response.data.ChatId}`)
+      }
       // socket trigger to update seen status for each member of chat
       socket?.emit("messageSent", response.data.MessageId);
     }
@@ -246,8 +294,18 @@ export default function useChatArea() {
   }, [socket, chatId]);
 
   useEffect(() => {
-    getChatHeaderData();
-    fetchMessages(0);
+    if (typeof chatId === 'string') {
+      if (chatId.startsWith('new')) {
+        const userId = chatId.slice(3);
+        if (isNaN(parseInt(userId))) {
+          dispatch(setError('Invalid URL: User ID is not valid'));
+        }
+      } else {
+        fetchMessages(0);
+      }
+      getChatHeaderData();
+    } else
+      dispatch(setError('Invalid URL: Chat ID should be a string'));
   }, [chatId]);
 
   return {

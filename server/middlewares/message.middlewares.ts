@@ -14,6 +14,7 @@ const isChatMember = async (
     const userId = req.userId;
     let ChatId = req.params.ChatId;
 
+
     // if it is not in params, then it should be in body for post request
     if (!ChatId) {
       ChatId = req.body.ChatId;
@@ -21,6 +22,9 @@ const isChatMember = async (
     if (!ChatId) {
       ChatId = req.query.chatId as string
     }
+    const receiverId = req.body.receiverId;
+    if (typeof receiverId !== 'undefined') // for send message if recieverId is available in body it means that chat is new so no need to check for member
+      return next();
 
     const query: string =
       "SELECT * FROM Members WHERE ChatId = ? AND UserId = ?";
@@ -35,7 +39,7 @@ const isChatMember = async (
         if (result.length === 0) {
           next(errorHandler(403, "You are not a member of this chat"));
         }
-        next();
+        return next();
       }
     );
   } catch (error) {
@@ -81,19 +85,18 @@ const createPersonalChatForFalseChatId = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { ChatId, recieverId } = req.body;
+  const { ChatId, receiverId } = req.body;
 
-  // if ChatId has a value, than we do not need to do anything
   if (ChatId !== false) {
-    next();
+    return next();
   }
 
-  // if chat id is false, we know that we have to create a new personal chat.
-  // In case of group it will always have a value because group was created first.
-  // (!ChatId) syntax has not been used because it will also give true for undefined.
-  // Also explicitly mentioning the condition, instead of else case to handle any unintended value
   if (ChatId === false) {
     connection.beginTransaction((err: QueryError | null) => {
+      if (err) {
+        return next(err);
+      }
+
       // Create new Personal chat
       const newChatQuery = "INSERT INTO Chats (Type) VALUES ('Personal')";
       connection.query(
@@ -102,23 +105,27 @@ const createPersonalChatForFalseChatId = async (
           if (err) {
             return connection.rollback(() => next(err));
           }
-          req.body.ChatId = result.insertId;
+
+          const newChatId = result.insertId; // Store the newly created ChatId
+          req.body.ChatId = newChatId;
+
           // Insert members into the new Personal Chat
           const addMembers =
             "INSERT INTO Members (UserId, ChatId) VALUES (?, ?), (?, ?);";
           connection.query(
             addMembers,
-            [req.userId, ChatId, recieverId, ChatId],
-            (err: QueryError | null, result: RowDataPacket[]) => {
+            [req.userId, newChatId, receiverId, newChatId],
+            (err: QueryError | null) => {
               if (err) {
                 return connection.rollback(() => next(err));
               }
-              // commit and return success response if no errors else rollback
+
+              // Commit and return success response if no errors else rollback
               connection.commit((err: QueryError | null) => {
                 if (err) {
                   return connection.rollback(() => next(err));
                 }
-
+                console.log("Transaction successful: ", req.body);
                 next();
               });
             }
@@ -128,6 +135,7 @@ const createPersonalChatForFalseChatId = async (
     });
   }
 };
+
 
 export {
   isChatMember,
