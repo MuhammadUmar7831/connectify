@@ -121,6 +121,16 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on("chatLeft", (chatId: number) => {
+        const roomName = `chat_${chatId}`;
+        socket.leave(roomName);
+    })
+
+    socket.on("chatDeleted", (chatId: number) => {
+        const roomName = `chat_${chatId}`;
+        io.sockets.adapter.rooms.delete(roomName);
+    })
+
     // Handle other socket events
     socket.on('disconnect', () => {
         // TO DO 

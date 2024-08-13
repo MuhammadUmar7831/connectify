@@ -8,6 +8,7 @@ import { setError } from '../redux/slices/error';
 import { setSuccess } from '../redux/slices/success';
 import { User } from '../types/user.type';
 import useCloudinary from './useCloudinary';
+import { getSocket } from '../config/scoket.config';
 
 export default function useGroupInfo() {
     const [groupInfo, setGroupInfo] = useState<GroupInfoResponse | null>(null);
@@ -23,6 +24,7 @@ export default function useGroupInfo() {
     const { uploadImage, deleteImage } = useCloudinary();
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
+    const socket = getSocket();
 
     const getGroupInfo = async () => {
         if (!id || isNaN(parseInt(id))) return;
@@ -55,6 +57,7 @@ export default function useGroupInfo() {
             setLoading(true);
             const res = await leaveGroupApi({ groupId: groupInfo.GroupId });
             if (res.success) {
+                socket?.emit('chatLeft', groupInfo.ChatId);
                 dispatch(setSuccess(res.message));
                 navigate("/");
             } else {
@@ -69,6 +72,8 @@ export default function useGroupInfo() {
             setLoading(true);
             const res = await deleteGroupApi({ groupId: groupInfo.GroupId });
             if (res.success) {
+                deleteImage(groupInfo.Avatar);
+                socket?.emit('chatDeleted', groupInfo.ChatId);
                 dispatch(setSuccess(res.message));
                 navigate("/");
             } else {
