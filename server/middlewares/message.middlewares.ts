@@ -125,7 +125,6 @@ const createPersonalChatForFalseChatId = async (
                 if (err) {
                   return connection.rollback(() => next(err));
                 }
-                console.log("Transaction successful: ", req.body);
                 next();
               });
             }

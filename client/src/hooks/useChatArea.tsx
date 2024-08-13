@@ -85,6 +85,7 @@ export default function useChatArea() {
       setMessages((prevMessages) => [...prevMessages, ...res.data]);
     } else {
       dispatch(setError(res.message));
+      navigate("/")
     }
     return false;
   };
@@ -96,9 +97,11 @@ export default function useChatArea() {
     }
 
     if (chatId.startsWith('new')) { // the chat is not created so we have fetch the data of user with id 'new:userId'
+      if (isNaN(parseInt(chatId.slice(3)))) { return } // invalid userId
       const res = await getUserApi(parseInt(chatId.slice(3)));
       if (!res.success) {
         dispatch(setError(res.message));
+        navigate("/")
       } else {
         const headerData: ChatHeaderResponse = { // transform user data into chat header data
           ChatName: res.user.Name,
@@ -125,12 +128,14 @@ export default function useChatArea() {
         setChatHeaderData(headerData);
       }
     } else { // user is not new
+      if (isNaN(parseInt(chatId))) { return } // invalid chat id
       const res = await getChatHeaderDataApi(parseInt(chatId));
       if (res.success) {
         setChatHeaderData(res.data)
       }
       else {
         dispatch(setError(res.message));
+        navigate("/")
       }
     }
 
@@ -299,14 +304,37 @@ export default function useChatArea() {
         const userId = chatId.slice(3);
         if (isNaN(parseInt(userId))) {
           dispatch(setError('Invalid URL: User ID is not valid'));
+          navigate("/")
+        } else if (parseInt(userId) === user?.UserId) {
+          dispatch(setError('Invalid URL You Really want to Chat with Yourself'));
+          navigate("/")
         }
       } else {
+        if (isNaN(parseInt(chatId))) {
+          dispatch(setError('Invalid URL: Chat ID should be a number'));
+          navigate("/")
+        }
         fetchMessages(0);
       }
       getChatHeaderData();
-    } else
-      dispatch(setError('Invalid URL: Chat ID should be a string'));
+    } else {
+      dispatch(setError('Invalid URL: Chat ID should be a valid number'));
+      navigate("/")
+    }
+
   }, [chatId]);
+
+  useEffect(() => {
+    if (chatId && personalChats && chatId.startsWith('new')) {
+      const userId = parseInt(chatId.slice(3)); // Extract the userId from the chatId
+      const existingChat = personalChats.find((pChat) => pChat.UserId === userId);
+
+      if (existingChat) {
+        navigate(`/chat/${existingChat.ChatId}`);
+      }
+    }
+  }, [chatId, personalChats]);
+
 
   return {
     onContentChange,
