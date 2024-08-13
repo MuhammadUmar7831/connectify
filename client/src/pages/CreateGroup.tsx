@@ -12,9 +12,8 @@ import { setError } from "../redux/slices/error";
 import { setSuccess } from "../redux/slices/success";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { setGroupChats } from "../redux/slices/groupChats";
-import Chat from "../types/chat.types";
 import useCloudinary from "../hooks/useCloudinary";
+import { getSocket } from "../config/scoket.config";
 
 export default function CreateGroup() {
     const [groupName, setGroupName] = useState<string>("");
@@ -23,12 +22,12 @@ export default function CreateGroup() {
     const [groupAvatarFile, setGroupAvatarFile] = useState<null | File>(null);
     const [addMemberSearch, setAddMemberSearch] = useState<boolean>(false);
     const { user } = useSelector((state: RootState) => state.user);
-    const { groupChats } = useSelector((state: RootState) => state.groupChats);
     const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const { uploadImage } = useCloudinary();
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const socket = getSocket();
 
     useEffect(() => {
         if (user) {
@@ -74,7 +73,6 @@ export default function CreateGroup() {
         let avatar = groupAvatar;
         if (groupAvatarFile !== null) {
             const isUploaded = await uploadImage(groupAvatarFile, user?.Name);
-            console.log(isUploaded)
             if (isUploaded.success) {
                 if (isUploaded.imageUrl) {
                     setGroupAvatar(isUploaded.imageUrl);
@@ -90,16 +88,8 @@ export default function CreateGroup() {
         const res = await createGroupApi(body);
         if (res.success) {
             dispatch(setSuccess(res.message));
-
-            let chat: Chat = {
-                ChatId: res.chatId,
-                UserId: null,
-                Name: groupName,
-                Avatar: avatar,
-                isActive: false
-            };
-
-            dispatch(setGroupChats(groupChats ? [...groupChats, chat] : [chat]));
+            const data = { chatId: res.chatId, type: 'group', members: [...members, user?.UserId] };
+            socket?.emit("chatCreated", data);
             navigate(`/chat/${res.chatId}`);
         } else {
             dispatch(setError(res.message));
