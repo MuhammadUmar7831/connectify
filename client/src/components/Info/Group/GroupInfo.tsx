@@ -98,7 +98,7 @@ export default function GroupInfo() {
                             onClick={() => document.getElementById('file-input')?.click()}
                             className="flex justify-center items-center absolute top-0 left-0 bg-gray-200 w-full h-full opacity-0 group-hover:opacity-100 group-hover:bg-opacity-60"
                         >
-                            <MdEdit size={40} className="cursor-pointer" />
+                            {userItselfAdmin && <MdEdit size={40} className="cursor-pointer" />}
                         </div>
                         <img src={groupAvatar === null ? groupInfo.Avatar : groupAvatar} alt="avatar" className={`w-full h-full object-cover ${updating ? 'animate-pulse' : ''}`} />
                         <input
@@ -127,7 +127,7 @@ export default function GroupInfo() {
                                     </button>
                                 </form>
                             }
-                            <MdEdit onClick={handleEditGroupNameClick} size={25} className="cursor-pointer" />
+                            {userItselfAdmin && <MdEdit onClick={handleEditGroupNameClick} size={25} className="cursor-pointer" />}
                         </div>
                         <p className="text-gray-300">Group • {groupInfo.Members.length} Members</p>
                     </div>
@@ -158,7 +158,7 @@ export default function GroupInfo() {
                                 </button>
                             </form>
                         }
-                        <MdEdit onClick={handleEditGroupDescClick} size={25} className="cursor-pointer" />
+                        {userItselfAdmin && <MdEdit onClick={handleEditGroupDescClick} size={25} className="cursor-pointer" />}
                     </div>
                 </div>
                 <div className="bg-white rounded-2xl">

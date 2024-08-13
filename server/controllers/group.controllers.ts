@@ -40,16 +40,14 @@ export const getCommonGroups = async (
 
     const query = `
     SELECT 
-    g.GroupId,
-    g.Name,
-    g.Avatar, 
+    g.GroupId, g.Name, g.Avatar, 
     JSON_ARRAYAGG(JSON_OBJECT('UserId', u.UserId, 'UserName', u.Name)) AS Members
     FROM _Groups g  
     JOIN Members m1 on g.ChatId = m1.ChatId 
     JOIN Members m2 on g.ChatId = m2.ChatId
     JOIN Members m3 on g.ChatId = m3.ChatId
     JOIN Users u ON m3.UserId = u.UserId
-    WHERE m1.UserId = 1 AND m2.UserId = 2
+    WHERE m1.UserId = ? AND m2.UserId = ?
     GROUP BY g.GroupId;`;
 
     const values = [friendId, req.userId];
