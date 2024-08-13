@@ -46,7 +46,8 @@ export default function Signin() {
                         onClick={googleClick}
                         className="flex justify-center items-center gap-2 w-full bg-gray-100 rounded-md py-2 hover:bg-gray focus:bg-gray-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <FcGoogle className="text-xl" /> Continue with Google
+                        <FcGoogle className="text-xl" /> 
+                        Continue with Google
                     </button>
                 </div>
                 <p className="text-center my-2 text-md">or</p>

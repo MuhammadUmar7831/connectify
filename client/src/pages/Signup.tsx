@@ -3,10 +3,13 @@ import { GrConnect } from "react-icons/gr";
 import { FcGoogle } from "react-icons/fc";
 import { Link } from "react-router-dom";
 import { LuEye, LuEyeOff } from "react-icons/lu";
+import ClipLoader from "react-spinners/ClipLoader";
+import loginButton from "../components/loginButton";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
@@ -16,9 +19,9 @@ const Signup = () => {
     setPassword(e.target.value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSignUpClick = (e: React.FormEvent) => {
     e.preventDefault();
-    // Add your sign up logic here
+    setLoading(true);
   };
 
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -37,23 +40,26 @@ const Signup = () => {
           Sign Up
         </h2>
         <button
-          className=" flex items-center justify-center mb-4 shadow-sm text-gray-600 hover:bg-gray-50
+        className="flex items-center  justify-center mb-4 shadow-sm text-gray-600 hover:bg-gray-50
         w-full focus:outline-none bg-gray-100 py-2 px-4 rounded-md"
+          onClick={handleSignUpClick}
         >
-          <FcGoogle className="text-xl m-3" />
-          Continue with Google
+            <FcGoogle className="text-xl mr-2" /> 
+         {loginButton()}   
         </button>
         <div className="text-center text-gray-500 mb-4">or</div>
-        <form>
+        <form onSubmit={handleSignUpClick}>
           <input
             type="text"
             placeholder="Name"
+            required
             className="mb-4 shadow-sm text-gray-600 hover:bg-gray-50
         w-full focus:outline-none bg-gray-100 py-2 px-4 rounded-md"
           />
           <input
             type="email"
             placeholder="Email address"
+            required
             className="mb-4 shadow-sm text-gray-600 hover:bg-gray-50
         w-full focus:outline-none bg-gray-100 py-2 px-4 rounded-md"
           />
@@ -87,11 +93,15 @@ const Signup = () => {
             </ul>
           </p>
           <button
+            disabled={loading}
+            className="bg-gray-900 hover:bg-gray-800 rounded-md text-white py-2 px-4 mt-2 w-full bg-orange hover:bg-black disabled:cursor-not-allowed"
             type="submit"
-            className="w-full px-4 py-2 text-white bg-orange text-gray-500 rounded-lg cursor-not-allowed"
-            disabled
           >
-            CONTINUE
+            {loading == true ? (
+              <ClipLoader size={20} color="#FFFFFF" />
+            ) : (
+              "CONTINUE"
+            )}
           </button>
         </form>
         <p className="text-center text-gray-500 mt-6">
