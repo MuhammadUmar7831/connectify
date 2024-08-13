@@ -189,6 +189,19 @@ export default function useSyncChatList() {
         dispatch(setArchiveChats(updateChatArray(archiveChats)));
     }
 
+    const chatIsBeingCreated = (data: Chat, type: 'personal' | 'group' | 'pinned' | 'archive') => {
+        const updateChatArray = (chats: Chat[] | null) => {
+            if (!chats) { return null }
+            return [...chats, data]
+        };
+
+        if (type === 'personal') {
+            dispatch(setPersonalChats(updateChatArray(personalChats)));
+        } else if (type == "group") {
+            dispatch(setGroupChats(updateChatArray(groupChats)));
+        }
+    }
+
     useEffect(() => {
         if (socket) {
             // socket function that listen to the message that is newly received (wether i sent it or anyone else)
@@ -196,6 +209,7 @@ export default function useSyncChatList() {
             socket.on("seenAllMessage", allMessagesSeen)
             socket.on("singleMessageHasBeenSeen", singleMessageHasBeenSeen)
             socket.on("userOnline", setSentStatusToReceived)
+            socket.on("chatIsBeingCreated", chatIsBeingCreated)
 
             // Clean up the socket listener when the component unmounts
             return () => {
@@ -203,6 +217,7 @@ export default function useSyncChatList() {
                 socket.off("seenAllMessage", allMessagesSeen)
                 socket.off("singleMessageHasBeenSeen", singleMessageHasBeenSeen)
                 socket.off("userOnline", setSentStatusToReceived)
+                socket.off("chatIsBeingCreated")
             };
         }
     }, [socket, chatId, personalChats, groupChats, archiveChats, pinnedChats]);

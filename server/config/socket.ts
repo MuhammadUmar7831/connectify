@@ -7,6 +7,7 @@ import { sendMessage } from "../socket/sendMessage.socket";
 import { allMessageSeen } from "../socket/allMessagesSeen.scoket";
 import { messageSeenById } from "../socket/seenMessageById.socket";
 import setSentMessagesToReceived from "../socket/setSentMessagesToReceived";
+import { getChatData } from "../socket/getChatData";
 
 export const app = express();
 app.use(express.json());
@@ -92,6 +93,29 @@ io.on('connection', (socket) => {
         if (res.success && res.data) {
             const room = `chat_${res.data.ChatId}`;
             io.to(room).emit('singleMessageHasBeenSeen', userId, res.data.ChatId, res.data.MessageId);
+        } else {
+            console.log(res.message);
+        }
+    });
+
+    socket.on("chatCreated", async (data: { chatId: number, type: string, members: number[] }) => {
+        const res = await getChatData(userId, data.chatId, data.type);
+        if (res.success) {
+            const room = `chat_${data.chatId}`;
+
+            // each member joins the chat room
+            data.members.forEach((memberId) => {
+                const memberSocketId = userSocketMap[memberId]; // Get the socket ID of the member
+                if (memberSocketId) {
+                    const memberSocket = io.sockets.sockets.get(memberSocketId); // Get the socket instance
+                    if (memberSocket) {
+                        memberSocket.join(room); // Join the chat room for this specific member
+                    }
+                }
+            });
+
+            // Notify all members in the room that the chat is being created
+            io.to(room).emit('chatIsBeingCreated', res.data, data.type);
         } else {
             console.log(res.message);
         }

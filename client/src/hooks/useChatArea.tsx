@@ -185,6 +185,12 @@ export default function useChatArea() {
     if (response.success) {
       if (chatId.startsWith('new')) {
         // TODO: create a new room and join user in that room
+        const data = {
+          chatId: response.data.ChatId,
+          type: 'personal',
+          members: [user?.UserId, receiverId]
+        }
+        socket?.emit("chatCreated", data);
         navigate(`/chat/${response.data.ChatId}`)
       }
       // socket trigger to update seen status for each member of chat
