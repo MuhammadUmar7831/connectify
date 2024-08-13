@@ -13,7 +13,7 @@ export const getUser = async (req: authRequest, res: Response, next: NextFunctio
     const sql = `SELECT ${columns} FROM Users u JOIN Members m ON u.UserId = m.UserId WHERE u.UserId = ? GROUP BY u.UserId`;
     connection.query(sql, [userId], (err: QueryError | null, result: RowDataPacket[]) => {
         if (err) { return next(err) }
-        
+
         res.status(200).send({ success: true, message: 'User Retrieved', user: result[0] })
     })
 }
@@ -26,27 +26,22 @@ export const getFriendInfo = async (req: Request, res: Response, next: NextFunct
     if (isNaN(myId) || isNaN(friendId)) {
         return next(errorHandler(400, 'Invalid Request Params: Expected myId and friendId to be numbers'));
     }
+    if (myId === friendId) {
+        return next(errorHandler(400, 'Come on,You are Requesting Your Own Info'));
+    }
 
     const query = `
-        SELECT
-            u.UserId, u.Name, u.Bio, u.Email, u.Avatar, uc2.ChatId
-        FROM Users u
-        LEFT JOIN (
-            SELECT m.*
-            FROM Members m
-            JOIN Chats c ON m.ChatId = c.ChatId
-            WHERE m.UserId = ? AND c.Type = 'Personal'
-        ) uc1 ON u.UserId = uc1.UserId
-        LEFT JOIN (
-            SELECT m.ChatId
-            FROM Members m
-            JOIN Chats c ON m.ChatId = c.ChatId
-            WHERE m.UserId = ? AND c.Type = 'Personal'
-        ) uc2 ON uc1.ChatId = uc2.ChatId
-        WHERE u.UserId = ?;
-    `;
+    SELECT 
+    u.UserId, u.Name, u.Bio, u.Email, u.Avatar,
+    (
+        SELECT c.ChatId FROM Chats c JOIN Members m ON c.ChatId = m.ChatId WHERE c.Type = 'personal' AND m.UserId = u.UserId
+        AND c.ChatId IN
+            (SELECT c.ChatId FROM Chats c join Members m ON c.ChatId = m.ChatId WHERE c.Type = 'personal' AND m.UserId = ?)
+    )
+    AS ChatId
+    FROM Users u WHERE u.UserId = ?;`;
 
-    connection.query(query, [friendId, myId, friendId], (err: QueryError | null, result: RowDataPacket[]) => {
+    connection.query(query, [myId, friendId], (err: QueryError | null, result: RowDataPacket[]) => {
         if (err) {
             return next(err);
         }

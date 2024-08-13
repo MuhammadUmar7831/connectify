@@ -14,7 +14,7 @@ import { ClipLoader } from "react-spinners";
 import themeColor from "../../../config/theme.config";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { RootState } from "../../../redux/store";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { MdOutlineMessage } from "react-icons/md";
 
 export default function PersonalInfo() {
@@ -23,26 +23,35 @@ export default function PersonalInfo() {
     const [loading, setLoading] = useState<boolean>(false);
     const { user } = useSelector((state: RootState) => state.user);
     const { showMenu, setShowMenu, menuRef } = useMenu();
+    const { id } = useParams<{ id: string }>();
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const getFriendInfo = async () => {
         if (user) {
-            const res = await getFriendInfoApi(2, user.UserId);
+            if (!id || isNaN(parseInt(id))) { return; }
+
+            const res = await getFriendInfoApi(parseInt(id), user.UserId);
             if (res.success) {
+                console.log(res)
                 setFriend(res.data);
             }
             else {
                 dispatch(setError(res.message));
+                navigate("/")
             }
         }
     }
 
     const getCommonGroups = async () => {
-        const res = await getCommonGroupsApi(2);
+        if (!id || isNaN(parseInt(id))) { return; }
+
+        const res = await getCommonGroupsApi(parseInt(id));
         if (res.success) {
             setCommonGroups(res.data);
         } else {
             dispatch(setError(res.message));
+            navigate("/")
         }
     }
 
@@ -50,9 +59,14 @@ export default function PersonalInfo() {
     const { isPinned, pinChat, unPinChat } = usePiningChat({ chatId: friend !== null && friend.ChatId !== null ? friend.ChatId : -1, chatType: 'personal', setLoading });
 
     useEffect(() => {
-        getFriendInfo();
-        getCommonGroups();
-    }, [])
+        if (id && !isNaN(parseInt(id))) {
+            getFriendInfo();
+            getCommonGroups();
+        } else {
+            dispatch(setError('Invalid URL'))
+            navigate("/")
+        }
+    }, [id])
 
     if (friend === null || commonGroups === null) {
         return <div className="w-2/3 min-w-[820px] h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar"></div>
@@ -82,7 +96,6 @@ export default function PersonalInfo() {
                                             }
                                         </>
                                     }
-                                    {/* <li onClick={leaveGroup} className="px-4 py-1 hover:bg-gray-100 cursor-pointer">Leave Group</li> */}
                                 </ul>
                             </motion.div>
                         }
@@ -90,19 +103,17 @@ export default function PersonalInfo() {
                     </div>
                 }
                 <div className="rounded-full overflow-hidden mx-auto w-44 h-44">
-                    <img src={friend.Avatar} alt="avatar" />
+                    <img className="object-cover w-full h-full" src={friend.Avatar} alt="avatar" />
                 </div>
                 <div className="flex flex-col gap-1 items-center w-full mt-3">
                     <h1 className="text-2xl font-semibold">{friend.Name}</h1>
                     <a href="mailto:mu8494759@gmail.com" className="text-gray-300 hover:text-blue-400">{friend.Email}</a>
                 </div>
-                {friend.ChatId &&
-                    <div className="flex justify-center mt-5 gap-2">
-                        <Link to={`/chat/${friend.ChatId}`} className="border border-black p-4 flex items-center justify-center rounded-md group hover:bg-black cursor-pointer">
-                            <MdOutlineMessage size={30} className="text-black group-hover:text-white" />
-                        </Link>
-                    </div>
-                }
+                <div className="flex justify-center mt-5 gap-2">
+                    <Link to={`/chat/${friend.ChatId === null ? `new${friend.UserId}` : friend.ChatId}`} className="border border-black p-4 flex items-center justify-center rounded-md group hover:bg-black cursor-pointer">
+                        <MdOutlineMessage size={30} className="text-black group-hover:text-white" />
+                    </Link>
+                </div>
             </div>
             <div className="bg-white rounded-2xl p-4">
                 <h1 className="text-gray-300">About</h1>

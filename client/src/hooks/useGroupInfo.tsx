@@ -2,7 +2,7 @@ import React, { ChangeEvent, useEffect, useMemo, useState } from 'react'
 import GroupInfoResponse from '../types/groupInfo.type';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { addMembersApi, deleteGroupApi, getGroupInfoApi, leaveGroupApi, updateGroupApi } from '../api/group.api';
 import { setError } from '../redux/slices/error';
 import { setSuccess } from '../redux/slices/success';
@@ -22,19 +22,27 @@ export default function useGroupInfo() {
     const [updating, setUpdating] = useState<boolean>(false)
     const { uploadImage, deleteImage } = useCloudinary();
     const navigate = useNavigate();
+    const { id } = useParams<{ id: string }>();
 
     const getGroupInfo = async () => {
-        const res = await getGroupInfoApi(1);
+        if (!id || isNaN(parseInt(id))) return;
+        const res = await getGroupInfoApi(parseInt(id));
         if (res.success) {
             setGroupInfo(res.data);
         } else {
             dispatch(setError(res.message));
+            navigate("/");
         }
     };
 
     useEffect(() => {
-        getGroupInfo();
-    }, []);
+        if (id && !isNaN(parseInt(id))) {
+            getGroupInfo();
+        } else {
+            dispatch(setError('Invalid URL'))
+            navigate("/")
+        }
+    }, [id]);
 
     const userItselfAdmin = useMemo(() => {
         return groupInfo !== null ? groupInfo?.Members.some(
