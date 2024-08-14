@@ -37,8 +37,9 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
 
 export const signin = async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
-    const query = 'SELECT * FROM Users WHERE Email = ?';
-    connection.query(query, [email], (err: QueryError | null, result: RowDataPacket[]) => {
+    const columns = 'u.UserId, Name, Email, Password, Avatar, Bio, LastSeen, IsActivePrivacy, IsLastSeenPrivacy, JSON_ARRAYAGG(m.ChatId) as ChatIds'
+    const sql = `SELECT ${columns} FROM Users u JOIN Members m ON u.UserId = m.UserId WHERE u.Email = ? GROUP BY u.UserId`;
+    connection.query(sql, [email], (err: QueryError | null, result: RowDataPacket[]) => {
         if (err) { return next(err) }
 
         if (result.length === 0) {
@@ -57,13 +58,14 @@ export const signin = async (req: Request, res: Response, next: NextFunction) =>
                 LastSeen: result[0].LastSeen,
                 IsActivePrivacy: result[0].IsActivePrivacy,
                 IsLastSeenPrivacy: result[0].IsLastSeenPrivacy,
+                ChatIds: result[0].ChatIds
             }
             res
                 .cookie('access_token', token, { httpOnly: true, secure: true })
                 .status(200)
                 .send({ success: true, message: `Wellcome ${result[0].Name}`, user });
         } else {
-            return next(errorHandler(404, 'Invalid Email or Password'));
+            return next(errorHandler(404, 'Incorrect Password'));
         }
     })
 }
