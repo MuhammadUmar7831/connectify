@@ -33,6 +33,7 @@ export default function PrivateRoutes() {
         if (user === null) {
             getUser();
         } else {
+            createSocket(user.UserId, user.ChatIds);
             setLoading(false);
         }
     }, [user])

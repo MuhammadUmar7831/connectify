@@ -7,4 +7,5 @@ export interface User {
     LastSeen: string;
     IsActivePrivacy: number;
     IsLastSeenPrivacy: number;
+    ChatIds: number[];
 }
