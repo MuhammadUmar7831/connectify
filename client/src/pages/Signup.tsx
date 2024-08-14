@@ -1,17 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { GrConnect } from "react-icons/gr";
 import { FcGoogle } from "react-icons/fc";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { LuEye, LuEyeOff } from "react-icons/lu";
 import ClipLoader from "react-spinners/ClipLoader";
 import loginButton from "../components/loginButton";
-import { useEffect } from "react";
-import {gapi} from "gapi-script"
+import { gapi } from "gapi-script";
+import { signupApi } from "../api/auth.api";
+import { useDispatch } from "react-redux";
+import { setUser } from "../redux/slices/user";
+import { setSuccess } from "../redux/slices/success";
+import { setError } from "../redux/slices/error";
 
 const Signup = () => {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [avatar, setAvatar] = useState("")
   const [loading, setLoading] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+  };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
@@ -21,18 +34,27 @@ const Signup = () => {
     setPassword(e.target.value);
   };
 
-  const handleSignUpClick = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-  };
-
-  const [passwordVisible, setPasswordVisible] = useState(false);
-
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
   };
 
-  const clientId = "476553953625-r86dopv2fee9gtsnln507855orn3jko4.apps.googleusercontent.com";
+  const handleSignUpClick = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+  
+    const res = await signupApi({ email, password, name, avatar});
+    if (res.success) {
+      dispatch(setUser(res.user));
+      dispatch(setSuccess(res.message));
+      navigate("/");
+    } else {
+      dispatch(setError(res.message));
+    }
+    setLoading(false);
+  };
+
+  const clientId =
+    "476553953625-r86dopv2fee9gtsnln507855orn3jko4.apps.googleusercontent.com";
   useEffect(() => {
     function start() {
       gapi.client.init({
@@ -42,7 +64,6 @@ const Signup = () => {
     }
     gapi.load("client:auth2", start);
   }, []);
-  
 
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -54,12 +75,11 @@ const Signup = () => {
           Sign Up
         </h2>
         <button
-        className="flex items-center  justify-center mb-4 shadow-sm text-gray-600 hover:bg-gray-50
-        w-full focus:outline-none bg-gray-100 py-2 px-4 rounded-md"
+          className="flex items-center justify-center mb-4 shadow-sm text-gray-600 hover:bg-gray-50 w-full focus:outline-none bg-gray-100 py-2 px-4 rounded-md"
           onClick={handleSignUpClick}
         >
-            <FcGoogle className="text-xl mr-2" /> 
-         {loginButton()}   
+          <FcGoogle className="text-xl mr-2" />
+          {loginButton()}
         </button>
         <div className="text-center text-gray-500 mb-4">or</div>
         <form onSubmit={handleSignUpClick}>
@@ -67,22 +87,26 @@ const Signup = () => {
             type="text"
             placeholder="Name"
             required
-            className="mb-4 shadow-sm text-gray-600 hover:bg-gray-50
-        w-full focus:outline-none bg-gray-100 py-2 px-4 rounded-md"
+            value={name}
+            onChange={handleNameChange}
+            className="mb-4 shadow-sm text-gray-600 hover:bg-gray-50 w-full focus:outline-none bg-gray-100 py-2 px-4 rounded-md"
           />
           <input
             type="email"
             placeholder="Email address"
             required
-            className="mb-4 shadow-sm text-gray-600 hover:bg-gray-50
-        w-full focus:outline-none bg-gray-100 py-2 px-4 rounded-md"
+            value={email}
+            onChange={handleEmailChange}
+            className="mb-4 shadow-sm text-gray-600 hover:bg-gray-50 w-full focus:outline-none bg-gray-100 py-2 px-4 rounded-md"
           />
           <div className="relative">
             <input
               type={passwordVisible ? "text" : "password"}
               placeholder="Password"
-              className="mb-4 shadow-sm text-gray-600 hover:bg-gray-50
-        w-full focus:outline-none bg-gray-100 py-2 px-4 rounded-md"
+              required
+              value={password}
+              onChange={handlePasswordChange}
+              className="mb-4 shadow-sm text-gray-600 hover:bg-gray-50 w-full focus:outline-none bg-gray-100 py-2 px-4 rounded-md"
             />
             <button
               type="button"
@@ -90,9 +114,9 @@ const Signup = () => {
               className="absolute inset-y-0 right-0 px-1 mb-3 mr-2 flex items-center text-gray-500"
             >
               {passwordVisible ? (
-                <LuEyeOff className="text-xl" /> // Replace with an icon
+                <LuEyeOff className="text-xl" />
               ) : (
-                <LuEye className="text-xl" /> // Replace with an icon
+                <LuEye className="text-xl" />
               )}
             </button>
           </div>
@@ -111,7 +135,7 @@ const Signup = () => {
             className="bg-gray-900 hover:bg-gray-800 rounded-md text-white py-2 px-4 mt-2 w-full bg-orange hover:bg-black disabled:cursor-not-allowed"
             type="submit"
           >
-            {loading == true ? (
+            {loading ? (
               <ClipLoader size={20} color="#FFFFFF" />
             ) : (
               "CONTINUE"

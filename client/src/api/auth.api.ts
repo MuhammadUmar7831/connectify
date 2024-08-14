@@ -12,3 +12,18 @@ export const signinApi = async (body: { email: string, password: string }) => {
         }
     }
 }
+
+export const signupApi = async(body:{email: string, password: string, name: string, avatar: string}) => {
+    try {
+        const response = await axios.post(`/api/auth/signup`, body);
+        console.log("User Signed Up")
+        return response.data
+    } catch (error: any) {
+        if(error.response){
+            return error.response.data
+        }
+        else{
+            return { success: false, message: 'Server is Down' }
+        }
+    }
+}
