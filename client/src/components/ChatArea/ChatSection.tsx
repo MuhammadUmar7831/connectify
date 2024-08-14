@@ -20,9 +20,9 @@ export default function ChatSection({ messages, userId, onSetReplyClick, fetchMo
   const handleScroll = async () => {
     if (chatContainerRef.current) {
       const container = chatContainerRef.current;
-      if (container.scrollTop === 0) {
-        console.log('Set the Scroll to Down Button to Hide')
-      }
+      // if (container.scrollTop === 0) {
+      //   console.log('Set the Scroll to Down Button to Hide')
+      // }
 
       if (!reachedEnd && !loading && (container.scrollHeight + container.scrollTop === container.clientHeight)) {
         setLoading(true)
@@ -108,7 +108,7 @@ export default function ChatSection({ messages, userId, onSetReplyClick, fetchMo
             <>
               {!isSameAsLastDate &&
                 <div className="flex justify-center my-2">
-                  <span className="bg-gray text-black text-xs py-1 px-3 rounded-md">
+                  <span className="bg-gray text-black text-xs py-1 px-3 rounded-md shadow-lg">
                     {formatDate(badgeDate)}
                   </span>
                 </div>
@@ -144,6 +144,13 @@ export default function ChatSection({ messages, userId, onSetReplyClick, fetchMo
             </>
           );
         })}
+        {messages.length > 0 &&
+          <div className="flex justify-center my-2">
+            <span className="bg-gray text-black text-xs py-1 px-3 rounded-md shadow-lg">
+              {formatDate(lastDate)}
+            </span>
+          </div>
+        }
         {loading &&
           <span className="flex justify-center">
             <ClipLoader size={20} color={themeColor} />
