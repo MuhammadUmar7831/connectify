@@ -56,7 +56,7 @@ export default function useChatArea() {
       Content,
       ChatId: parseInt(chatId ? chatId : 'This is not Possible.'),
       MessageId: -1,
-      Timestamp: "",
+      Timestamp: new Date().toISOString(),
       SenderId: user !== null ? user.UserId : -1,
       Sender: user !== null ? user.Name : 'Why not you stupid Bastard',
       UserStatus: [{ Status: "sending", UserId: -1, UserName: "" }],
