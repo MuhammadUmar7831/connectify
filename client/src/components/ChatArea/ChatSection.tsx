@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import MessageResponse from "../../types/MessageResponse.type";
 import Message from "./Message";
 import MessageReply from "./MessageReply";
 import { ClipLoader } from "react-spinners";
+import { motion } from 'framer-motion';
 import themeColor from "../../config/theme.config";
 
 interface ChatSectionProps {
@@ -12,10 +13,21 @@ interface ChatSectionProps {
   fetchMoreMessages: () => Promise<boolean>;
 }
 
+const floatingDateBadgeVariants = {
+  bounce: {
+    scale: [1, 1.1, 1],
+    transition: {
+      duration: 0.4,
+      ease: "easeInOut",
+    },
+  },
+};
+
 export default function ChatSection({ messages, userId, onSetReplyClick, fetchMoreMessages, }: ChatSectionProps) {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [reachedEnd, setReachedEnd] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [lastVisibleDate, setLastVisibleDate] = useState<string | null>(null);
 
   const handleScroll = async () => {
     if (chatContainerRef.current) {
@@ -88,15 +100,57 @@ export default function ChatSection({ messages, userId, onSetReplyClick, fetchMo
     );
   }
 
+  const observerCallback = useCallback((entries: IntersectionObserverEntry[]) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const messageDate = entry.target.getAttribute("data-timestamp");
+        if (messageDate) {
+          setLastVisibleDate(formatDate(new Date(messageDate)));
+        }
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(observerCallback, {
+      root: chatContainerRef.current,
+      threshold: 0.5, // 50% of the message should be visible
+    });
+
+    const messageElements = chatContainerRef.current?.querySelectorAll(".message") || [];
+
+    messageElements.forEach((messageElement) => observer.observe(messageElement));
+
+    return () => {
+      messageElements.forEach((messageElement) => observer.unobserve(messageElement));
+    };
+  }, [messages, observerCallback]);
+
+  useEffect(() => { setReachedEnd(false) }, [])
+
   let lastDate = messages.length > 0 ? new Date(messages[0].Timestamp) : new Date();
 
   return (
-    <>
+    <div className="relative bg-white overflow-hidden rounded-2xl w-full h-full">
+      {messages.length > 0 &&
+        // condition to check if the chatContainer is overflowing if not than don't show the floating bage
+        (chatContainerRef.current?.scrollHeight || 0) > (chatContainerRef.current?.clientHeight || 0)
+        &&
+        <motion.div
+          key={lastVisibleDate}
+          variants={floatingDateBadgeVariants}
+          animate="bounce"
+          className="sticky top-6 flex justify-center my-2 z-10">
+          <span className="bg-gray text-black text-xs py-1 px-3 rounded-md shadow-lg">
+            {lastVisibleDate}
+          </span>
+        </motion.div>
+      }
       <div
         ref={chatContainerRef}
-        className="bg-white rounded-2xl w-full h-full flex flex-col-reverse gap-10 p-4 overflow-y-scroll no-scrollbar"
+        className="absolute inset-0 flex flex-col-reverse gap-10 p-4 overflow-y-scroll no-scrollbar"
       >
-        {messages.map((m, i) => {
+        {messages.map((m) => {
           const badgeDate = lastDate;
           const currentDate = new Date(m.Timestamp);
           const isSameAsLastDate = currentDate.toLocaleDateString() === lastDate.toLocaleDateString();
@@ -105,7 +159,7 @@ export default function ChatSection({ messages, userId, onSetReplyClick, fetchMo
           }
 
           return (
-            <>
+            <div className="message" data-timestamp={m.Timestamp}>
               {!isSameAsLastDate &&
                 <div className="flex justify-center my-2">
                   <span className="bg-gray text-black text-xs py-1 px-3 rounded-md shadow-lg">
@@ -115,7 +169,6 @@ export default function ChatSection({ messages, userId, onSetReplyClick, fetchMo
               }
               {m.ReplyId === null ? (
                 <Message
-                  key={i}
                   onSetReplyClick={onSetReplyClick}
                   me={m.SenderId === userId}
                   content={m.Content}
@@ -127,7 +180,6 @@ export default function ChatSection({ messages, userId, onSetReplyClick, fetchMo
                 />
               ) : (
                 <MessageReply
-                  key={i}
                   onSetReplyClick={onSetReplyClick}
                   me={m.SenderId === userId}
                   message={m.ReplyContent ? m.ReplyContent : 'That is not Possible'}
@@ -141,23 +193,16 @@ export default function ChatSection({ messages, userId, onSetReplyClick, fetchMo
                   userStatus={m.UserStatus}
                 />
               )}
-            </>
+            </div>
           );
         })}
-        {messages.length > 0 &&
-          <div className="flex justify-center my-2">
-            <span className="bg-gray text-black text-xs py-1 px-3 rounded-md shadow-lg">
-              {formatDate(lastDate)}
-            </span>
-          </div>
-        }
         {loading &&
           <span className="flex justify-center">
             <ClipLoader size={20} color={themeColor} />
           </span>
         }
       </div>
-    </>
+    </div>
   );
 
 }
