@@ -5,9 +5,9 @@ import useScreenWidth from "../hooks/useScreenWidth";
 
 export default function Main() {
     const screenWidth = useScreenWidth();
-    if (screenWidth && screenWidth < 640) {
+    if (screenWidth && screenWidth < 1024) {
         return (
-            <div className="w-full h-full flex flex-col gap-2">
+            <div className="w-full h-full flex flex-col gap-2 mx-auto">
                 <MainHeader />
                 <ChatList />
                 <SideBar />
@@ -16,9 +16,12 @@ export default function Main() {
     }
 
     return (
-        <div className="h-full w-1/3 flex flex-col gap-2">
-            <MainHeader />
-            <ChatList />
+        <div className="w-1/2 2xl:w-1/3 h-full flex gap-2">
+            <SideBar />
+            <div className="h-full w-full flex flex-col gap-2">
+                <MainHeader />
+                <ChatList />
+            </div>
         </div>
     )
 }

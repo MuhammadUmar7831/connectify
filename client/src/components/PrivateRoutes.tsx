@@ -5,7 +5,6 @@ import { getUserApi } from "../api/user.api";
 import { setError } from "../redux/slices/error";
 import { Navigate, Outlet } from "react-router-dom";
 import { setUser } from "../redux/slices/user";
-import SideBar from "./SideBar";
 import Main from "../pages/Main";
 import { BarLoader } from "react-spinners";
 import { GrConnect } from "react-icons/gr";
@@ -54,7 +53,7 @@ export default function PrivateRoutes() {
         )
     }
 
-    if (screenWidth && screenWidth < 640) { // app layout for mobile screens
+    if (screenWidth && screenWidth < 1024) { // app layout for mobile screens
         return (
             user !== null ?
                 <>
@@ -66,7 +65,6 @@ export default function PrivateRoutes() {
     return (
         user !== null ?
             <>
-                <SideBar />
                 <Main />
                 <Outlet />
             </> : <Navigate to="/signin" />

@@ -13,7 +13,7 @@ import useScreenWidth from "./hooks/useScreenWidth";
 function App() {
   const screenWidth = useScreenWidth();
 
-  if (screenWidth && screenWidth < 640) { // routing for mobile screens
+  if (screenWidth && screenWidth < 1024) { // routing for mobile screens
     return (
       <div className="flex items-center justify-center p-4 w-screen h-screen bg-gray gap-2">
         <BrowserRouter>
@@ -34,7 +34,7 @@ function App() {
   }
 
   return (
-    <div className="flex items-center justify-center p-4 w-screen h-screen bg-gray gap-2 overflow-x-auto">
+    <div className="flex items-center justify-center p-4 w-screen h-screen bg-gray gap-2">
       <BrowserRouter>
         <SuccessToaster />
         <ErrorToaster />

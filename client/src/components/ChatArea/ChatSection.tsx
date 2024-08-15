@@ -35,8 +35,10 @@ export default function ChatSection({ messages, userId, onSetReplyClick, fetchMo
       // if (container.scrollTop === 0) {
       //   console.log('Set the Scroll to Down Button to Hide')
       // }
+      const tolerance = 1;
+      const scrollDiff = Math.abs(container.scrollHeight - container.clientHeight + container.scrollTop);
 
-      if (!reachedEnd && !loading && (container.scrollHeight + container.scrollTop === container.clientHeight)) {
+      if (!reachedEnd && !loading && scrollDiff <= tolerance) {
         setLoading(true)
         const isEnd = await fetchMoreMessages(); // return true if we reached the end
         setLoading(false);
@@ -197,7 +199,7 @@ export default function ChatSection({ messages, userId, onSetReplyClick, fetchMo
           );
         })}
         {loading &&
-          <span className="flex justify-center">
+          <span className="flex justify-center z-10">
             <ClipLoader size={20} color={themeColor} />
           </span>
         }

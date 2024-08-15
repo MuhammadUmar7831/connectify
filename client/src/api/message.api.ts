@@ -30,7 +30,6 @@ export const sendMessageToChatApi = async (
         receiverId,
       }
     }
-    console.log(body)
 
     const response = await axios.post(`/api/message/send`, body);
     return response.data;
