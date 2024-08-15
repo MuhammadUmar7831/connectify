@@ -3,17 +3,18 @@ import { HiMiniUserGroup } from "react-icons/hi2";
 import ArchiveIcon from "../interface/icons/ArchiveIcon";
 import ChatIcon from "../interface/icons/ChatIcon";
 import { IoIosPerson } from "react-icons/io";
-import UserIcon from "../interface/icons/UserIcon";
 import { useDispatch, useSelector } from "react-redux";
 import { setChatListTypeSlice } from "../redux/slices/chatListType";
 import SidebarIcon from "../interface/SidebarIcon";
 import { RootState } from "../redux/store";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 export default function SideBar() {
   const dispatch = useDispatch();
   const { archiveChats } = useSelector((state: RootState) => state.archiveChats);
   const [archiveBadge, setAtchiveBadge] = useState<number>(0);
+  const { user } = useSelector((state: RootState) => state.user);
 
   const getUnseenMessageCountInArchivedChats = () => {
     if (archiveChats) {
@@ -62,11 +63,9 @@ export default function SideBar() {
           </ul>
         }
       </div>
-      <UserIcon
-        className={
-          "text-white p-3 rounded-full bg-slate-500 h-10 w-10 cursor-pointer"
-        }
-      />
-    </div>
+      <Link to="/info/my" className="text-white rounded-full overflow-hidden bg-slate-500 w-10 aspect-square cursor-pointer">
+        <img src={user?.Avatar} alt={user?.Name} className="object-cover"/>
+      </Link>
+    </div >
   );
 }

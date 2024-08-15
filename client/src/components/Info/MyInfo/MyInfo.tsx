@@ -63,7 +63,7 @@ export default function MyInfo() {
           <BsThreeDotsVertical onClick={() => setShowMenu(!updating && true)} className="cursor-pointer" />
         </div>
         <div className="bg-white rounded-2xl p-4">
-          <div className="relative rounded-full overflow-hidden mx-auto w-44 h-44 group cursor-pointer bg-gray">
+          <div className="relative rounded-full overflow-hidden mx-auto w-44 h-44 aspect-square group cursor-pointer bg-gray">
             <div
               onClick={() => document.getElementById("file-input")?.click()}
               className="flex justify-center items-center absolute top-0 left-0 bg-gray-200 w-full h-full opacity-0 group-hover:opacity-100 group-hover:bg-opacity-60"
@@ -108,7 +108,7 @@ export default function MyInfo() {
           )}
           <div className="flex gap-2 items-center justify-center">
             {userName === null ? (
-              <h1 className="text-2xl font-semibold ml-9">
+              <h1 className="text-2xl font-semibold ml-9 text-wrap text-center">
                 {user.Name}
               </h1>
             ) : (
@@ -154,7 +154,7 @@ export default function MyInfo() {
         <h1 className="text-gray-300">Bio</h1>
         <div className=" flex gap-2 items-center w-fit max-w-full">
           {userDesc === null ? (
-            <p className="w-full">{user?.Bio}</p>
+            <p className="w-full text-wrap text-center">{user?.Bio}</p>
           ) : (
             <form
               onSubmit={updateUser}
