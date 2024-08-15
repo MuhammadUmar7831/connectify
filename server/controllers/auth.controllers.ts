@@ -75,3 +75,12 @@ export const signin = async (req: Request, res: Response, next: NextFunction) =>
         }
     })
 }
+
+export const signout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  res.clearCookie("access_token");
+  res.status(200).send({ success: true, message: "signout Successfully" });
+};
