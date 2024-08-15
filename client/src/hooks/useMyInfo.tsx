@@ -1,30 +1,40 @@
-import friendType from '../types/friend.type';
-import{useState,ChangeEvent} from 'react';
-import { useDispatch } from 'react-redux';
+import { useState, ChangeEvent } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import useCloudinary from './useCloudinary';
 import { setSuccess } from '../redux/slices/success';
 import { setError } from '../redux/slices/error';
 import { updateUserApi } from '../api/user.api';
+import { RootState } from '../redux/store';
+import { setUser } from '../redux/slices/user';
+import { User } from '../types/user.type';
+import { signoutApi } from '../api/auth.api';
+import { useNavigate } from 'react-router-dom';
 
-export default function usePersonalInfo() {
+export default function useMyInfo() {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+
     const [userName, setUserName] = useState<string | null>(null);
     const [userDesc, setUserDesc] = useState<string | null>(null);
     const [userAvatarFile, setUserAvatarFile] = useState<null | File>(null);
-    const [userInfo, setUserInfo] = useState<friendType | null>(null);
     const [updating, setUpdating] = useState<boolean>(false)
     const [userAvatar, setUserAvatar] = useState<string | null>(null);
+
+    const [isActiveChecked, setIsActiveChecked] = useState(false);
+    const [isLastSeenChecked, setisLastSeenChecked] = useState(false);
+    const { user } = useSelector((state: RootState) => state.user);
+
     const { uploadImage, deleteImage } = useCloudinary();
 
     const handleEditUserNameClick = () => {
-        if (userInfo) {
-            setUserName(userName === null ? userInfo?.Name : null);
+        if (user) {
+            setUserName(userName === null ? user?.Name : null);
         }
     };
 
     const handleEditUserDescClick = () => {
-        if (userInfo) {
-            setUserDesc(userDesc === null ? userInfo?.Bio : null);
+        if (user) {
+            setUserDesc(userDesc === null ? user?.Bio : null);
         }
     };
 
@@ -46,14 +56,14 @@ export default function usePersonalInfo() {
         e.preventDefault();
         if (updating) { return }
         setUpdating(true);
-        if (userInfo) {
-            const newName = userName === null ? userInfo?.Name : userName;
-            const newDesc = userDesc === null ? userInfo?.Bio : userDesc;
-            let newAvatar = userAvatar === null ? userInfo?.Avatar : userAvatar;
+        if (user) {
+            const newName = userName === null ? user?.Name : userName;
+            const newDesc = userDesc === null ? user?.Bio : userDesc;
+            let newAvatar = userAvatar === null ? user?.Avatar : userAvatar;
 
             //not default avatar so delete it first from cloud
             if (newAvatar !== '/group.png') {
-                const isDeleted = await deleteImage(userInfo?.Avatar);
+                const isDeleted = await deleteImage(user?.Avatar);
                 if (!isDeleted.success) {
                     setUpdating(false);
                     return;
@@ -74,32 +84,27 @@ export default function usePersonalInfo() {
             }
 
             if (
-                (newName !== userInfo?.Name && newName !== "") ||
-                (newDesc !== userInfo?.Bio && newDesc !== "") ||
-                (newAvatar !== userInfo?.Avatar && newAvatar !== "")
+                (newName !== user?.Name && newName !== "") ||
+                (newDesc !== user?.Bio && newDesc !== "") ||
+                (newAvatar !== user?.Avatar && newAvatar !== "")
             ) {
                 const body = {
-                    UserId: userInfo?.UserId,
+                    UserId: user?.UserId,
                     Name: newName,
                     Avatar: newAvatar,
                     Bio: newDesc
                 };
+
                 const res = await updateUserApi(body);
                 if (res.success) {
-                    setUserInfo((prevUserInfo) => {
-                        if (prevUserInfo) {
-                            return {
-                                ...prevUserInfo,
-                                Name: body.Name,
-                                Avatar:newAvatar,
-                                Bio: body.Bio
-                            };
-                        }
-                        return prevUserInfo;
-                    });
-                    setUserName(null)
-                    setUserDesc(null)
-                    setUserAvatar(null)
+                    const updatedUser: User = {
+                        ...user,
+                        Name: body.Name,
+                        Avatar: body.Avatar,
+                        Bio: body.Bio
+                    };
+
+                    dispatch(setUser(updatedUser));
                     dispatch(setSuccess(res.message));
                 } else {
                     dispatch(setError(res.message));
@@ -112,20 +117,35 @@ export default function usePersonalInfo() {
         setUpdating(false);
     };
 
+    const signout = async () => {
+        const res = await signoutApi();
+        if (res.success) {
+            navigate("/signin")
+            dispatch(setSuccess(res.message))
+        } else {
+            dispatch(setError(res.message))
+        }
+    }
+
     return {
-        userInfo,
-        setUserInfo,
+        user,
         userName,
         setUserName,
         userDesc,
         setUserDesc,
         userAvatar,
         setUserAvatar,
+        setUserAvatarFile,
+        isActiveChecked,
+        setIsActiveChecked,
+        isLastSeenChecked,
+        setisLastSeenChecked,
         handleEditUserNameClick,
         handleEditUserDescClick,
         updateUser,
         handleImageChange,
         updating,
-        setUpdating
+        setUpdating,
+        signout,
     };
 };
