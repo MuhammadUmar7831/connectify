@@ -6,34 +6,46 @@ import { setUser } from "../redux/slices/user";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-
 const clientId = "476553953625-r86dopv2fee9gtsnln507855orn3jko4.apps.googleusercontent.com";
 
-
-
-function loginButton() {
-  
-const dispatch = useDispatch();
-const navigate = useNavigate();
+function LoginButton() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const generateStrongPassword = () => {
     const length = 10;
-    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=";
+    const charset =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+~`|}{[]:;?><,./-=";
     let password = "";
     for (let i = 0, n = charset.length; i < length; ++i) {
       password += charset.charAt(Math.floor(Math.random() * n));
     }
     return password;
-  }
-  const onSuccess =  async(res: any) => {
-    const response = await signupApi({ email: res.email, password: generateStrongPassword(), name: res.name, avatar:res.imageUrl });
-    if (response.success) {
-      dispatch(setUser(response.user));
-      dispatch(setSuccess(response.message));
-      navigate("/");
-  } else {
-      dispatch(setError(response.message));
-  }
+  };
+
+  const onSuccess = async (res: any) => {
+    const { email, name, imageUrl } = res.profileObj; // Extract from profileObj
+
+    try {
+      const response = await signupApi({
+        email: email,
+        password: generateStrongPassword(),
+        name: name,
+        avatar: imageUrl,
+        bio: "Default Bio, You can change it"
+      });
+
+      if (response.success) {
+        dispatch(setUser(response.user));
+        dispatch(setSuccess(response.message));
+        navigate("/");
+      } else {
+        dispatch(setError(response.message));
+      }
+    } catch (error) {
+      dispatch(setError("An error occurred during signup."));
+    }
+
     console.log("Login Success", res.profileObj);
   };
 
@@ -62,4 +74,4 @@ const navigate = useNavigate();
   );
 }
 
-export default loginButton;
+export default LoginButton;

@@ -16,33 +16,43 @@ const Signup = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [avatar, setAvatar] = useState("")
+  const [passwordStrength, setPasswordStrength] = useState("");
+  const [avatar, setAvatar] = useState("");
+  const [bio, setBio] = useState("");
   const [loading, setLoading] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [disableOnPass, setDisableOnPass] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleNameChange = (e:any) => {
     setName(e.target.value);
   };
 
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEmailChange = (e:any) => {
     setEmail(e.target.value);
   };
 
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
+  const handlePasswordChange = (e:any) => {
+    const pwd = e.target.value;
+    setPassword(pwd);
+    checkPasswordStrength(pwd);
+  };
+
+  const handleAvatarChange = (e:any) => {
+    setAvatar(e.target.value);
   };
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
   };
 
-  const handleSignUpClick = async (e: React.FormEvent) => {
+  const handleSignUpClick = async (e:any) => {
     e.preventDefault();
     setLoading(true);
-  
-    const res = await signupApi({ email, password, name, avatar});
+
+    setBio("Default Bio, You can change it");
+    const res = await signupApi({ email, password, name, avatar, bio });
     if (res.success) {
       dispatch(setUser(res.user));
       dispatch(setSuccess(res.message));
@@ -51,6 +61,28 @@ const Signup = () => {
       dispatch(setError(res.message));
     }
     setLoading(false);
+  };
+
+  const checkPasswordStrength = (password: any) => {
+    let strength = "";
+    const strongRegex = new RegExp(
+      "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\\$%\\^&\\*])(?=.{8,})"
+    );
+    const mediumRegex = new RegExp(
+      "^(((?=.*[a-z])(?=.*[A-Z]))|((?=.*[a-z])(?=.*[0-9]))|((?=.*[A-Z])(?=.*[0-9])))(?=.{6,})"
+    );
+
+    if (strongRegex.test(password)) {
+      strength = "strong";
+      setDisableOnPass(false);
+    } else if (mediumRegex.test(password)) {
+      strength = "medium";
+      setDisableOnPass(false);
+    } else {
+      strength = "weak";
+      setDisableOnPass(true);
+    }
+    setPasswordStrength(strength);
   };
 
   const clientId =
@@ -99,27 +131,51 @@ const Signup = () => {
             onChange={handleEmailChange}
             className="mb-4 shadow-sm text-gray-600 hover:bg-gray-50 w-full focus:outline-none bg-gray-100 py-2 px-4 rounded-md"
           />
-          <div className="relative">
+          <input
+            type="text"
+            placeholder="Avatar URL"
+            required
+            value={avatar}
+            onChange={handleAvatarChange}
+            className="mb-4 shadow-sm text-gray-600 hover:bg-gray-50 w-full focus:outline-none bg-gray-100 py-2 px-4 rounded-md"
+          />
+          <div className="relative mb-4">
             <input
               type={passwordVisible ? "text" : "password"}
               placeholder="Password"
               required
               value={password}
               onChange={handlePasswordChange}
-              className="mb-4 shadow-sm text-gray-600 hover:bg-gray-50 w-full focus:outline-none bg-gray-100 py-2 px-4 rounded-md"
+              className="shadow-sm text-gray-600 hover:bg-gray-50 w-full focus:outline-none bg-gray-100 py-2 px-4 rounded-md"
             />
             <button
               type="button"
               onClick={togglePasswordVisibility}
-              className="absolute inset-y-0 right-0 px-1 mb-3 mr-2 flex items-center text-gray-500"
+              className="absolute inset-y-0 right-0 px-1 mb-3 mr-2 mt-2 flex items-center text-gray-500"
             >
               {passwordVisible ? (
-                <LuEyeOff className="text-xl" />
-              ) : (
                 <LuEye className="text-xl" />
+              ) : (
+                <LuEyeOff className="text-xl" />
               )}
             </button>
           </div>
+          {password && (
+            <div className={`text-xs font-semibold mb-4 ${
+                passwordStrength === "weak"
+                ? "text-red-500"
+                : passwordStrength === "medium"
+                ? "text-yellow-500"
+                : "text-green-500"
+              }`}
+            >
+              {passwordStrength === "weak"
+                ? "Weak Password"
+                : passwordStrength === "medium"
+                ? "Medium Password"
+                : "Strong Password"}
+            </div>
+          )}
           <p className="text-xs text-gray-500 mb-4">
             A strong password should contain at least:
             <ul className="list-disc pl-5">
@@ -131,7 +187,7 @@ const Signup = () => {
             </ul>
           </p>
           <button
-            disabled={loading}
+            disabled={disableOnPass || loading}
             className="bg-gray-900 hover:bg-gray-800 rounded-md text-white py-2 px-4 mt-2 w-full bg-orange hover:bg-black disabled:cursor-not-allowed"
             type="submit"
           >

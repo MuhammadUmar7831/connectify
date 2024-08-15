@@ -13,17 +13,22 @@ export const signinApi = async (body: { email: string, password: string }) => {
     }
 }
 
-export const signupApi = async(body:{email: string, password: string, name: string, avatar: string}) => {
+export const signupApi = async (body: { email: string; password: string; name: string; avatar: string; bio: string }) => {
     try {
-        const response = await axios.post(`/api/auth/signup`, body);
-        console.log("User Signed Up")
-        return response.data
+      console.log("Sending signup request with body:", body); // Debug log
+  
+      const response = await axios.post("/api/auth/signup", body);
+  
+      console.log("User Signed Up:", response.data); // Debug log
+  
+      return response.data;
     } catch (error: any) {
-        if(error.response){
-            return error.response.data
-        }
-        else{
-            return { success: false, message: 'Server is Down' }
-        }
+      console.error("Signup error:", error); // Debug log
+  
+      if (error.response) {
+        return error.response.data;
+      } else {
+        return { success: false, message: "Server is Down" };
+      }
     }
-}
+  };
