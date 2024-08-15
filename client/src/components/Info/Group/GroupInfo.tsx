@@ -93,8 +93,8 @@ export default function GroupInfo() {
                         }
                         {loading ? <ClipLoader size={20} color={themeColor} /> : <BsThreeDotsVertical onClick={() => setShowMenu(true)} className="cursor-pointer" />}
                     </div>
-                    <div className="relative rounded-full overflow-hidden mx-auto w-44 h-44 group cursor-pointer border-2 border-blue-800 bg-gray">
-                        <div
+                    <div className="relative rounded-full overflow-hidden mx-auto w-44 h-44 group cursor-pointer bg-gray">
+                        {userItselfAdmin && <div
                             onClick={() => document.getElementById('file-input')?.click()}
                             className="flex justify-center items-center absolute top-0 left-0 bg-gray-200 w-full h-full opacity-0 group-hover:opacity-100 group-hover:bg-opacity-60"
                         >
@@ -152,9 +152,9 @@ export default function GroupInfo() {
                             <p className="w-full">{groupInfo.Description}</p> :
                             <form onSubmit={updateGroup} className="relative flex gap-2 border-b-2 p-2 w-full">
                                 <input required className="focus:outline-none w-full" type="text" placeholder="Group Name" value={groupDesc} onChange={(e) => setGroupDesc(e.target.value)} />
-                                <Emoji_Picker emojiPicketClassName="top-[60px] right-[20px] " onPickup={(emoji: string) => { setGroupDesc(`${groupDesc}${emoji}`) }} />
+                                <Emoji_Picker emojiPicketClassName="top-10 -right-10" onPickup={(emoji: string) => { setGroupDesc(`${groupDesc}${emoji}`) }} />
                                 <button type="submit">
-                                    <AiOutlineCheck className=" cursor-pointer" size={25} />
+                                    <AiOutlineCheck className="cursor-pointer" size={25} />
                                 </button>
                             </form>
                         }
