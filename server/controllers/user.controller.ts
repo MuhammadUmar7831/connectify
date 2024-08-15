@@ -14,6 +14,25 @@ export const getUser = async (req: authRequest, res: Response, next: NextFunctio
     })
 }
 
+
+export const updateUser=async(req:authRequest,res:Response,next:NextFunction)=>{
+    const { UserId, Name, Avatar, Bio } = req.body;
+    if (
+        typeof UserId !== 'number' ||
+        typeof Name !== 'string' ||
+        typeof Avatar !== 'string' ||
+        typeof Bio !== 'string'
+    ) {
+        return res.status(400).send({ success: false, message: 'Invalid request body (UserId: number, Name: string, Avatar: string, Bio: string)' });
+    }
+
+    const sql = "UPDATE Users SET Name = ?, Avatar = ?, Bio = ? WHERE UserId = ?";
+    connection.query(sql, [Name, Avatar, Bio, UserId], (err: QueryError | null, result: any) => {
+        if (err) { return next(err) }
+        res.status(201).send({ success: true, message: "User updated" })
+    })
+}
+
 export const getFriendInfo = async (req: Request, res: Response, next: NextFunction) => {
     const myId = parseInt(req.query.myId as string);
     const friendId = parseInt(req.query.friendId as string);

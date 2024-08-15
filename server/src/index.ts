@@ -8,8 +8,12 @@ import chatRoutes from "../routes/chat.routes";
 import groupRoutes from "../routes/group.routes";
 import messageRoutes from "../routes/message.routes";
 import server, { app } from "../config/socket";
+import cookieParser from "cookie-parser";
+
 
 dotenv.config();
+app.use(cookieParser());
+
 
 app.get("/", tryCatch((req: Request, res: Response, next: NextFunction) => {
     res.status(200).send('Wellcome to Connectify');
