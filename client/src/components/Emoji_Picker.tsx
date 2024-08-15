@@ -14,7 +14,7 @@ export default function Emoji_Picker({ emojiPicketClassName, closeOnPickup = tru
             }
             <div
                 className={`absolute ${emojiPicketClassName}`}>
-                <EmojiPicker open={isOpen} height={350} onEmojiClick={(emojiData: EmojiClickData) => { setOpen(!closeOnPickup); onPickup(emojiData.emoji) }} />
+                <EmojiPicker open={isOpen} width={300} height={350} onEmojiClick={(emojiData: EmojiClickData) => { setOpen(!closeOnPickup); onPickup(emojiData.emoji) }} />
             </div>
         </div>
     )

@@ -9,6 +9,7 @@ import { setError } from "../../../redux/slices/error";
 import GroupInfoResponse from "../../../types/groupInfo.type";
 import { setSuccess } from "../../../redux/slices/success";
 import { ClipLoader } from "react-spinners";
+import { Link } from "react-router-dom";
 
 interface Props {
     member: {
@@ -126,17 +127,18 @@ export default function MembersListItems({ member, groupId, userItselfAdmin, set
     const actions = member.isAdmin ? [kickUser, removeAdmin] : [kickUser, makeAdmin];
 
     return (
-        <div className="flex justify-between p-4 hover:bg-gray-100">
+        <div className="flex justify-between p-4 hover:bg-gray-100 w-full">
 
-            <div className="flex gap-2">
-                <div className="rounded-full w-12 h-12 overflow-hidden">
-                    <img src={member.Avatar} alt="Avatar" />
-                </div>
-                <div>
-                    <h1>{member.UserId === user?.UserId ? 'You' : member.Name}</h1>
-                    <p className="text-gray-300 text-sm">{member.Bio}</p>
+            <div className="flex gap-2 w-full overflow-hidden">
+                <Link to={`/info/personal/${member.UserId}`} className="rounded-full w-16 overflow-hidden aspect-square">
+                    <img src={member.Avatar} alt="Avatar" className="object-cover w-full h-full" />
+                </Link>
+                <div className="w-full overflow-hidden">
+                    <h1 className="truncate">{member.UserId === user?.UserId ? 'You' : member.Name}</h1>
+                    <p className="text-gray-300 text-sm truncate">{member.Bio}</p>
                 </div>
             </div>
+
             <div className="flex gap-2 justify-center items-center">
                 {member.isAdmin === 1 && <AdminBadge />}
                 {loading ? // show loader in case user is being made admin or being kicked

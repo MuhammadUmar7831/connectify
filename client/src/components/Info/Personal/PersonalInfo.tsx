@@ -33,7 +33,6 @@ export default function PersonalInfo() {
 
             const res = await getFriendInfoApi(parseInt(id), user.UserId);
             if (res.success) {
-                console.log(res)
                 setFriend(res.data);
             }
             else {
@@ -69,11 +68,11 @@ export default function PersonalInfo() {
     }, [id])
 
     if (friend === null || commonGroups === null) {
-        return <div className="w-2/3 min-w-[820px] h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar"></div>
+        return <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar"></div>
     }
 
     return (
-        <div className="w-2/3 min-w-[820px] h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar">
+        <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar">
             <div className="bg-white rounded-2xl p-4">
                 {friend.ChatId &&
                     <div className="flex justify-end relative" ref={menuRef}>
@@ -105,7 +104,7 @@ export default function PersonalInfo() {
                 <div className="rounded-full overflow-hidden mx-auto w-44 h-44">
                     <img className="object-cover w-full h-full" src={friend.Avatar} alt="avatar" />
                 </div>
-                <div className="flex flex-col gap-1 items-center w-full mt-3">
+                <div className="flex flex-col gap-1 items-center w-full mt-3 text-wrap text-center">
                     <h1 className="text-2xl font-semibold">{friend.Name}</h1>
                     <a href="mailto:mu8494759@gmail.com" className="text-gray-300 hover:text-blue-400">{friend.Email}</a>
                 </div>

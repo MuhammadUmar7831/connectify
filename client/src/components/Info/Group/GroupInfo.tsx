@@ -46,7 +46,7 @@ export default function GroupInfo() {
     const { isPinned, pinChat, unPinChat } = usePiningChat({ chatId: groupInfo !== null ? groupInfo?.ChatId : -1, chatType: 'group', setLoading });
 
     if (groupInfo === null) {
-        return <div className="w-2/3 min-w-[820px] h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar" />
+        return <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar" />
 
     }
 
@@ -59,7 +59,7 @@ export default function GroupInfo() {
 
     return (
         <>
-            <div className="w-2/3 min-w-[820px] h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar">
+            <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar">
                 <div className="bg-white rounded-2xl p-4">
                     <div className="relative flex justify-center">
                         {updating ? <ClipLoader size={30} color={themeColor} className="top-0 absolute z-10" /> : <></>}
@@ -70,7 +70,7 @@ export default function GroupInfo() {
                                 initial={{ opacity: 0, y: '-50%' }}
                                 animate={{ opacity: 1, y: '0%' }}
                                 transition={{ duration: 0.3 }}
-                                className="bg-white rounded-lg py-2 shadow absolute top-0 right-0">
+                                className="bg-white rounded-lg py-2 shadow absolute top-0 right-0 z-10">
                                 <ul>
                                     {isArchived ? // first check if chat is archive if yes than user can unarchive it 
                                         // only if no than check uf chat is pinned if yes than user can only unpin 
@@ -116,18 +116,18 @@ export default function GroupInfo() {
                         </div>
                     }
                     <div className="flex flex-col gap-1 items-center w-full mt-3">
-                        <div className="flex gap-2 items-center">
+                        <div className="flex gap-2 items-center max-w-full">
                             {groupName === null ?
-                                <h1 className="text-2xl font-semibold">{groupInfo.GroupName}</h1> :
-                                <form onSubmit={updateGroup} className="relative flex gap-2 text-2xl border-b-2 p-2">
-                                    <input required className="font-semibold focus:outline-none" type="text" placeholder="Group Name" value={groupName} onChange={(e) => setGroupName(e.target.value)} />
-                                    <Emoji_Picker emojiPicketClassName="top-[60px] right-0" onPickup={(emoji: string) => { setGroupName(`${groupName}${emoji}`) }} />
+                                <h1 className="text-2xl font-semibold text-wrap text-center w-full">{groupInfo.GroupName}</h1> :
+                                <form onSubmit={updateGroup} className="relative flex items-center gap-2 text-2xl border-b-2 p-2 w-full">
+                                    <input required className="font-semibold focus:outline-none w-full" type="text" placeholder="Group Name" value={groupName} onChange={(e) => setGroupName(e.target.value)} />
+                                    <Emoji_Picker emojiPicketClassName="top-[60px] -right-10 lg:right-0" onPickup={(emoji: string) => { setGroupName(`${groupName}${emoji}`) }} />
                                     <button type="submit">
                                         <AiOutlineCheck className="cursor-pointer" size={26} />
                                     </button>
                                 </form>
                             }
-                            {userItselfAdmin && <MdEdit onClick={handleEditGroupNameClick} size={25} className="cursor-pointer" />}
+                            {userItselfAdmin && <MdEdit onClick={handleEditGroupNameClick} size={25} className="cursor-pointer text-lg" />}
                         </div>
                         <p className="text-gray-300">Group • {groupInfo.Members.length} Members</p>
                     </div>
@@ -147,12 +147,12 @@ export default function GroupInfo() {
                     <h1 className="text-gray-300 mt-2">Created By</h1>
                     <p>{groupInfo.CreatedBy} on {new Date(groupInfo.DateCreated).toLocaleString()}</p>
                     <h1 className="text-gray-300 mt-2">Description</h1>
-                    <div className="flex gap-2 items-center">
+                    <div className="flex gap-2 items-center w-fit max-w-full">
                         {groupDesc === null ?
-                            <p>{groupInfo.Description}</p> :
-                            <form onSubmit={updateGroup} className="flex gap-2 border-b-2 p-2 w-full">
+                            <p className="w-full">{groupInfo.Description}</p> :
+                            <form onSubmit={updateGroup} className="relative flex gap-2 border-b-2 p-2 w-full">
                                 <input required className="focus:outline-none w-full" type="text" placeholder="Group Name" value={groupDesc} onChange={(e) => setGroupDesc(e.target.value)} />
-                                <Emoji_Picker emojiPicketClassName="top-[60px] right-[20px]" onPickup={(emoji: string) => { setGroupDesc(`${groupDesc}${emoji}`) }} />
+                                <Emoji_Picker emojiPicketClassName="top-10 -right-10" onPickup={(emoji: string) => { setGroupDesc(`${groupDesc}${emoji}`) }} />
                                 <button type="submit">
                                     <AiOutlineCheck className="cursor-pointer" size={25} />
                                 </button>
@@ -161,7 +161,7 @@ export default function GroupInfo() {
                         {userItselfAdmin && <MdEdit onClick={handleEditGroupDescClick} size={25} className="cursor-pointer" />}
                     </div>
                 </div>
-                <div className="bg-white rounded-2xl">
+                <div className="bg-white rounded-2xl w-full">
                     <h1 className="text-gray-300 p-4">Members</h1>
                     {groupInfo.Members.map((member) => (
                         <MembersListItems key={member.UserId} member={member} userItselfAdmin={userItselfAdmin} groupId={groupInfo?.GroupId} setGroupInfo={setGroupInfo} />

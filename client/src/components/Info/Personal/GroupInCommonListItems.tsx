@@ -10,12 +10,12 @@ export default function GroupInCommonListItems({ group }: { group: GroupListItem
         .join(', ');
     return (
         <Link to={`/info/group/${group.GroupId}`} className="flex gap-2 p-4 hover:bg-gray-100">
-            <div className="rounded-full w-12 h-12 overflow-hidden">
-                <img src={group.Avatar} />
+            <div className="rounded-full w-16 aspect-square overflow-hidden">
+                <img src={group.Avatar} className="w-full h-full object-cover"/>
             </div>
-            <div>
-                <h1>{group.Name}</h1>
-                <p className="text-gray-300 text-sm">{memberNames}</p>
+            <div className="w-full overflow-hidden">
+                <h1 className="truncate">{group.Name}</h1>
+                <p className="text-gray-300 text-sm truncate">{memberNames}</p>
             </div>
         </Link>
     )
