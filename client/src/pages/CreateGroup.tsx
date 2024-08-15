@@ -108,15 +108,15 @@ export default function CreateGroup() {
     }
 
     return (
-        <div className="w-2/3 min-w-[820px] h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar bg-white rounded-2xl p-4">
-            <div className="relative rounded-full overflow-hidden mx-auto w-42 h-42 group cursor-pointer bg-gray">
+        <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar bg-white rounded-2xl p-4">
+            <div className="relative rounded-full overflow-hidden mx-auto w-44 h-44 aspect-square group cursor-pointer bg-gray">
                 <div
                     onClick={() => document.getElementById('file-input')?.click()}
                     className="flex justify-center items-center absolute top-0 left-0 bg-gray-200 w-full h-full opacity-0 group-hover:opacity-100 group-hover:bg-opacity-60"
                 >
                     <MdEdit size={40} className="cursor-pointer" />
                 </div>
-                <img src={groupAvatar} alt="avatar" className="w-full h-full object-cover" />
+                <img src={groupAvatar} alt="avatar" className="object-cover" />
                 <input
                     type="file"
                     id="file-input"
@@ -126,7 +126,7 @@ export default function CreateGroup() {
                 />
             </div>
             <form onSubmit={() => { }} className="flex flex-col gap-5 items-center w-full mt-3">
-                <div className="relative flex gap-2 text-2xl border-b-2 p-2 justify-between w-1/2">
+                <div className="relative flex gap-2 text-2xl border-b-2 p-2 justify-between w-full sm:w-1/2">
                     <input
                         required
                         className="focus:outline-none w-full"
@@ -140,7 +140,7 @@ export default function CreateGroup() {
                         onPickup={(emoji: string) => { if (`${groupName}${emoji}`.length < 30) { setGroupName(`${groupName}${emoji}`) } }}
                     />
                 </div>
-                <div className="relative flex gap-2 text-lg border-b p-2 w-2/3 justify-between">
+                <div className="relative flex gap-2 text-lg border-b p-2 w-full sm:w-2/3 justify-between">
                     <input
                         required
                         className="focus:outline-none w-full"

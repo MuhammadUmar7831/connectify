@@ -79,7 +79,7 @@ export default function UserSearchAndSelect({ notInclude, onClose, proceed }: { 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
-            className="w-2/3 min-w-[820px] h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar bg-white rounded-2xl pt-4">
+            className="w-full h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar bg-white rounded-2xl pt-4">
             <div className="w-fit px-4 cursor-pointer">
                 <IoReturnUpBack size={30} onClick={() => { onClose() }} />
             </div>
