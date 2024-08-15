@@ -154,7 +154,7 @@ export default function GroupInfo() {
                                 <input required className="focus:outline-none w-full" type="text" placeholder="Group Name" value={groupDesc} onChange={(e) => setGroupDesc(e.target.value)} />
                                 <Emoji_Picker emojiPicketClassName="top-10 -right-10" onPickup={(emoji: string) => { setGroupDesc(`${groupDesc}${emoji}`) }} />
                                 <button type="submit">
-                                    <AiOutlineCheck className="cursor-pointer" size={25} />
+                                    <AiOutlineCheck className=" cursor-pointer" size={25} />
                                 </button>
                             </form>
                         }

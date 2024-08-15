@@ -36,7 +36,9 @@ const authenticate = async (
           return next(err);
         }
         if (result.length === 0) {
-          return next(errorHandler(404, "Please Login to Continue"));
+          return next(
+            errorHandler(404, "Please Login to Continue,User not found")
+          );
         }
         req.userId = result[0].UserId;
         next();
