@@ -11,6 +11,7 @@ import { BarLoader } from "react-spinners";
 import { GrConnect } from "react-icons/gr";
 import themeColor from "../config/theme.config";
 import { createSocket } from "../config/scoket.config";
+import useScreenWidth from "../hooks/useScreenWidth";
 
 export default function PrivateRoutes() {
     const dispatch = useDispatch();
@@ -37,6 +38,8 @@ export default function PrivateRoutes() {
             setLoading(false);
         }
     }, [user])
+    const screenWidth = useScreenWidth();
+
 
     if (loading) {
         return (
@@ -48,6 +51,15 @@ export default function PrivateRoutes() {
                 <BarLoader width={200} color={themeColor} />
                 <span className="animate-pulse">Authenticating...</span>
             </div>
+        )
+    }
+
+    if (screenWidth && screenWidth < 640) { // app layout for mobile screens
+        return (
+            user !== null ?
+                <>
+                    <Outlet />
+                </> : <Navigate to="/signin" />
         )
     }
 
