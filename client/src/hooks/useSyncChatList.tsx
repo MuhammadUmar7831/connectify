@@ -41,30 +41,26 @@ export default function useSyncChatList() {
 
         // local function that actually return the passed state with updated status
         const updateChatArray = (chats: any) => {
-            return chats.map((chat: any) => {
-                if (chat.ChatId == ChatId) { // this is the chat i want to push notification to
-                    if (chat.ChatId == chatId) { // this chat is in view
-                        return {
-                            ...chat,
-                            SenderName: Sender,
-                            SenderId,
-                            Content,
-                            Timestamp,
-                            UserStatus,
-                            unSeenMessages: 0,
-                        };
-                    } else { // chat not in view
-                        return {
-                            ...chat,
-                            Content,
-                            Timestamp,
-                            UserStatus,
-                            unSeenMessages: (chat.unSeenMessages || 0) + 1,
-                        };
-                    }
-                }
-                return chat;
-            });
+            // Filter out the chat to be updated
+            const updatedChats = chats.filter((chat: any) => chat.ChatId !== ChatId);
+
+            // Find the chat to be updated
+            const updatedChat = chats.find((chat: any) => chat.ChatId === ChatId);
+
+            // Create a new chat object with the updated properties
+            const newChat = updatedChat ? {
+                ...updatedChat,
+                Content: Content,
+                Timestamp: Timestamp,
+                UserStatus: UserStatus,
+                SenderName: Sender,
+                SenderId: SenderId,
+                unSeenMessages: chatId == ChatId ? 0 : (updatedChat.unSeenMessages || 0) + 1,
+            } : null;
+
+            // Return the new array with the updated chat at the start
+            return newChat ? [newChat, ...updatedChats] : updatedChats;
+
         };
 
         switch (chatType) {

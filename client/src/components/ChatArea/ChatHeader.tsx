@@ -106,7 +106,7 @@ export default function ChatHeader({ data }: Props) {
             <div className="flex gap-4 w-3/4 items-center">
                 <Avatar
                     image={data !== null ? data.ChatAvatar : ''}
-                    isActive={active && data?.Type === 'Personal'}
+                    isActive={active}
                 />
                 <div className="w-full truncate">
                     <h1 className="text-xl font-semibold truncate">{data?.ChatName}</h1>
