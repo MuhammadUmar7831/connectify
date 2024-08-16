@@ -21,7 +21,7 @@ export default function MessageInfoPanel() {
             <div className="w-full p-4">
                 <RxCrossCircled size={30} className="cursor-pointer hover:text-orange" onClick={() => setShowInfoPanel(false)} />
             </div>
-            <div className="flex flex-col gap-2 w-fit p-4">
+            <div className="flex flex-col gap-2 max-w-full p-4 break-words">
                 <span className="text-xs font-semibold hover:underline cursor-pointer text-orange">
                     You
                 </span>

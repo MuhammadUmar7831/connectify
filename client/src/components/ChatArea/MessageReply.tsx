@@ -100,7 +100,7 @@ export default function MessageReply(props: Props) {
               <p className={`font-semibold`}>{replySender}</p>
               {message}
             </div>
-            <p>{content}</p>
+            <p className="text-white max-w-[200px] sm:max-w-[400px] text-wrap">{content}</p>
           </div>
           <div className={`flex gap-2 ${me ? 'flex-row-reverse' : 'flex-row'}`}>
             <span className="text-gray-200 text-xs">{time}</span>

@@ -76,7 +76,7 @@ export default function Message(props: Props) {
             className={`${me
               ? "bg-orange rounded-l-2xl text-white"
               : "bg-gray-200 rounded-r-2xl text-black"
-              } rounded-t-2xl p-4 text-sm relative group w-fit`}
+              } rounded-t-2xl p-4 text-sm relative group w-fit break-words`}
           >
             <MessageContextMenu isOpen={showMenu} options={['Info', 'Edit', 'Delete']} actions={[
               handleInfoClick,
@@ -88,7 +88,7 @@ export default function Message(props: Props) {
               style={{ boxShadow: `0 0 6px 6px ${me ? themeColor : '#BABABA'}` }}
               className={`absolute top-2 right-4 ${me ? 'bg-orange' : 'bg-gray-200'} text-lg rounded-full opacity-0 group-hover:opacity-100 cursor-pointer`}
             />
-            <p className="text-white">{content}</p>
+            <p className="text-white max-w-[200px] sm:max-w-[400px] text-wrap">{content}</p>
           </div>
           <div className={`flex gap-2 ${me ? 'flex-row-reverse' : 'flex-row'}`}>
             {time !== "" && <span className="text-gray-200 text-xs">{time}</span>}

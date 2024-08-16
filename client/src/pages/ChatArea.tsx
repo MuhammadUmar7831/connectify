@@ -38,7 +38,7 @@ export default function ChatArea() {
 
   return (
     <MessageInfoProvider>
-      <div className="w-full h-full flex flex-col gap-2 relative">
+      <div className="w-full h-full flex flex-col gap-2 relative overflow-hidden">
         <ChatHeader data={chatHeaderData} />
         <ChatSection
           onSetReplyClick={onSetReplyClick}
