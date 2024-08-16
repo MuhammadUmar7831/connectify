@@ -193,8 +193,10 @@ export default function useChatArea() {
         socket?.emit("chatCreated", data);
         navigate(`/chat/${response.data.ChatId}`)
       }
-      // socket trigger to update seen status for each member of chat
-      socket?.emit("messageSent", response.data.MessageId);
+      if (!chatId.startsWith('new')) { // emit function only if the chat is not new
+        // socket trigger to update seen status for each member of chat
+        socket?.emit("messageSent", response.data.MessageId);
+      }
     }
     else {
       // Showing that message was not sent and error occurred
@@ -306,7 +308,8 @@ export default function useChatArea() {
 
   useEffect(() => {
     if (typeof chatId === 'string') {
-      setChatHeaderData(null)
+      setChatHeaderData(null);
+      // setMessages([]);
       if (chatId.startsWith('new')) {
         const userId = chatId.slice(3);
         if (isNaN(parseInt(userId))) {
@@ -316,14 +319,14 @@ export default function useChatArea() {
           dispatch(setError('Invalid URL You Really want to Chat with Yourself'));
           navigate("/")
         }
-      }
-      if (isNaN(parseInt(chatId))) {
-        dispatch(setError('Invalid URL: Chat ID should be a number'));
-        navigate("/")
       } else {
+        if (isNaN(parseInt(chatId))) {
+          dispatch(setError('Invalid URL: Chat ID should be a number'));
+          navigate("/")
+        }
         fetchMessages(0);
-        getChatHeaderData();
       }
+      getChatHeaderData();
     } else {
       dispatch(setError('Invalid URL: Chat ID should be a valid number'));
       navigate("/")
@@ -341,6 +344,8 @@ export default function useChatArea() {
       }
     }
   }, [chatId, personalChats]);
+
+
 
   return {
     onContentChange,
