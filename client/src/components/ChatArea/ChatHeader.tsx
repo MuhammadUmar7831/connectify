@@ -109,21 +109,15 @@ export default function ChatHeader({ data }: Props) {
                     isActive={active && data?.Type === 'Personal'}
                 />
                 <div className="w-full truncate">
-                    <h1 className="text-xl font-semibold">{data?.ChatName}</h1>
+                    <h1 className="text-xl font-semibold truncate">{data?.ChatName}</h1>
                     <span className={`text-sm  ${typingTimeout !== null ? 'text-orange' : status === 'Active' ? 'text-green-500' : 'text-gray-200'}`}>{status}</span>
                 </div>
             </div>
-            {/* <div className="flex items-center gap-4 justify-between"> */}
             <div className="pr-2 w-[100px]">
-                <Link to={`/info/${data?.Type.toLocaleLowerCase()}/${data?.InfoId}`} className={`rounded-3xl border border-black hover:bg-black hover:text-white cursor-pointer py-2 px-4`}>
+                <Link to={`/info/${data?.Type.toLocaleLowerCase()}/${data?.InfoId}`} className={`rounded-3xl border border-black hover:bg-black hover:text-white cursor-pointer py-2 px-2 sm:px-4`}>
                     <span className="font-semibold">Profile</span>
                 </Link>
             </div>
-            {/* <div className="flex gap-2">
-                    <CiSearch className="text-black text-2xl cursor-pointer" />
-                    <BsThreeDots className="text-black text-2xl cursor-pointer" />
-                </div> */}
-            {/* </div> */}
         </div>
     );
 }

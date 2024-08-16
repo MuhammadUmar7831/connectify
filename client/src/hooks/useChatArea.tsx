@@ -306,6 +306,7 @@ export default function useChatArea() {
 
   useEffect(() => {
     if (typeof chatId === 'string') {
+      setChatHeaderData(null)
       if (chatId.startsWith('new')) {
         const userId = chatId.slice(3);
         if (isNaN(parseInt(userId))) {
@@ -315,14 +316,14 @@ export default function useChatArea() {
           dispatch(setError('Invalid URL You Really want to Chat with Yourself'));
           navigate("/")
         }
-      } else {
-        if (isNaN(parseInt(chatId))) {
-          dispatch(setError('Invalid URL: Chat ID should be a number'));
-          navigate("/")
-        }
-        fetchMessages(0);
       }
-      getChatHeaderData();
+      if (isNaN(parseInt(chatId))) {
+        dispatch(setError('Invalid URL: Chat ID should be a number'));
+        navigate("/")
+      } else {
+        fetchMessages(0);
+        getChatHeaderData();
+      }
     } else {
       dispatch(setError('Invalid URL: Chat ID should be a valid number'));
       navigate("/")
@@ -340,7 +341,6 @@ export default function useChatArea() {
       }
     }
   }, [chatId, personalChats]);
-
 
   return {
     onContentChange,

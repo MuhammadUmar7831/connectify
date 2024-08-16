@@ -132,6 +132,8 @@ export default function ChatSection({ messages, userId, onSetReplyClick, fetchMo
 
   let lastDate = messages.length > 0 ? new Date(messages[0].Timestamp) : new Date();
 
+  
+
   return (
     <div className="relative bg-white overflow-hidden rounded-2xl w-full h-full">
       {messages.length > 0 &&
@@ -150,7 +152,7 @@ export default function ChatSection({ messages, userId, onSetReplyClick, fetchMo
       }
       <div
         ref={chatContainerRef}
-        className="absolute inset-0 flex flex-col-reverse gap-10 p-4 overflow-y-scroll no-scrollbar"
+        className="absolute inset-0 flex flex-col-reverse gap-5 p-4 overflow-y-scroll no-scrollbar"
       >
         {messages.map((m) => {
           const badgeDate = lastDate;

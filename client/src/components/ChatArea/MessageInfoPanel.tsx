@@ -17,7 +17,7 @@ export default function MessageInfoPanel() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
-            className="w-full h-full bg-white absolute top-0 left-0 rounded-2xl flex flex-col items-end">
+            className="w-full h-full bg-white absolute top-0 left-0 rounded-2xl flex flex-col items-end z-10">
             <div className="w-full p-4">
                 <RxCrossCircled size={30} className="cursor-pointer hover:text-orange" onClick={() => setShowInfoPanel(false)} />
             </div>

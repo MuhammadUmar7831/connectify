@@ -5,6 +5,9 @@ import SendMessageBox from "../components/ChatArea/SendMessageBox";
 import useChatArea from "../hooks/useChatArea";
 import MessageInfoPanel from "../components/ChatArea/MessageInfoPanel";
 import { MessageInfoProvider } from "../context/MessageInfoContext";
+import ChatHeaderSkeleton from "../interface/skeletons/ChatHeaderSkeleton";
+import ChatSectionSkeleton from "../interface/skeletons/ChatSectionSkeleton";
+import SendMessageBoxSkeleton from "../interface/skeletons/SendMessageBoxSkeleton";
 
 export default function ChatArea() {
   const data = useSelector((state: any) => state.user);
@@ -22,6 +25,16 @@ export default function ChatArea() {
     reply,
     onSetReplyClick,
   } = useChatArea();
+
+  if (chatHeaderData === null || messages === null) {
+    return (
+      <div className="w-full h-full flex flex-col gap-2">
+        <ChatHeaderSkeleton />
+        <ChatSectionSkeleton />
+        <SendMessageBoxSkeleton />
+      </div>
+    )
+  }
 
   return (
     <MessageInfoProvider>
