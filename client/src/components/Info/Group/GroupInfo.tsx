@@ -60,7 +60,7 @@ export default function GroupInfo() {
 
     return (
         <>
-            <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar">
+            <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar rounded-2xl overflow-hidden">
                 <div className="bg-white rounded-2xl p-4">
                     <div className="relative flex justify-center">
                         {updating ? <ClipLoader size={30} color={themeColor} className="top-0 absolute z-10" /> : <></>}

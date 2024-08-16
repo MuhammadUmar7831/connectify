@@ -73,7 +73,7 @@ export default function PersonalInfo() {
     }
 
     return (
-        <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar">
+        <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar rounded-2xl overflow-hidden">
             <div className="bg-white rounded-2xl p-4">
                 {friend.ChatId &&
                     <div className="flex justify-end relative" ref={menuRef}>

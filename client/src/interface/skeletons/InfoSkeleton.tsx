@@ -2,7 +2,7 @@ import Skeleton from "./Skeleton";
 
 export default function InfoSkeleton() {
     return (
-        <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar" >
+        <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar rounded-2xl overflow-hidden" >
             <div className="bg-white rounded-2xl p-4">
                 <div className="flex justify-end">
                     <div className="flex flex-col gap-1">

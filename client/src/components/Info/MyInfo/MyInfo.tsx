@@ -34,12 +34,12 @@ export default function MyInfo() {
 
   if (user === null) {
     return (
-      <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar"></div>
+      <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar rounded-2xl overflow-hidden"></div>
     );
   }
 
   return (
-    <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar">
+    <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar rounded-2xl overflow-hidden">
       <div className="bg-white rounded-2xl p-4">
         <div className="flex justify-end relative" ref={menuRef}>
           {showMenu && (
