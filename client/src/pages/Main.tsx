@@ -18,7 +18,7 @@ export default function Main() {
     return (
         <div className="w-1/2 2xl:w-1/3 h-full flex gap-2">
             <SideBar />
-            <div className="h-full w-full flex flex-col gap-2">
+            <div className="h-full w-full flex flex-col gap-2 min-w-[400px]">
                 <MainHeader />
                 <ChatList />
             </div>

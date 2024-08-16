@@ -82,12 +82,12 @@ export default function ChatListItem({ userId, chatId, image, name, senderIsMe, 
 
     return (
         <Link to={`/chat/${chatId}`}>
-            <div className="flex justify-between gap-2 p-4 text-gray-200 hover:bg-gray-100">
-                <div className="flex gap-2 w-5/6">
+            <div className="flex w-full justify-between gap-2 p-4 text-gray-200 hover:bg-gray-100">
+                <div className="flex gap-2 w-full truncate">
                     <Avatar image={image} isActive={isActive} />
-                    <div className="flex flex-col gap-2 w-full text-nowrap overflow-hidden">
-                        <h1 className="text-black font-semibold overflow-hidden text-ellipsis">{name}</h1>
-                        <p className="text-sm overflow-hidden flex items-center gap-1">
+                    <div className="flex flex-col gap-2 w-full">
+                        <h1 className="text-black font-semibold">{name}</h1>
+                        <p className="text-sm flex items-center gap-1">
                             {senderIsMe && (status === "sent" ? (
                                 <SingleTick size="16" className="text-gray-200" />
                             ) : status === "received" ? (
@@ -96,8 +96,7 @@ export default function ChatListItem({ userId, chatId, image, name, senderIsMe, 
                                 <DoubleTick size="16" className="text-orange" />
                             ) : <></>)
                             }
-                            <span className={isTyping ? 'text-orange' : ''}>{content?.substring(0, 30)}</span>
-                            {content && content.length > 30 && <>...</>}
+                            <span className={isTyping ? 'text-orange' : ''}>{content}</span>
                         </p>
                     </div>
                 </div>

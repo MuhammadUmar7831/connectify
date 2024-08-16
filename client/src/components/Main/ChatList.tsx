@@ -19,7 +19,7 @@ export default function ChatList() {
 
     useSyncChatList();
 
-    if (chatsToRender === null) {
+    if (chatsToRender === null && pinnedChats === null) {
         return (
             <ChatListSkeleton />
         )
@@ -27,7 +27,7 @@ export default function ChatList() {
 
     return (
         <div className="rounded-2xl w-full h-full bg-white overflow-y-scroll no-scrollbar">
-            {chatListType !== 'Archived' && (
+            {chatListType !== 'Archived' && pinnedChats && pinnedChats?.length > 0 && (
                 <>
                     <h1 className="text-gray-200 mx-6 mt-6 uppercase text-sm">Pinned</h1>
                     {pinnedChats && pinnedChats.map((chat, index) => (
@@ -49,7 +49,10 @@ export default function ChatList() {
                 </>
             )}
 
-            <h1 className="text-gray-200 mx-6 mt-6 uppercase text-sm">{chatListType}</h1>
+            {chatsToRender && chatsToRender?.length > 0 ?
+                <h1 className="text-gray-200 mx-6 mt-6 uppercase text-sm">{chatListType}</h1>:
+                <h1 className="text-gray-200 mx-6 mt-6 uppercase text-sm">No {chatListType} Chats Found</h1>
+            }
             {chatsToRender && chatsToRender.map((chat, index) => (
                 <ChatListItem
                     key={index}
