@@ -16,6 +16,7 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { RootState } from "../../../redux/store";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { MdOutlineMessage } from "react-icons/md";
+import InfoSkeleton from "../../../interface/skeletons/InfoSkeleton";
 
 export default function PersonalInfo() {
     const [friend, setFriend] = useState<null | friendType>(null);
@@ -68,7 +69,7 @@ export default function PersonalInfo() {
     }, [id])
 
     if (friend === null || commonGroups === null) {
-        return <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar"></div>
+        return <InfoSkeleton />
     }
 
     return (

@@ -13,6 +13,7 @@ import Emoji_Picker from "../../Emoji_Picker";
 import useGroupInfo from "../../../hooks/useGroupInfo";
 import { useChatArchiving } from "../../../hooks/useArchivingChat";
 import { usePiningChat } from "../../../hooks/usePiningChat";
+import InfoSkeleton from "../../../interface/skeletons/InfoSkeleton";
 
 export default function GroupInfo() {
     const { showMenu, setShowMenu, menuRef } = useMenu();
@@ -46,7 +47,7 @@ export default function GroupInfo() {
     const { isPinned, pinChat, unPinChat } = usePiningChat({ chatId: groupInfo !== null ? groupInfo?.ChatId : -1, chatType: 'group', setLoading });
 
     if (groupInfo === null) {
-        return <div className="w-full h-full flex flex-col gap-2 overflow-y-scroll no-scrollbar" />
+        return <InfoSkeleton />
 
     }
 

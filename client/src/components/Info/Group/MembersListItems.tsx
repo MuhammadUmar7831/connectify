@@ -130,7 +130,7 @@ export default function MembersListItems({ member, groupId, userItselfAdmin, set
         <div className="flex justify-between p-4 hover:bg-gray-100 w-full">
 
             <div className="flex gap-2 w-full overflow-hidden">
-                <Link to={`/info/personal/${member.UserId}`} className="rounded-full w-16 overflow-hidden aspect-square">
+                <Link to={member.UserId === user?.UserId ? '/info/my' : `/info/personal/${member.UserId}`} className="rounded-full w-16 overflow-hidden aspect-square">
                     <img src={member.Avatar} alt="Avatar" className="object-cover w-full h-full" />
                 </Link>
                 <div className="w-full overflow-hidden">
