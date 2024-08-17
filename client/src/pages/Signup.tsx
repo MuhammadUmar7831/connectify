@@ -11,6 +11,9 @@ import { useDispatch } from "react-redux";
 import { setUser } from "../redux/slices/user";
 import { setSuccess } from "../redux/slices/success";
 import { setError } from "../redux/slices/error";
+import { MdEdit } from "react-icons/md";
+import useCloudinary from "../hooks/useCloudinary";
+
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -20,6 +23,7 @@ const Signup = () => {
   const [avatar, setAvatar] = useState("");
   const [bio, setBio] = useState("");
   const [loading, setLoading] = useState(false);
+  const [preview, setPriview] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [disableOnPass, setDisableOnPass] = useState(false);
   const dispatch = useDispatch();
@@ -32,37 +36,6 @@ const Signup = () => {
   const handleEmailChange = (e:any) => {
     setEmail(e.target.value);
   };
-
-  const handlePasswordChange = (e:any) => {
-    const pwd = e.target.value;
-    setPassword(pwd);
-    checkPasswordStrength(pwd);
-  };
-
-  const handleAvatarChange = (e:any) => {
-    setAvatar(e.target.value);
-  };
-
-  const togglePasswordVisibility = () => {
-    setPasswordVisible(!passwordVisible);
-  };
-
-  const handleSignUpClick = async (e:any) => {
-    e.preventDefault();
-    setLoading(true);
-
-    setBio("Default Bio, You can change it");
-    const res = await signupApi({ email, password, name, avatar, bio });
-    if (res.success) {
-      dispatch(setUser(res.user));
-      dispatch(setSuccess(res.message));
-      navigate("/");
-    } else {
-      dispatch(setError(res.message));
-    }
-    setLoading(false);
-  };
-
   const checkPasswordStrength = (password: any) => {
     let strength = "";
     const strongRegex = new RegExp(
@@ -84,6 +57,57 @@ const Signup = () => {
     }
     setPasswordStrength(strength);
   };
+  const handlePasswordChange = (e:any) => {
+    const pwd = e.target.value;
+    setPassword(pwd);
+    checkPasswordStrength(pwd);
+  };
+
+  //Cloudinary
+  const { uploadImage } = useCloudinary();
+
+  const handleAvatarChange = async (e: any) => {
+    const file = e.target.files[0];
+    setPriview(URL.createObjectURL(file)); // Preview image
+    let userConfirmation = confirm("Are you sure you want to upload this image?");
+    console.log(file) //testing
+    if (userConfirmation) {
+      try {
+        const res = await uploadImage(file);
+        if (res.success) {
+          setAvatar(res.imageUrl || "Error uploading image");
+          console.log(avatar); //testing
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  };
+
+  const handleBioChange = (e: any) => {
+    setBio(e.target.value);
+  };
+
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
+  };
+
+  const handleSignUpClick = async (e: any) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const res = await signupApi({ email, password, name, avatar, bio });
+    if (res.success) {
+      dispatch(setUser(res.user));
+      dispatch(setSuccess(res.message));
+      navigate("/");
+    } else {
+      dispatch(setError(res.message));
+    }
+    setLoading(false);
+  };
+
+ 
 
   const clientId =
     "476553953625-r86dopv2fee9gtsnln507855orn3jko4.apps.googleusercontent.com";
@@ -100,12 +124,37 @@ const Signup = () => {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-        <div className="flex justify-center mb-4">
-          <GrConnect className="text-orange size-20 hover:text-black cursor-pointer" />
+        {/* Image Selection */}
+        <div className="relative rounded-full overflow-hidden mx-auto w-44 h-44 group cursor-pointer bg-gray">
+          <div
+            onClick={handleAvatarChange}
+            className="flex justify-center items-center absolute top-0 left-0 bg-gray-200 w-full h-full opacity-0 group-hover:opacity-100 group-hover:bg-opacity-60"
+          >
+            <MdEdit size={40} className="cursor-pointer" />
+          </div>
+          <img
+            src={preview || "default-avatar.jpg"}
+            alt="avatar"
+            className={`w-full h-full object-cover ${
+              loading ? "animate-pulse" : ""
+            }`}
+          />
+          <input
+            type="file"
+            id="file-input"
+            accept="image/*"
+            onChange={handleAvatarChange}
+            className="absolute inset-0 opacity-0 cursor-pointer"
+          />
         </div>
-        <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
-          Sign Up
-        </h2>
+
+        <div className="flex justify-center mb-4 items-center">
+          <GrConnect className="text-orange size-8 hover:text-black cursor-pointer" />
+          <h2 className="text-2xl font-semibold text-center text-gray-800 mb-4 mt-4 ml-2">
+            Sign Up
+          </h2>
+        </div>
+
         <button
           className="flex items-center justify-center mb-4 shadow-sm text-gray-600 hover:bg-gray-50 w-full focus:outline-none bg-gray-100 py-2 px-4 rounded-md"
           onClick={handleSignUpClick}
@@ -133,10 +182,10 @@ const Signup = () => {
           />
           <input
             type="text"
-            placeholder="Avatar URL"
+            placeholder="Bio"
             required
-            value={avatar}
-            onChange={handleAvatarChange}
+            value={bio}
+            onChange={handleBioChange}
             className="mb-4 shadow-sm text-gray-600 hover:bg-gray-50 w-full focus:outline-none bg-gray-100 py-2 px-4 rounded-md"
           />
           <div className="relative mb-4">
@@ -161,12 +210,13 @@ const Signup = () => {
             </button>
           </div>
           {password && (
-            <div className={`text-xs font-semibold mb-4 ${
+            <div
+              className={`text-xs font-semibold mb-4 ${
                 passwordStrength === "weak"
-                ? "text-red-500"
-                : passwordStrength === "medium"
-                ? "text-yellow-500"
-                : "text-green-500"
+                  ? "text-red-500"
+                  : passwordStrength === "medium"
+                  ? "text-yellow-500"
+                  : "text-green-500"
               }`}
             >
               {passwordStrength === "weak"
@@ -191,11 +241,7 @@ const Signup = () => {
             className="bg-gray-900 hover:bg-gray-800 rounded-md text-white py-2 px-4 mt-2 w-full bg-orange hover:bg-black disabled:cursor-not-allowed"
             type="submit"
           >
-            {loading ? (
-              <ClipLoader size={20} color="#FFFFFF" />
-            ) : (
-              "CONTINUE"
-            )}
+            {loading ? <ClipLoader size={20} color="#FFFFFF" /> : "CONTINUE"}
           </button>
         </form>
         <p className="text-center text-gray-500 mt-6">
