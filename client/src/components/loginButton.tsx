@@ -5,6 +5,7 @@ import { setSuccess } from "../redux/slices/success";
 import { setUser } from "../redux/slices/user";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import sendWelcomeEmail from "../config/sendEmail.config";
 
 const clientId = "476553953625-r86dopv2fee9gtsnln507855orn3jko4.apps.googleusercontent.com";
 
@@ -36,8 +37,10 @@ function LoginButton() {
       });
 
       if (response.success) {
+        //await sendWelcomeEmail(email,name);
         dispatch(setUser(response.user));
         dispatch(setSuccess(response.message));
+        
         navigate("/");
       } else {
         dispatch(setError(response.message));
