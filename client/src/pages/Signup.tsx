@@ -13,7 +13,6 @@ import { setSuccess } from "../redux/slices/success";
 import { setError } from "../redux/slices/error";
 import { MdEdit } from "react-icons/md";
 import useCloudinary from "../hooks/useCloudinary";
-import sendWelcomeEmail from "../config/sendEmail.config";
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -97,9 +96,8 @@ const Signup = () => {
     setLoading(true);
 
     const res = await signupApi({ email, password, name, avatar, bio });
-    //sendWelcomeEmail(email,name);
     if (res.success) {
-      //await sendWelcomeEmail(email,name);
+       
       dispatch(setUser(res.user));
       dispatch(setSuccess(res.message));
       navigate("/");

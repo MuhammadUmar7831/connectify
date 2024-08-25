@@ -19,6 +19,7 @@
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.10.2",
+    "nodemailer": "^6.9.14",
     "nodemon": "^3.1.4",
     "socket.io": "^4.7.5",
     "ts-node": "^10.9.2"
@@ -31,6 +32,7 @@
     "@types/jsonwebtoken": "^9.0.6",
     "@types/mysql": "^2.15.26",
     "@types/node": "^20.14.9",
+    "@types/nodemailer": "^6.4.15",
     "typescript": "^5.5.3"
   }
 }

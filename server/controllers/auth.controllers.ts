@@ -4,6 +4,7 @@ import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import connection from "../config/db";
 import errorHandler from "../errors/error";
+import sendWelcomeEmail from "../config/sendEmail";
 
 export const signup = async (req: Request, res: Response, next: NextFunction) => {
     const { name, email, password, avatar, bio, lastSeen } = req.body;
@@ -28,6 +29,7 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
             IsActivePrivacy: 0,
             IsLastSeenPrivacy: 0,
         }
+        sendWelcomeEmail(email,name)
         res
             .cookie('access_token', token, { httpOnly: true })
             .status(201)
