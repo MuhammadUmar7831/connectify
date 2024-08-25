@@ -73,7 +73,6 @@ const isMessageTimeFiveMinutes = async (
       if (differenceInMinutes >= 5) {
         next(errorHandler(403, "More than 5 minutes passed for the message"));
       }
-      console.log(differenceInMinutes)
 
       next();
     }

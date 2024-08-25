@@ -38,3 +38,17 @@ export const sendMessageToChatApi = async (
     else return { success: false, message: "Server is down" };
   }
 };
+
+export const editMessageApi = async (ChatId: number, MessageId: number, Content: string) => {
+  try {
+    const response = await axios.put(`/api/message/edit`, {
+      ChatId,
+      MessageId,
+      Content
+    });
+    return response.data;
+  } catch (error: any) {
+    if (error.response) return error.response.data;
+    else return { success: false, message: "Server is down" };
+  }
+};

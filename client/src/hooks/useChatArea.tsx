@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
+  editMessageApi,
   getMessageByChatIdApi,
   sendMessageToChatApi,
 } from "../api/message.api";
@@ -13,6 +14,7 @@ import { RootState } from "../redux/store";
 import Reply from "../types/reply.type";
 import { getChatHeaderDataApi } from "../api/chat.api";
 import { getUserApi } from "../api/user.api";
+import { setSuccess } from "../redux/slices/success";
 
 // Define the types for the message
 
@@ -224,6 +226,21 @@ export default function useChatArea() {
 
   // SEND MESSAGE LOGIN ENDS HERE **
 
+  // Edit MESSAGE LOGIN STARTS HERE **
+  const editMessage = async ({ MessageId, Content }: { MessageId: number, Content: string }) => {
+    if (!chatId) return false;
+    const res = await editMessageApi(parseInt(chatId), MessageId, Content);
+    if (res.success) {
+      socket?.emit('editMessage', MessageId, Content, chatId);
+      dispatch(setSuccess(res.message));
+      return true;
+    } else {
+      dispatch(setError(res.message));
+      return false;
+    }
+  }
+  // Edit MESSAGE LOGIN ENDS HERE **
+
   useEffect(() => {
     if (socket && chatId) {
       // socket function that listen to the message that is newly received (wether i sent it or anyone else)
@@ -235,6 +252,7 @@ export default function useChatArea() {
               (message) => message.MessageId !== -1
             );
 
+            console.log("new", [data, ...updatedMessages])
             return [data, ...updatedMessages];
           });
           // singleMessageSeen emitted
@@ -291,6 +309,21 @@ export default function useChatArea() {
           return updatedMessages;
         }));
 
+      socket.on("messageEdited", (messageId: number, content: string, _chatId: string) => {
+        if (_chatId != chatId) return;
+        console.log(messageId, content, chatId);
+        setMessages((prevMessages) => {
+          const updatedMessages = prevMessages.map((message) => {
+            if (message.MessageId === messageId) {
+              return { ...message, Content: content, isEdited: true }
+            } else {
+              return message
+            }
+          })
+          console.log(updatedMessages)
+          return [...updatedMessages];
+        })
+      })
 
       // Clean up the socket listener when the component unmounts
       return () => {
@@ -298,6 +331,7 @@ export default function useChatArea() {
         socket.off("seenAllMessage");
         socket.off("singleMessageHasBeenSeen");
         socket.off("userOnline");
+        socket.off("messageEdited");
       };
     }
   }, [socket, chatId, personalChats, groupChats, archiveChats, pinnedChats]);
@@ -358,5 +392,6 @@ export default function useChatArea() {
     fetchMessages,
     reply,
     onSetReplyClick,
+    editMessage
   };
 }

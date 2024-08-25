@@ -10,25 +10,39 @@ import { useMenu } from "../../hooks/useMenu";
 import themeColor from "../../config/theme.config";
 import { MessageInfoContext } from "../../context/MessageInfoContext";
 import { useContext, useState } from "react";
+import MessageResponse from "../../types/MessageResponse.type";
+import EditMessageModal from "./EditMessageModal";
 
 interface Props {
-  me: Boolean;
-  content: string;
-  time: string;
-  senderName: string;
-  senderId: number;
-  messageId: number;
+  message: MessageResponse
   onSetReplyClick: any;
-  userStatus: {
-    Status: string;
-    UserId: number;
-    UserName: string;
-  }[];
+  me: boolean;
+  editMessage: (any: any) => any
+}
+
+function formatTime(timestamp: string): string {
+  if (timestamp === "") {
+    return timestamp;
+  }
+  const date = new Date(timestamp);
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  const minutesStr = minutes < 10 ? "0" + minutes : minutes;
+  const strTime = hours + ":" + minutesStr + " " + ampm;
+  return strTime;
 }
 
 export default function Message(props: Props) {
-  const { me, content, time, senderName, senderId, messageId, onSetReplyClick, userStatus } = props;
-  const status = getMessageStatus(userStatus);
+  const { message, onSetReplyClick, me, editMessage } = props;
+  const { Timestamp, Sender, SenderId, MessageId, UserStatus } = message;
+  const status = getMessageStatus(UserStatus);
+  const formatedTime = formatTime(Timestamp);
+  const [content, setContent] = useState<string>(message.Content);
+  const [editedMessage, setEditedMessage] = useState<string | null>(null);
+  const [isEdited, setIsEdited] = useState<null | undefined | boolean>(message.isEdited)
 
   const { showMenu, setShowMenu, menuRef } = useMenu();
   const [menuPosition, setMenuPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
@@ -50,9 +64,23 @@ export default function Message(props: Props) {
   const handleInfoClick = () => {
     setShowMenu(false);
     setShowInfoPanel(true);
-    setUserStatus(userStatus);
+    setUserStatus(UserStatus);
     setSelectedMessage(content);
-    setTimestamp(time)
+    setTimestamp(formatedTime)
+  }
+
+  const handleEditClick = async () => {
+    if (content === editedMessage) return;
+    setEditedMessage(null);// close popup (not close if same message)
+    setIsEdited(false) //means api is taking time
+    setContent(editedMessage === null ? content : editedMessage);
+    const success = await editMessage({ MessageId, Content: editedMessage });
+    if (!success) {
+      setContent(message.Content)
+      setIsEdited(null); // null means error editing
+    } else {
+      setIsEdited(true)
+    }
   }
 
   return (
@@ -60,7 +88,7 @@ export default function Message(props: Props) {
       <div className={`group flex items-center gap-2 ${me ? "" : "flex-row-reverse"}`}>
         <HiOutlineReply
           onClick={() => {
-            onSetReplyClick(messageId, content, senderId, senderName);
+            onSetReplyClick(MessageId, content, SenderId, Sender);
           }}
           size={20}
           className={`cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity ${me ? '' : 'scale-x-[-1]'}`} /> {/*scale-x-[-1] will flip horizintally the reply icon */}
@@ -69,7 +97,7 @@ export default function Message(props: Props) {
             className={`text-xs font-semibold hover:underline cursor-pointer ${me ? " text-orange text-end" : "text-black"
               }`}
           >
-            {me ? "You" : senderName}
+            {me ? "You" : Sender}
           </span>
           <div
             ref={menuRef}
@@ -80,7 +108,9 @@ export default function Message(props: Props) {
           >
             <MessageContextMenu isOpen={showMenu} options={['Info', 'Edit', 'Delete']} actions={[
               handleInfoClick,
-              () => { /* Edit logic */ },
+              () => { /* Edit Logic */
+                setEditedMessage(content);// mean edit modal is now active
+              },
               () => { /* Delete logic */ }
             ]} position={menuPosition} />
             <IoIosArrowDown
@@ -91,7 +121,13 @@ export default function Message(props: Props) {
             <p className="text-white max-w-[200px] sm:max-w-[400px] text-wrap">{content}</p>
           </div>
           <div className={`flex gap-2 ${me ? 'flex-row-reverse' : 'flex-row'}`}>
-            {time !== "" && <span className="text-gray-200 text-xs">{time}</span>}
+            {isEdited === undefined ?
+              <></>
+              : isEdited === null ? <span className="text-gray-200 text-xs font-semibold flex gap-1"><CircleAlert size="16" className="text-red-700" />Error Editing</span>
+                : isEdited === false ? <span className="text-gray-200 text-xs font-semibold flex gap-1"><Clock size="16" className="text-gray-200" />Editing</span>
+                  : <span className="text-gray-200 text-xs font-semibold">Edited</span>
+            }
+            {formatedTime !== "" && <span className="text-gray-200 text-xs font-semibold">{formatedTime}</span>}
             {me &&
               (status === "sending" ? (
                 <Clock size="16" className="text-gray-200" />
@@ -107,6 +143,13 @@ export default function Message(props: Props) {
           </div>
         </div>
       </div>
+      {editedMessage !== null &&
+        <EditMessageModal
+          submitEditMessage={handleEditClick}
+          content={editedMessage}
+          setContent={setEditedMessage}
+        />
+      }
     </div>
   );
 }

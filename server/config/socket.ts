@@ -133,6 +133,11 @@ io.on('connection', (socket) => {
         io.sockets.adapter.rooms.delete(roomName);
     })
 
+    socket.on("editMessage", (messageId: number, content: string, chatId: string) => {
+        const roomName = `chat_${chatId}`;
+        io.to(roomName).emit('messageEdited', messageId, content, chatId);
+    })
+
     // Handle other socket events
     socket.on('disconnect', () => {
         // TO DO 

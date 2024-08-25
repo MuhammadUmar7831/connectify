@@ -11,6 +11,7 @@ interface ChatSectionProps {
   userId: number;
   onSetReplyClick: any;
   fetchMoreMessages: () => Promise<boolean>;
+  editMessage: (any: any) => void
 }
 
 const floatingDateBadgeVariants = {
@@ -23,7 +24,7 @@ const floatingDateBadgeVariants = {
   },
 };
 
-export default function ChatSection({ messages, userId, onSetReplyClick, fetchMoreMessages, }: ChatSectionProps) {
+export default function ChatSection({ messages, userId, onSetReplyClick, fetchMoreMessages, editMessage }: ChatSectionProps) {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [reachedEnd, setReachedEnd] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -60,21 +61,6 @@ export default function ChatSection({ messages, userId, onSetReplyClick, fetchMo
       }
     };
   }, [messages, reachedEnd, loading]);  // Depend on messages to track updates
-
-  function formatTime(timestamp: string): string {
-    if (timestamp === "") {
-      return timestamp;
-    }
-    const date = new Date(timestamp);
-    let hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? "PM" : "AM";
-    hours = hours % 12;
-    hours = hours ? hours : 12;
-    const minutesStr = minutes < 10 ? "0" + minutes : minutes;
-    const strTime = hours + ":" + minutesStr + " " + ampm;
-    return strTime;
-  }
 
   function formatDate(date: Date): string {
     const today = new Date();
@@ -129,10 +115,9 @@ export default function ChatSection({ messages, userId, onSetReplyClick, fetchMo
   }, [messages, observerCallback]);
 
   useEffect(() => { setReachedEnd(false) }, [])
+  useEffect(() => { console.log() }, [messages])
 
   let lastDate = messages.length > 0 ? new Date(messages[0].Timestamp) : new Date();
-
-  
 
   return (
     <div className="relative bg-white overflow-hidden rounded-2xl w-full h-full">
@@ -163,7 +148,7 @@ export default function ChatSection({ messages, userId, onSetReplyClick, fetchMo
           }
 
           return (
-            <div className="message" data-timestamp={m.Timestamp}>
+            <div key={m.MessageId} className="message" data-timestamp={m.Timestamp}>
               {!isSameAsLastDate &&
                 <div className="flex justify-center my-2">
                   <span className="bg-gray text-black text-xs py-1 px-3 rounded-md shadow-lg">
@@ -173,28 +158,17 @@ export default function ChatSection({ messages, userId, onSetReplyClick, fetchMo
               }
               {m.ReplyId === null ? (
                 <Message
-                  onSetReplyClick={onSetReplyClick}
                   me={m.SenderId === userId}
-                  content={m.Content}
-                  time={`${formatTime(m.Timestamp)}`}
-                  senderName={m.Sender}
-                  senderId={m.SenderId}
-                  messageId={m.MessageId}
-                  userStatus={m.UserStatus}
+                  onSetReplyClick={onSetReplyClick}
+                  message={m}
+                  editMessage={editMessage}
                 />
               ) : (
                 <MessageReply
-                  onSetReplyClick={onSetReplyClick}
                   me={m.SenderId === userId}
-                  message={m.ReplyContent ? m.ReplyContent : 'That is not Possible'}
-                  content={m.Content}
-                  time={`${formatTime(m.Timestamp)}`}
-                  senderId={m.SenderId}
-                  senderName={m.Sender}
-                  replySenderId={m.ReplySenderId}
-                  replySender={m.ReplySender}
-                  messageId={m.MessageId}
-                  userStatus={m.UserStatus}
+                  onSetReplyClick={onSetReplyClick}
+                  message={m}
+                  editMessage={editMessage}
                 />
               )}
             </div>

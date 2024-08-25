@@ -5,6 +5,7 @@ export default interface MessageResponse {
     Content: string;
     Timestamp: string;
     Sender: string;
+    isEdited?: boolean; // the api not give this this is being manipulated by socket
     UserStatus: {
         Status: string;
         UserId: number;

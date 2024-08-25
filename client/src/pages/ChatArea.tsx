@@ -24,6 +24,7 @@ export default function ChatArea() {
     fetchMessages,
     reply,
     onSetReplyClick,
+    editMessage
   } = useChatArea();
 
   if (chatHeaderData === null || messages === null) {
@@ -45,6 +46,7 @@ export default function ChatArea() {
           messages={messages}
           userId={data.user.UserId}
           fetchMoreMessages={fetchMessages}
+          editMessage={editMessage}
         />
         <SendMessageBox
           onSetReplyClick={onSetReplyClick}
