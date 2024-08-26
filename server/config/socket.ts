@@ -15,7 +15,7 @@ dotenv.config();
 export const app = express();
 app.use(express.json());
 app.use(cors({
-    origin: process.env.VITE_API_BASE_URL,
+    origin: process.env.CLIENT_BASE_URL,
     credentials: true,
 }));
 app.use(cookieParser());
@@ -23,7 +23,7 @@ app.use(cookieParser());
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: process.env.VITE_API_BASE_URL,
+        origin: process.env.CLIENT_BASE_URL,
         methods: ["GET", "POST"],
         credentials: true,
     },
