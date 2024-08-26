@@ -8,7 +8,7 @@ import errorHandler from "../errors/error";
 const COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production', // Ensure secure cookies in production
-  sameSite: 'lax' // Adjust based on your cross-site needs ('lax', 'strict', 'none')
+  sameSite: 'none' // Adjust based on your cross-site needs ('lax', 'strict', 'none')
 };
 
 export const signup = async (
