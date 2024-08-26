@@ -8,6 +8,7 @@ export const createSocket = (userId: number, chatIds: number[]) => {
                 userId: userId.toString(),  // Ensure userId is a string
                 chatIds: chatIds.join(','), // Convert array to comma-separated string
             },
+            transports: ['websocket'],
             withCredentials: true, // Ensure credentials are sent
         });
     }
