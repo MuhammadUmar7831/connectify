@@ -8,11 +8,14 @@ import { allMessageSeen } from "../socket/allMessagesSeen.scoket";
 import { messageSeenById } from "../socket/seenMessageById.socket";
 import setSentMessagesToReceived from "../socket/setSentMessagesToReceived";
 import { getChatData } from "../socket/getChatData";
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 export const app = express();
 app.use(express.json());
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: process.env.VITE_API_BASE_URL,
     credentials: true,
 }));
 app.use(cookieParser());
@@ -20,7 +23,7 @@ app.use(cookieParser());
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:5173",
+        origin: process.env.VITE_API_BASE_URL,
         methods: ["GET", "POST"],
         credentials: true,
     },
