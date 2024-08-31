@@ -5,7 +5,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { LuEye, LuEyeOff } from "react-icons/lu";
 import ClipLoader from "react-spinners/ClipLoader";
 import loginButton from "../components/loginButton";
-import { gapi } from "gapi-script";
 import { signupApi } from "../api/auth.api";
 import { useDispatch } from "react-redux";
 import { setUser } from "../redux/slices/user";
@@ -108,19 +107,6 @@ const Signup = () => {
   };
 
  
-
-  const clientId =
-    "476553953625-r86dopv2fee9gtsnln507855orn3jko4.apps.googleusercontent.com";
-  useEffect(() => {
-    function start() {
-      gapi.client.init({
-        clientId: clientId,
-        scope: "",
-      });
-    }
-    gapi.load("client:auth2", start);
-  }, []);
-
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
